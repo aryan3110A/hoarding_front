@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import AppLayout, { useUser } from "@/components/AppLayout";
+import { canCreate, canUpdate, canEditOwn } from "@/lib/rbac";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function Bookings() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -124,35 +126,36 @@ export default function Bookings() {
     );
   }
 
-  const userRole = user?.role?.toLowerCase() || "";
-  const isSales = userRole === "sales";
+  const userRole = user?.role || "";
+  const isSales = userRole?.toLowerCase() === "sales";
+  const canCreateBooking = canCreate(userRole, "bookings");
 
   // Don't show loading spinner - show content immediately with empty state if needed
 
   return (
-    <AppLayout>
-      <div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "20px",
-          }}
-        >
-          <h1>Bookings</h1>
-          {(isSales || userRole === "owner" || userRole === "manager") && (
-            <button
-              onClick={() => setShowTokenForm(!showTokenForm)}
-              className="btn btn-primary"
-            >
-              {showTokenForm ? "Cancel" : "Create New Booking"}
-            </button>
-          )}
-        </div>
+    <ProtectedRoute component="bookings">
+      <AppLayout>
+        <div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "20px",
+            }}
+          >
+            <h1>Bookings</h1>
+            {canCreateBooking && (
+              <button
+                onClick={() => setShowTokenForm(!showTokenForm)}
+                className="btn btn-primary"
+              >
+                {showTokenForm ? "Cancel" : "Create New Booking"}
+              </button>
+            )}
+          </div>
 
-        {showTokenForm &&
-          (isSales || userRole === "owner" || userRole === "manager") && (
+          {showTokenForm && canCreateBooking && (
             <div className="card">
               <h3>Create New Booking</h3>
               <form onSubmit={handleCreateBooking}>
@@ -204,94 +207,99 @@ export default function Bookings() {
             </div>
           )}
 
-        <div className="card">
-          <h3>All Bookings</h3>
-          {bookings.length > 0 ? (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Hoarding Code</th>
-                  <th>Location</th>
-                  <th>Client Name</th>
-                  <th>Client Contact</th>
-                  <th>Start Date</th>
-                  <th>End Date</th>
-                  <th>Price</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((booking: any) => (
-                  <tr key={booking.id}>
-                    <td>
-                      <strong>
-                        {booking.hoarding?.code || booking.hoardingId || "N/A"}
-                      </strong>
-                    </td>
-                    <td>
-                      {booking.hoarding?.city || ""}
-                      {booking.hoarding?.area && `, ${booking.hoarding.area}`}
-                      {!booking.hoarding?.city &&
-                        !booking.hoarding?.area &&
-                        getHoardingName(booking.hoardingId)}
-                    </td>
-                    <td>{booking.clientName || "N/A"}</td>
-                    <td>{booking.clientContact || "N/A"}</td>
-                    <td>
-                      {booking.startDate
-                        ? new Date(booking.startDate).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    <td>
-                      {booking.endDate
-                        ? new Date(booking.endDate).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    <td>₹{Number(booking.price || 0).toLocaleString()}</td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          booking.status === "confirmed"
-                            ? "badge-success"
-                            : booking.status === "cancelled"
-                            ? "badge-danger"
-                            : "badge-warning"
-                        }`}
-                      >
-                        {booking.status || "Pending"}
-                      </span>
-                    </td>
+          <div className="card">
+            <h3>All Bookings</h3>
+            {bookings.length > 0 ? (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Hoarding Code</th>
+                    <th>Location</th>
+                    <th>Client Name</th>
+                    <th>Client Contact</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Price</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "60px 20px",
-                color: "var(--text-secondary)",
-              }}
-            >
-              <div style={{ fontSize: "48px", marginBottom: "16px" }}>📅</div>
-              <h3 style={{ marginBottom: "8px", color: "var(--text-primary)" }}>
-                No Bookings Yet
-              </h3>
-              <p style={{ marginBottom: "24px" }}>
-                Get started by creating your first booking.
-              </p>
-              {(isSales || userRole === "owner" || userRole === "manager") && (
-                <button
-                  onClick={() => setShowTokenForm(true)}
-                  className="btn btn-primary"
+                </thead>
+                <tbody>
+                  {bookings.map((booking: any) => (
+                    <tr key={booking.id}>
+                      <td>
+                        <strong>
+                          {booking.hoarding?.code ||
+                            booking.hoardingId ||
+                            "N/A"}
+                        </strong>
+                      </td>
+                      <td>
+                        {booking.hoarding?.city || ""}
+                        {booking.hoarding?.area && `, ${booking.hoarding.area}`}
+                        {!booking.hoarding?.city &&
+                          !booking.hoarding?.area &&
+                          getHoardingName(booking.hoardingId)}
+                      </td>
+                      <td>{booking.clientName || "N/A"}</td>
+                      <td>{booking.clientContact || "N/A"}</td>
+                      <td>
+                        {booking.startDate
+                          ? new Date(booking.startDate).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td>
+                        {booking.endDate
+                          ? new Date(booking.endDate).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td>₹{Number(booking.price || 0).toLocaleString()}</td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            booking.status === "confirmed"
+                              ? "badge-success"
+                              : booking.status === "cancelled"
+                              ? "badge-danger"
+                              : "badge-warning"
+                          }`}
+                        >
+                          {booking.status || "Pending"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "60px 20px",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                <div style={{ fontSize: "48px", marginBottom: "16px" }}>📅</div>
+                <h3
+                  style={{ marginBottom: "8px", color: "var(--text-primary)" }}
                 >
-                  Create New Booking
-                </button>
-              )}
-            </div>
-          )}
+                  No Bookings Yet
+                </h3>
+                <p style={{ marginBottom: "24px" }}>
+                  Get started by creating your first booking.
+                </p>
+                {canCreateBooking && (
+                  <button
+                    onClick={() => setShowTokenForm(true)}
+                    className="btn btn-primary"
+                  >
+                    Create New Booking
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </AppLayout>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }

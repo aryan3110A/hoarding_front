@@ -10,7 +10,10 @@ import {
   hoardingsAPI,
   bookingsAPI,
   enquiriesAPI,
+  tasksAPI,
+  designAssignmentsAPI,
 } from "@/lib/api";
+import { canViewRent, canAssignTasks } from "@/lib/rbac";
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -143,66 +146,66 @@ export default function Dashboard() {
       }
       // Designer: Fetch design tasks
       else if (userRole === "designer") {
-        // Placeholder design tasks - in production, fetch from API
-        setTasks([
-          {
-            id: "1",
-            title: "Banner Design for H001",
-            status: "pending",
-            hoardingCode: "H001",
-            clientName: "Client A",
-            dueDate: "2025-12-01",
-          },
-          {
-            id: "2",
-            title: "Creative for H002",
-            status: "in_progress",
-            hoardingCode: "H002",
-            clientName: "Client B",
-            dueDate: "2025-11-28",
-          },
-          {
-            id: "3",
-            title: "Artwork for H003",
-            status: "completed",
-            hoardingCode: "H003",
-            clientName: "Client C",
-            dueDate: "2025-11-25",
-          },
-        ]);
+        try {
+          const response = await tasksAPI.getAll({
+            assignedTo: user?.id,
+            type: "design",
+          });
+          if (response.success && response.data) {
+            const designTasks = Array.isArray(response.data)
+              ? response.data
+              : response.data.tasks || [];
+            setTasks(designTasks);
+          } else {
+            // Fallback: try design assignments API
+            try {
+              const designResponse = await designAssignmentsAPI.getAll({
+                designerId: user?.id,
+              });
+              if (designResponse.success && designResponse.data) {
+                const assignments = Array.isArray(designResponse.data)
+                  ? designResponse.data
+                  : designResponse.data.assignments || [];
+                setTasks(
+                  assignments.map((a: any) => ({
+                    id: a.id,
+                    title: `Design for ${a.hoarding?.code || "Hoarding"}`,
+                    status: a.status?.toLowerCase() || "pending",
+                    hoardingCode: a.hoarding?.code || a.hoardingId,
+                    clientName: a.clientName,
+                    dueDate: a.dueDate,
+                  }))
+                );
+              }
+            } catch (err) {
+              console.error("Failed to fetch design assignments:", err);
+              setTasks([]);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch design tasks:", error);
+          setTasks([]);
+        }
       }
       // Fitter: Fetch assigned installation jobs
       else if (userRole === "fitter") {
-        // Placeholder installation jobs - in production, fetch from API
-        setTasks([
-          {
-            id: "1",
-            title: "Install Hoarding H001",
-            status: "pending",
-            hoardingCode: "H001",
-            location: "Mumbai, Bandra",
-            clientName: "Client A",
-            assignedDate: "2025-11-25",
-          },
-          {
-            id: "2",
-            title: "Install Hoarding H002",
-            status: "in_progress",
-            hoardingCode: "H002",
-            location: "Mumbai, Andheri",
-            clientName: "Client B",
-            assignedDate: "2025-11-24",
-          },
-          {
-            id: "3",
-            title: "Install Hoarding H003",
-            status: "completed",
-            hoardingCode: "H003",
-            location: "Pune, Kothrud",
-            clientName: "Client C",
-            assignedDate: "2025-11-20",
-          },
-        ]);
+        try {
+          const response = await tasksAPI.getAll({
+            assignedTo: user?.id,
+            type: "installation",
+          });
+          if (response.success && response.data) {
+            const installationTasks = Array.isArray(response.data)
+              ? response.data
+              : response.data.tasks || [];
+            setTasks(installationTasks);
+          } else {
+            setTasks([]);
+          }
+        } catch (error) {
+          console.error("Failed to fetch installation jobs:", error);
+          setTasks([]);
+        }
       } else {
         // Unknown role - set empty state
         setStats(null);
@@ -260,8 +263,9 @@ export default function Dashboard() {
     }
   };
 
-  const userRole = user?.role?.toLowerCase() || "";
-  const canViewRent = ["owner", "manager", "admin"].includes(userRole);
+  const userRole = user?.role || "";
+  const userRoleLower = userRole?.toLowerCase() || "";
+  const canViewRentInfo = canViewRent(userRole);
 
   // Debug: Log user object to see what we're working with
   useEffect(() => {
@@ -277,16 +281,7 @@ export default function Dashboard() {
     }
   }, [user]);
 
-  if (loading) {
-    return (
-      <AppLayout>
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <div className="loading-spinner" style={{ margin: "0 auto" }}></div>
-          <p>Loading dashboard...</p>
-        </div>
-      </AppLayout>
-    );
-  }
+  // Don't show loading spinner - show content immediately with empty states if needed
 
   return (
     <AppLayout>
@@ -395,7 +390,7 @@ export default function Dashboard() {
         )}
 
         {/* Rent Overview Cards - Only for Owner/Manager */}
-        {canViewRent && (
+        {canViewRentInfo && (
           <>
             <div className="grid">
               <div className="stat-card">
@@ -450,7 +445,14 @@ export default function Dashboard() {
             </div>
 
             {/* Upcoming Rent Dues */}
-            {upcomingDues.length > 0 ? (
+            {loading ? (
+              <div className="card">
+                <h3>Upcoming Rent Due</h3>
+                <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
+                  Loading rent dues...
+                </p>
+              </div>
+            ) : upcomingDues.length > 0 ? (
               <div className="card">
                 <h3>Upcoming Rent Due (Next 5)</h3>
                 <table className="table">
@@ -542,16 +544,25 @@ export default function Dashboard() {
             ) : (
               <div className="card">
                 <h3>Upcoming Rent Due</h3>
-                <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
-                  No upcoming rent dues at the moment.
-                </p>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "40px 20px",
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>📅</div>
+                  <p style={{ marginTop: "8px" }}>
+                    No upcoming rent dues at the moment.
+                  </p>
+                </div>
               </div>
             )}
           </>
         )}
 
         {/* Sales Dashboard */}
-        {userRole === "sales" && (
+        {userRoleLower === "sales" && (
           <>
             <div className="grid">
               <div className="stat-card">
@@ -577,7 +588,14 @@ export default function Dashboard() {
             </div>
 
             {/* Recent Bookings */}
-            {recentBookings && recentBookings.length > 0 && (
+            {loading ? (
+              <div className="card" style={{ marginTop: "24px" }}>
+                <h3>Recent Bookings</h3>
+                <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
+                  Loading bookings...
+                </p>
+              </div>
+            ) : recentBookings && recentBookings.length > 0 ? (
               <div className="card" style={{ marginTop: "24px" }}>
                 <div
                   style={{
@@ -643,10 +661,31 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               </div>
+            ) : (
+              <div className="card" style={{ marginTop: "24px" }}>
+                <h3>Recent Bookings</h3>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "40px 20px",
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>📅</div>
+                  <p style={{ marginTop: "8px" }}>No bookings yet.</p>
+                </div>
+              </div>
             )}
 
             {/* Recent Enquiries */}
-            {recentEnquiries && recentEnquiries.length > 0 && (
+            {loading ? (
+              <div className="card" style={{ marginTop: "24px" }}>
+                <h3>Recent Enquiries</h3>
+                <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
+                  Loading enquiries...
+                </p>
+              </div>
+            ) : recentEnquiries && recentEnquiries.length > 0 ? (
               <div className="card" style={{ marginTop: "24px" }}>
                 <div
                   style={{
@@ -704,6 +743,20 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               </div>
+            ) : (
+              <div className="card" style={{ marginTop: "24px" }}>
+                <h3>Recent Enquiries</h3>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "40px 20px",
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>📋</div>
+                  <p style={{ marginTop: "8px" }}>No enquiries yet.</p>
+                </div>
+              </div>
             )}
 
             {/* Quick Actions for Sales */}
@@ -751,7 +804,7 @@ export default function Dashboard() {
         )}
 
         {/* Designer Dashboard */}
-        {userRole === "designer" && (
+        {userRoleLower === "designer" && (
           <>
             <div className="grid">
               <div className="stat-card">
@@ -777,7 +830,11 @@ export default function Dashboard() {
             {/* Design Assignments List */}
             <div className="card" style={{ marginTop: "24px" }}>
               <h3>My Design Assignments</h3>
-              {tasks.length > 0 ? (
+              {loading ? (
+                <p style={{ color: "var(--text-secondary)", marginTop: "16px" }}>
+                  Loading design assignments...
+                </p>
+              ) : tasks.length > 0 ? (
                 <table className="table" style={{ marginTop: "16px" }}>
                   <thead>
                     <tr>
@@ -827,11 +884,18 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               ) : (
-                <p
-                  style={{ color: "var(--text-secondary)", marginTop: "16px" }}
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "40px 20px",
+                    color: "var(--text-secondary)",
+                  }}
                 >
-                  No design assignments at the moment.
-                </p>
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>🎨</div>
+                  <p style={{ marginTop: "16px" }}>
+                    No design assignments at the moment.
+                  </p>
+                </div>
               )}
             </div>
 
@@ -864,7 +928,7 @@ export default function Dashboard() {
         )}
 
         {/* Fitter Dashboard - Assigned Jobs Only */}
-        {userRole === "fitter" && (
+        {userRoleLower === "fitter" && (
           <>
             <div className="grid">
               <div className="stat-card">
@@ -890,7 +954,11 @@ export default function Dashboard() {
             {/* Assigned Installation Jobs */}
             <div className="card" style={{ marginTop: "24px" }}>
               <h3>My Assigned Installation Jobs</h3>
-              {tasks.length > 0 ? (
+              {loading ? (
+                <p style={{ color: "var(--text-secondary)", marginTop: "16px" }}>
+                  Loading installation jobs...
+                </p>
+              ) : tasks.length > 0 ? (
                 <table className="table" style={{ marginTop: "16px" }}>
                   <thead>
                     <tr>
@@ -942,11 +1010,18 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               ) : (
-                <p
-                  style={{ color: "var(--text-secondary)", marginTop: "16px" }}
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "40px 20px",
+                    color: "var(--text-secondary)",
+                  }}
                 >
-                  No installation jobs assigned at the moment.
-                </p>
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>🔧</div>
+                  <p style={{ marginTop: "16px" }}>
+                    No installation jobs assigned at the moment.
+                  </p>
+                </div>
               )}
             </div>
 
@@ -985,10 +1060,10 @@ export default function Dashboard() {
         )}
 
         {/* Fallback for unknown roles */}
-        {!canViewRent &&
-          userRole !== "sales" &&
-          userRole !== "designer" &&
-          userRole !== "fitter" && (
+        {!canViewRentInfo &&
+          userRoleLower !== "sales" &&
+          userRoleLower !== "designer" &&
+          userRoleLower !== "fitter" && (
             <div className="card">
               <h3>Welcome to Dashboard</h3>
               <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>

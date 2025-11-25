@@ -49,7 +49,10 @@ export default function Login() {
         deviceId
       );
 
+      console.log(response, "response");
+
       if (response.success && response.data) {
+        console.log("here");
         // Store tokens and user data
         localStorage.setItem("token", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);

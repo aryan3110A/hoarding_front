@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import AppLayout, { useUser } from "@/components/AppLayout";
 import AccessDenied from "@/components/AccessDenied";
+import { rentAPI, hoardingsAPI } from "@/lib/api";
 
 export default function Vendors() {
   const [vendors, setVendors] = useState<any[]>([]);
@@ -38,35 +39,33 @@ export default function Vendors() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const authToken = localStorage.getItem("token");
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const [vendorsRes, hoardingsRes] = await Promise.allSettled([
-        axios
-          .get(`${API_URL}/api/hoardings`, {
-            headers: { Authorization: `Bearer ${authToken}` },
-          })
-          .catch(() => ({
-            data: { success: true, data: { hoardings: [], total: 0 } },
-          })),
-        axios
-          .get(`${API_URL}/api/hoardings`, {
-            headers: { Authorization: `Bearer ${authToken}` },
-          })
-          .catch(() => ({
-            data: { success: true, data: { hoardings: [], total: 0 } },
-          })),
+      const [hoardingsRes, rentsRes] = await Promise.allSettled([
+        hoardingsAPI.getAll({ page: 1, limit: 1000 }).catch(() => ({
+          success: true,
+          data: { hoardings: [], total: 0 },
+        })),
+        rentAPI.getAll({ page: 1, limit: 1000 }).catch(() => ({
+          success: true,
+          data: { rents: [], total: 0 },
+        })),
       ]);
 
       const hoardingsData =
-        hoardingsRes.status === "fulfilled"
-          ? hoardingsRes.value.data?.data?.hoardings ||
-            hoardingsRes.value.data?.hoardings ||
-            []
+        hoardingsRes.status === "fulfilled" &&
+        hoardingsRes.value.success &&
+        hoardingsRes.value.data
+          ? hoardingsRes.value.data.hoardings || []
+          : [];
+
+      const rentsData =
+        rentsRes.status === "fulfilled" &&
+        rentsRes.value.success &&
+        rentsRes.value.data
+          ? rentsRes.value.data.rents || []
           : [];
 
       setVendors([]); // Vendors not implemented yet
-      setRents([]); // Rents fetched per hoarding
+      setRents(rentsData);
       setHoardings(Array.isArray(hoardingsData) ? hoardingsData : []);
       setLoading(false); // Set loading to false immediately after setting data
     } catch (error) {
@@ -414,53 +413,124 @@ export default function Vendors() {
         </div>
 
         <div className="card">
-          <h3>Rent Records</h3>
-          {rents.length > 0 ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "20px",
+            }}
+          >
+            <h3>All Rent Records ({rents.length})</h3>
+            <button
+              className="btn btn-secondary"
+              onClick={fetchData}
+              style={{ padding: "8px 16px", fontSize: "14px" }}
+            >
+              Refresh
+            </button>
+          </div>
+          {loading ? (
+            <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
+              Loading rent records...
+            </p>
+          ) : rents.length > 0 ? (
             <table className="table">
               <thead>
                 <tr>
-                  <th>Vendor</th>
-                  <th>Hoarding</th>
-                  <th>Amount</th>
-                  <th>Due Date</th>
-                  <th>Status</th>
+                  <th>Hoarding Code</th>
+                  <th>Location</th>
+                  <th>Party Type</th>
+                  <th>Rent Amount</th>
+                  <th>Payment Mode</th>
+                  <th>Last Payment</th>
+                  <th>Next Due Date</th>
+                  <th>Days Until Due</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {rents.map((rent) => {
-                  const daysUntilDue = Math.ceil(
-                    (new Date(rent.dueDate).getTime() - new Date().getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  );
+                {rents.map((rent: any) => {
+                  const dueDate = rent.nextDueDate
+                    ? new Date(rent.nextDueDate)
+                    : null;
+                  const today = new Date();
+                  const daysUntilDue = dueDate
+                    ? Math.ceil(
+                        (dueDate.getTime() - today.getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      )
+                    : null;
+                  const isUrgent =
+                    daysUntilDue !== null &&
+                    daysUntilDue <= 7 &&
+                    daysUntilDue >= 0;
+                  const hoarding = rent.hoarding || {};
+
                   return (
                     <tr
                       key={rent.id}
                       style={
-                        daysUntilDue <= 7 &&
-                        daysUntilDue > 0 &&
-                        rent.status !== "Paid"
+                        isUrgent
                           ? { backgroundColor: "#fff3cd" }
+                          : daysUntilDue !== null && daysUntilDue < 0
+                          ? { backgroundColor: "#fee2e2" }
                           : {}
                       }
                     >
-                      <td>{getVendorName(rent.vendorId)}</td>
-                      <td>{getHoardingName(rent.hoardingId)}</td>
-                      <td>₹{rent.amount}</td>
-                      <td>{new Date(rent.dueDate).toLocaleDateString()}</td>
-                      <td>{rent.status}</td>
                       <td>
-                        <select
-                          value={rent.status}
-                          onChange={(e) =>
-                            handleUpdateRentStatus(rent.id, e.target.value)
+                        <strong>{hoarding.code || "N/A"}</strong>
+                      </td>
+                      <td>
+                        {hoarding.city || ""}
+                        {hoarding.area && `, ${hoarding.area}`}
+                      </td>
+                      <td>
+                        <span className="badge badge-info">
+                          {rent.partyType || "N/A"}
+                        </span>
+                      </td>
+                      <td>₹{Number(rent.rentAmount || 0).toLocaleString()}</td>
+                      <td>{rent.paymentMode || "N/A"}</td>
+                      <td>
+                        {rent.lastPaymentDate
+                          ? new Date(rent.lastPaymentDate).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td>
+                        {dueDate ? dueDate.toLocaleDateString() : "N/A"}
+                      </td>
+                      <td>
+                        {daysUntilDue !== null ? (
+                          <span
+                            className={`badge ${
+                              isUrgent
+                                ? "badge-warning"
+                                : daysUntilDue < 0
+                                ? "badge-danger"
+                                : "badge-info"
+                            }`}
+                          >
+                            {daysUntilDue === 0
+                              ? "Due Today"
+                              : daysUntilDue < 0
+                              ? `Overdue by ${Math.abs(daysUntilDue)} days`
+                              : `${daysUntilDue} days`}
+                          </span>
+                        ) : (
+                          "N/A"
+                        )}
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-primary"
+                          style={{ padding: "5px 10px", fontSize: "12px" }}
+                          onClick={() =>
+                            router.push(`/hoardings/${rent.hoardingId}/rent`)
                           }
-                          style={{ padding: "5px", fontSize: "12px" }}
                         >
-                          <option value="Pending">Pending</option>
-                          <option value="Paid">Paid</option>
-                          <option value="Overdue">Overdue</option>
-                        </select>
+                          View Details
+                        </button>
                       </td>
                     </tr>
                   );

@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import AppLayout, { useUser } from "@/components/AppLayout";
 import { rentAPI, hoardingsAPI } from "@/lib/api";
+import { getRoleFromUser, canEditRent } from "@/lib/rbac";
 
 export default function RentDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const user = useUser();
+  const userFromContext = useUser();
+  const [user, setUser] = useState<any>(null);
   const hoardingId = params.id as string;
 
   const [hoarding, setHoarding] = useState<any>(null);
@@ -25,6 +27,22 @@ export default function RentDetailsPage() {
     lastPaymentDate: "",
   });
 
+  // Load user from context or localStorage
+  useEffect(() => {
+    if (userFromContext) {
+      setUser(userFromContext);
+    } else {
+      const localUser = localStorage.getItem("user");
+      if (localUser) {
+        try {
+          setUser(JSON.parse(localUser));
+        } catch (e) {
+          console.error("Failed to parse user from localStorage", e);
+        }
+      }
+    }
+  }, [userFromContext]);
+
   useEffect(() => {
     fetchData();
   }, [hoardingId]);
@@ -32,7 +50,7 @@ export default function RentDetailsPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch hoarding details
       const hoardingResponse = await hoardingsAPI.getById(hoardingId);
       if (hoardingResponse.success) {
@@ -48,7 +66,9 @@ export default function RentDetailsPage() {
           setFormData({
             partyType: rentData.partyType || "Private",
             rentAmount: rentData.rentAmount ? String(rentData.rentAmount) : "",
-            incrementYear: rentData.incrementYear ? String(rentData.incrementYear) : "",
+            incrementYear: rentData.incrementYear
+              ? String(rentData.incrementYear)
+              : "",
             paymentMode: rentData.paymentMode || "Monthly",
             lastPaymentDate: rentData.lastPaymentDate
               ? new Date(rentData.lastPaymentDate).toISOString().split("T")[0]
@@ -70,7 +90,10 @@ export default function RentDetailsPage() {
     }
   };
 
-  const calculateNextDueDate = (lastPaymentDate: string, paymentMode: string): string => {
+  const calculateNextDueDate = (
+    lastPaymentDate: string,
+    paymentMode: string
+  ): string => {
     if (!lastPaymentDate) return "";
 
     const date = new Date(lastPaymentDate);
@@ -91,11 +114,14 @@ export default function RentDetailsPage() {
     return date.toISOString().split("T")[0];
   };
 
-  const nextDueDate = calculateNextDueDate(formData.lastPaymentDate, formData.paymentMode);
+  const nextDueDate = calculateNextDueDate(
+    formData.lastPaymentDate,
+    formData.paymentMode
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.rentAmount || !formData.partyType || !formData.paymentMode) {
       alert("Please fill in all required fields");
       return;
@@ -106,7 +132,9 @@ export default function RentDetailsPage() {
       const response = await rentAPI.saveRent(hoardingId, {
         partyType: formData.partyType,
         rentAmount: parseFloat(formData.rentAmount),
-        incrementYear: formData.incrementYear ? parseInt(formData.incrementYear) : null,
+        incrementYear: formData.incrementYear
+          ? parseInt(formData.incrementYear)
+          : null,
         paymentMode: formData.paymentMode,
         lastPaymentDate: formData.lastPaymentDate || null,
       });
@@ -118,7 +146,10 @@ export default function RentDetailsPage() {
         alert("Failed to save: " + (response.message || "Unknown error"));
       }
     } catch (error: any) {
-      alert("Error saving rent: " + (error.response?.data?.message || "Unknown error"));
+      alert(
+        "Error saving rent: " +
+          (error.response?.data?.message || "Unknown error")
+      );
     } finally {
       setSaving(false);
     }
@@ -136,17 +167,45 @@ export default function RentDetailsPage() {
         alert("Rent recalculated successfully!");
         fetchData();
       } else {
-        alert("Failed to recalculate: " + (response.message || "Unknown error"));
+        alert(
+          "Failed to recalculate: " + (response.message || "Unknown error")
+        );
       }
     } catch (error: any) {
-      alert("Error recalculating rent: " + (error.response?.data?.message || "Unknown error"));
+      alert(
+        "Error recalculating rent: " +
+          (error.response?.data?.message || "Unknown error")
+      );
     } finally {
       setRecalculating(false);
     }
   };
 
-  const userRole = user?.role?.toLowerCase() || "";
-  const canEdit = ["owner", "manager", "admin"].includes(userRole);
+  // Robust role extraction with fallback and debug
+  const extractedRole = getRoleFromUser(user);
+  const rawRole = (user as any)?.role || (user as any)?.userRole || "";
+  const userRole =
+    extractedRole || (typeof rawRole === "string" ? rawRole : "");
+  const canEdit = canEditRent(userRole);
+  const fallbackRoleLower = (user as any)?.role?.toLowerCase?.() || "";
+  const canEditFinal =
+    canEdit || ["owner", "manager", "admin"].includes(fallbackRoleLower);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      console.log("[RentPage] user object:", user);
+      console.log(
+        "[RentPage] extractedRole:",
+        extractedRole,
+        "rawRole:",
+        rawRole,
+        "final userRole:",
+        userRole,
+        "canEdit:",
+        canEdit
+      );
+    }
+  }, [user, extractedRole, rawRole, userRole, canEdit]);
 
   if (loading) {
     return (
@@ -182,9 +241,16 @@ export default function RentDetailsPage() {
         {rent && (
           <div className="card" style={{ marginBottom: "24px" }}>
             <h3>Current Rent Information</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: "16px",
+              }}
+            >
               <div>
-                <strong>Rent Amount:</strong> ₹{Number(rent.rentAmount).toLocaleString()}
+                <strong>Rent Amount:</strong> ₹
+                {Number(rent.rentAmount).toLocaleString()}
               </div>
               <div>
                 <strong>Party Type:</strong> {rent.partyType}
@@ -202,7 +268,7 @@ export default function RentDetailsPage() {
           </div>
         )}
 
-        {canEdit ? (
+        {canEditFinal ? (
           <div className="card">
             <h3>{rent ? "Update" : "Add"} Rent Details</h3>
             <form onSubmit={handleSubmit}>
@@ -255,7 +321,9 @@ export default function RentDetailsPage() {
                   max="2100"
                   disabled={saving}
                 />
-                <small style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
+                <small
+                  style={{ color: "var(--text-secondary)", fontSize: "12px" }}
+                >
                   Rent will increase by 10% when this year is reached
                 </small>
               </div>
@@ -285,7 +353,10 @@ export default function RentDetailsPage() {
                   type="date"
                   value={formData.lastPaymentDate}
                   onChange={(e) =>
-                    setFormData({ ...formData, lastPaymentDate: e.target.value })
+                    setFormData({
+                      ...formData,
+                      lastPaymentDate: e.target.value,
+                    })
                   }
                   disabled={saving}
                 />
@@ -318,7 +389,9 @@ export default function RentDetailsPage() {
                     onClick={handleRecalculate}
                     disabled={recalculating}
                   >
-                    {recalculating ? "Recalculating..." : "Recalculate Rent (+10%)"}
+                    {recalculating
+                      ? "Recalculating..."
+                      : "Recalculate Rent (+10%)"}
                   </button>
                 )}
                 <button
@@ -341,9 +414,3 @@ export default function RentDetailsPage() {
     </AppLayout>
   );
 }
-
-
-
-
-
-

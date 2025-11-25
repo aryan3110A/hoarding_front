@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import AppLayout, { useUser } from "@/components/AppLayout";
 import AccessDenied from "@/components/AccessDenied";
 import { usersAPI, rolesAPI } from "@/lib/api";
+import { showSuccess, showError } from "@/lib/toast";
 
 export default function Users() {
   const [users, setUsers] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const user = useUser();
+  const userFromContext = useUser();
+  const [user, setUser] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -23,6 +25,21 @@ export default function Users() {
   const router = useRouter();
 
   useEffect(() => {
+    if (userFromContext) {
+      setUser(userFromContext);
+    } else {
+      const localUser = localStorage.getItem("user");
+      if (localUser) {
+        try {
+          setUser(JSON.parse(localUser));
+        } catch (error) {
+          console.error("Failed to parse user from localStorage:", error);
+        }
+      }
+    }
+  }, [userFromContext]);
+
+  useEffect(() => {
     if (user) {
       fetchUsers();
       fetchRoles();
@@ -33,16 +50,25 @@ export default function Users() {
     try {
       setLoading(true);
       const response = await usersAPI.getAll();
-      if (response.success && response.data) {
+      console.log("Users API response:", response);
+      if (response.success && Array.isArray(response.data)) {
         setUsers(response.data);
+      } else if (
+        response.success &&
+        response.data &&
+        Array.isArray(response.data.data)
+      ) {
+        // Handle paginated response structure if applicable
+        setUsers(response.data.data);
       } else {
+        console.warn("Unexpected users API response format:", response);
         setUsers([]);
       }
-      setLoading(false); // Set loading to false immediately after setting data
     } catch (error: any) {
       console.error("Failed to fetch users:", error);
       setUsers([]);
-      setLoading(false); // Set loading to false on error too
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,14 +109,38 @@ export default function Users() {
           territory: "",
         });
         fetchUsers();
-        alert("User created successfully!");
+        showSuccess("User created successfully!");
       }
     } catch (error: any) {
-      alert(
+      const raw =
         error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Failed to create user"
-      );
+        error.response?.data?.error ||
+        "Failed to create user";
+
+      // Normalize common backend messages and provide actionable text
+      const msg = String(raw)
+        .replace(/\u001b\[[0-9;]*m/g, "")
+        .trim();
+
+      if (/email already exists/i.test(msg)) {
+        showError(
+          "A user with this email already exists — choose a different phone number or role."
+        );
+      } else if (/phone already exists/i.test(msg)) {
+        showError(
+          "A user with this phone number already exists — choose a different phone number or role."
+        );
+      } else if (
+        /same name and role/i.test(msg) ||
+        /same name and role already exists/i.test(msg) ||
+        /same name and role and phone number already exists/i.test(msg)
+      ) {
+        showError(
+          "A user with the same name and role already exists. Please choose a different role or phone number."
+        );
+      } else {
+        showError(msg || "Failed to create user");
+      }
     }
   };
 
@@ -137,14 +187,14 @@ export default function Users() {
       if (response.success) {
         setEditingUser(null);
         fetchUsers();
-        alert("User updated successfully!");
+        showSuccess("User updated successfully!");
       }
     } catch (error: any) {
-      alert(
+      const raw =
         error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Failed to update user"
-      );
+        error.response?.data?.error ||
+        "Failed to update user";
+      showError(String(raw).replace(/\u001b\[[0-9;]*m/g, ""));
     }
   };
 
@@ -161,14 +211,14 @@ export default function Users() {
       const response = await usersAPI.delete(userId);
       if (response.success) {
         fetchUsers();
-        alert("User deleted successfully!");
+        showSuccess("User deleted successfully!");
       }
     } catch (error: any) {
-      alert(
+      const raw =
         error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Failed to delete user"
-      );
+        error.response?.data?.error ||
+        "Failed to delete user";
+      showError(String(raw).replace(/\u001b\[[0-9;]*m/g, ""));
     }
   };
 
@@ -179,11 +229,11 @@ export default function Users() {
         fetchUsers();
       }
     } catch (error: any) {
-      alert(
+      const raw =
         error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Failed to update user"
-      );
+        error.response?.data?.error ||
+        "Failed to update user";
+      showError(String(raw).replace(/\u001b\[[0-9;]*m/g, ""));
     }
   };
 

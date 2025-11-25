@@ -22,10 +22,15 @@ export default function Notifications() {
       if (response.success && response.data) {
         setNotifications(response.data.notifications || []);
         setTotal(response.data.total || 0);
+      } else {
+        setNotifications([]);
+        setTotal(0);
       }
       setLoading(false); // Set loading to false immediately after setting data
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
+      setNotifications([]);
+      setTotal(0);
       setLoading(false); // Set loading to false on error too
     }
   };
@@ -86,7 +91,17 @@ export default function Notifications() {
         </div>
 
         <div className="card">
-          {notifications.length === 0 ? (
+          {loading ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "60px 20px",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <p>Loading notifications...</p>
+            </div>
+          ) : notifications.length === 0 ? (
             <div
               style={{
                 textAlign: "center",

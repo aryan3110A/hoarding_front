@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { notificationsAPI } from "@/lib/api";
+import {
+  canViewRent,
+  canAccessLocationTracking,
+  canAccessAdminSettings,
+} from "@/lib/rbac";
 
 interface SidebarProps {
   user: any;
@@ -46,7 +51,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Hoardings",
       href: "/hoardings",
       icon: "🏢",
-      roles: ["owner", "manager", "sales", "admin"],
+      roles: ["owner", "manager", "sales", "admin"], // Sales can view only
     },
     {
       title: "Bookings",
@@ -64,43 +69,43 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Contracts",
       href: "/contracts",
       icon: "📄",
-      roles: ["owner", "manager", "admin"],
+      roles: ["owner", "manager", "admin"], // Sales cannot access
     },
     {
       title: "Vendors & Rent",
       href: "/vendors",
       icon: "💰",
-      roles: ["owner", "manager", "admin"],
+      roles: ["owner", "manager", "admin"], // Only Owner/Manager can view rent
     },
     {
       title: "Users & Roles",
       href: "/users",
       icon: "👥",
-      roles: ["owner", "admin"], // Only owner can manage users
+      roles: ["owner", "admin"], // Only Owner can manage users/roles
     },
     {
       title: "Design",
       href: "/design",
       icon: "🎨",
-      roles: ["owner", "manager", "designer", "admin"],
+      roles: ["owner", "manager", "designer", "admin"], // Designer only sees this
     },
     {
       title: "Reports",
       href: "/reports",
       icon: "📈",
-      roles: ["owner", "manager", "admin"],
+      roles: ["owner", "manager", "admin"], // Sales cannot access reports
     },
     {
       title: "Tasks",
       href: "/tasks",
       icon: "✅",
-      roles: ["owner", "manager", "sales", "designer", "fitter", "admin"],
+      roles: ["owner", "manager", "sales", "designer", "fitter", "admin"], // All roles see tasks (filtered by role)
     },
     {
       title: "Admin Settings",
       href: "/admin",
       icon: "⚙️",
-      roles: ["owner", "admin"],
+      roles: ["owner", "admin"], // Only Owner
     },
     {
       title: "Notifications",
@@ -113,7 +118,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Location",
       href: "/location",
       icon: "📍",
-      roles: ["owner", "sales", "fitter", "admin"],
+      roles: ["owner", "sales", "fitter", "admin"], // Only Owner, Sales, Fitter
     },
   ];
 

@@ -3,6 +3,7 @@
 import { useEffect, useState, createContext, useContext } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "./Navbar";
+import Toast from "./Toast";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -18,17 +19,40 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("👤 [AppLayout] Initializing user context...");
     const token = localStorage.getItem("token");
     if (!token) {
+      console.log("👤 [AppLayout] No token found, redirecting to login");
       router.push("/login");
       return;
     }
 
     const userData = localStorage.getItem("user");
+    console.log("👤 [AppLayout] Raw userData from localStorage:", userData);
     if (userData) {
-      setUser(JSON.parse(userData));
+      try {
+        const parsedUser = JSON.parse(userData);
+        console.log("👤 [AppLayout] Parsed user object:", parsedUser);
+        console.log(
+          "👤 [AppLayout] User object keys:",
+          Object.keys(parsedUser)
+        );
+        console.log("👤 [AppLayout] User role property:", parsedUser.role);
+        console.log(
+          "👤 [AppLayout] Full user object:",
+          JSON.stringify(parsedUser, null, 2)
+        );
+        setUser(parsedUser);
+        console.log("👤 [AppLayout] User state set, setting loading to false");
+        setLoading(false);
+      } catch (error) {
+        console.error("👤 [AppLayout] Error parsing user data:", error);
+        setLoading(false);
+      }
+    } else {
+      console.warn("👤 [AppLayout] No user data found in localStorage");
+      setLoading(false);
     }
-    setLoading(false);
   }, [router]);
 
   const handleLogout = async () => {
@@ -75,6 +99,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <UserContext.Provider value={user}>
       <div className="app-layout">
+        <Toast />
         <Navbar user={user} onLogout={handleLogout} />
         <main className="main-content">
           <div className="content-wrapper">{children}</div>

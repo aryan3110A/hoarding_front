@@ -113,6 +113,11 @@ export const hoardingsAPI = {
 
 // Rent API
 export const rentAPI = {
+  getAll: async (params?: { page?: number; limit?: number }) => {
+    const response = await api.get('/hoardings/rents/all', { params });
+    return response.data;
+  },
+  
   getRentDetails: async (hoardingId: string) => {
     const response = await api.get(`/hoardings/${hoardingId}/rent`);
     return response.data;
@@ -129,21 +134,6 @@ export const rentAPI = {
   },
 };
 
-// Dashboard API
-export const dashboardAPI = {
-  getOwnerDashboard: async () => {
-    const response = await api.get('/dashboard/owner');
-    return response.data;
-  },
-};
-
-// Bookings API
-export const bookingsAPI = {
-  getAll: async () => {
-    const response = await api.get('/bookings');
-    return response.data;
-  },
-};
 
 // Notifications API
 export const notificationsAPI = {
@@ -227,24 +217,6 @@ export const rolesAPI = {
   },
 };
 
-// Enquiries API
-export const enquiriesAPI = {
-  getAll: async () => {
-    const response = await api.get('/enquiries');
-    return response.data;
-  },
-  
-  create: async (data: any) => {
-    const response = await api.post('/enquiries', data);
-    return response.data;
-  },
-  
-  update: async (id: string, data: any) => {
-    const response = await api.put(`/enquiries/${id}`, data);
-    return response.data;
-  },
-};
-
 // Contracts API
 export const contractsAPI = {
   getAll: async () => {
@@ -257,6 +229,174 @@ export const contractsAPI = {
 export const clientsAPI = {
   getAll: async () => {
     const response = await api.get('/clients');
+    return response.data;
+  },
+};
+
+// Tasks API
+export const tasksAPI = {
+  getAll: async (params?: { assignedTo?: string; type?: string; status?: string }) => {
+    const response = await api.get('/tasks', { params });
+    return response.data;
+  },
+  
+  getById: async (id: string) => {
+    const response = await api.get(`/tasks/${id}`);
+    return response.data;
+  },
+  
+  create: async (data: any) => {
+    const response = await api.post('/tasks', data);
+    return response.data;
+  },
+  
+  update: async (id: string, data: any) => {
+    const response = await api.put(`/tasks/${id}`, data);
+    return response.data;
+  },
+  
+  delete: async (id: string) => {
+    const response = await api.delete(`/tasks/${id}`);
+    return response.data;
+  },
+  
+  updateStatus: async (id: string, status: string) => {
+    const response = await api.put(`/tasks/${id}/status`, { status });
+    return response.data;
+  },
+};
+
+// Design Assignments API
+export const designAssignmentsAPI = {
+  getAll: async (params?: { designerId?: string; status?: string }) => {
+    const response = await api.get('/design-assignments', { params });
+    return response.data;
+  },
+  
+  getById: async (id: string) => {
+    const response = await api.get(`/design-assignments/${id}`);
+    return response.data;
+  },
+  
+  create: async (data: any) => {
+    const response = await api.post('/design-assignments', data);
+    return response.data;
+  },
+  
+  update: async (id: string, data: any) => {
+    const response = await api.put(`/design-assignments/${id}`, data);
+    return response.data;
+  },
+  
+  delete: async (id: string) => {
+    const response = await api.delete(`/design-assignments/${id}`);
+    return response.data;
+  },
+};
+
+// Enquiries API
+export const enquiriesAPI = {
+  getAll: async (params?: { assignedTo?: string; status?: string }) => {
+    const response = await api.get('/enquiries', { params });
+    return response.data;
+  },
+  
+  getById: async (id: string) => {
+    const response = await api.get(`/enquiries/${id}`);
+    return response.data;
+  },
+  
+  create: async (data: any) => {
+    const response = await api.post('/enquiries', data);
+    return response.data;
+  },
+  
+  update: async (id: string, data: any) => {
+    const response = await api.put(`/enquiries/${id}`, data);
+    return response.data;
+  },
+  
+  delete: async (id: string) => {
+    const response = await api.delete(`/enquiries/${id}`);
+    return response.data;
+  },
+  
+  assign: async (id: string, userId: string) => {
+    const response = await api.post(`/enquiries/${id}/assign`, { userId });
+    return response.data;
+  },
+};
+
+// Bookings API
+export const bookingsAPI = {
+  getAll: async (params?: { createdBy?: string; status?: string }) => {
+    const response = await api.get('/bookings', { params });
+    return response.data;
+  },
+  
+  getById: async (id: string) => {
+    const response = await api.get(`/bookings/${id}`);
+    return response.data;
+  },
+  
+  create: async (data: any) => {
+    const response = await api.post('/bookings', data);
+    return response.data;
+  },
+  
+  update: async (id: string, data: any) => {
+    const response = await api.put(`/bookings/${id}`, data);
+    return response.data;
+  },
+  
+  delete: async (id: string) => {
+    const response = await api.delete(`/bookings/${id}`);
+    return response.data;
+  },
+};
+
+// Dashboard API
+export const dashboardAPI = {
+  getOwnerDashboard: async () => {
+    const response = await api.get('/dashboard/owner');
+    return response.data;
+  },
+  
+  getManagerDashboard: async () => {
+    const response = await api.get('/dashboard/manager');
+    return response.data;
+  },
+  
+  getSalesDashboard: async () => {
+    const response = await api.get('/dashboard/sales');
+    return response.data;
+  },
+  
+  getDesignerDashboard: async () => {
+    const response = await api.get('/dashboard/designer');
+    return response.data;
+  },
+  
+  getFitterDashboard: async () => {
+    const response = await api.get('/dashboard/fitter');
+    return response.data;
+  },
+};
+
+// Location Tracking API
+export const locationAPI = {
+  checkIn: async (data: { latitude: number; longitude: number; hoardingId?: string }) => {
+    const response = await api.post('/location/check-in', data);
+    return response.data;
+  },
+  
+  getMyCheckIns: async (params?: { startDate?: string; endDate?: string }) => {
+    const response = await api.get('/location/my-checkins', { params });
+    return response.data;
+  },
+  
+  getAllCheckIns: async (params?: { userId?: string; startDate?: string; endDate?: string }) => {
+    const response = await api.get('/location/checkins', { params });
     return response.data;
   },
 };

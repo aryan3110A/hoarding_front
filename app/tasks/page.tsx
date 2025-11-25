@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import AppLayout, { useUser } from "@/components/AppLayout";
+import { canCreate, canUpdate, canAssignTasks } from "@/lib/rbac";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -64,32 +66,41 @@ export default function Tasks() {
       const userRole = user?.role?.toLowerCase() || "";
 
       // Fitter/Execution role: Only see tasks assigned to them (installation jobs)
-      if (userRole === "fitter" || userRole === "execution") {
+      if (userRoleLower === "fitter" || userRoleLower === "execution") {
+        filteredTasks = filteredTasks.filter(
+          (task: any) =>
+            (task.assignedTo === user?.id || task.assignedToId === user?.id) &&
+            (task.type === "installation" ||
+              task.taskType === "Installation" ||
+              task.title?.toLowerCase().includes("install") ||
+              task.description?.toLowerCase().includes("install"))
+        );
+      }
+
+      // Designer role: Only see design-related tasks assigned to them
+      if (userRoleLower === "designer") {
+        filteredTasks = filteredTasks.filter(
+          (task: any) =>
+            (task.assignedTo === user?.id || task.assignedToId === user?.id) &&
+            (task.type === "design" ||
+              task.taskType === "Design" ||
+              task.title?.toLowerCase().includes("design") ||
+              task.description?.toLowerCase().includes("design"))
+        );
+      }
+
+      // Sales role: Only see tasks assigned to them
+      if (userRoleLower === "sales") {
         filteredTasks = filteredTasks.filter(
           (task: any) =>
             task.assignedTo === user?.id || task.assignedToId === user?.id
         );
       }
 
-      // Designer role: Only see design-related tasks assigned to them
-      if (userRole === "designer") {
-        filteredTasks = filteredTasks.filter(
-          (task: any) =>
-            (task.assignedTo === user?.id || task.assignedToId === user?.id) &&
-            (task.type === "design" ||
-              task.title?.toLowerCase().includes("design") ||
-              task.description?.toLowerCase().includes("design"))
-        );
-      }
-
       setTasks(filteredTasks);
 
-      // Only Owner/Admin/Manager can see users list for assignment
-      if (
-        userRole === "admin" ||
-        userRole === "owner" ||
-        userRole === "manager"
-      ) {
+      // Only users who can assign tasks can see users list
+      if (canAssignTask) {
         setUsers(Array.isArray(usersData) ? usersData : []);
       }
       setLoading(false);
@@ -170,205 +181,225 @@ export default function Tasks() {
     );
   }
 
-  const userRole = user?.role?.toLowerCase() || "";
-  const isAdmin = userRole === "admin" || userRole === "owner";
-  const isManager = userRole === "manager";
-  const canCreateTasks = isAdmin || isManager; // Only Owner/Admin/Manager can create tasks
+  const userRole = user?.role || "";
+  const userRoleLower = userRole?.toLowerCase() || "";
+  const canCreateTask = canCreate(userRole, "tasks");
+  const canUpdateTask = canUpdate(userRole, "tasks");
+  const canAssignTask = canAssignTasks(userRole);
 
   return (
-    <AppLayout>
-      <div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "20px",
-          }}
-        >
-          <h1>
-            {userRole === "fitter" || userRole === "execution"
-              ? "My Assigned Jobs"
-              : "Tasks"}
-          </h1>
-          {canCreateTasks && (
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="btn btn-primary"
-            >
-              {showForm ? "Cancel" : "Create Task"}
-            </button>
-          )}
-        </div>
-
-        {showForm && canCreateTasks && (
-          <div className="card">
-            <h3>Create New Task</h3>
-            <form onSubmit={handleSubmit}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: "15px",
-                }}
+    <ProtectedRoute component="tasks">
+      <AppLayout>
+        <div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "20px",
+            }}
+          >
+            <h1>
+              {userRoleLower === "fitter" || userRoleLower === "execution"
+                ? "My Assigned Jobs"
+                : userRoleLower === "designer"
+                ? "My Design Tasks"
+                : "Tasks"}
+            </h1>
+            {canCreateTask && (
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="btn btn-primary"
               >
-                <div className="form-group">
-                  <label>Title *</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) =>
-                      setFormData({ ...formData, title: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Assign To *</label>
-                  <select
-                    value={formData.assignedTo}
-                    onChange={(e) =>
-                      setFormData({ ...formData, assignedTo: e.target.value })
-                    }
-                    required
-                  >
-                    <option value="">Select User</option>
-                    {users.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} ({u.role})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group" style={{ gridColumn: "1 / -1" }}>
-                  <label>Description</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        description: e.target.value,
-                      })
-                    }
-                    rows={3}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Due Date *</label>
-                  <input
-                    type="date"
-                    value={formData.dueDate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, dueDate: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Related Hoarding ID</label>
-                  <input
-                    type="text"
-                    value={formData.hoardingId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, hoardingId: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-              <button type="submit" className="btn btn-primary">
-                Create Task
+                {showForm ? "Cancel" : "Create Task"}
               </button>
-            </form>
+            )}
           </div>
-        )}
 
-        <div className="card">
-          <h3>All Tasks</h3>
-          {tasks.length > 0 ? (
-            <table className="table" style={{ marginTop: "16px" }}>
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Assigned To</th>
-                  <th>Due Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tasks.map((task) => (
-                  <tr
-                    key={task.id}
-                    style={{
-                      backgroundColor:
-                        new Date(task.dueDate) < new Date() &&
-                        task.status !== "Completed"
-                          ? "#fff3cd"
-                          : "white",
-                    }}
-                  >
-                    <td>{task.title}</td>
-                    <td>{getUserName(task.assignedTo)}</td>
-                    <td>{new Date(task.dueDate).toLocaleDateString()}</td>
-                    <td>
-                      <span
-                        style={{
-                          color: getStatusColor(task.status, task.dueDate),
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {task.status}
-                      </span>
-                    </td>
-                    <td>
-                      <select
-                        value={task.status}
-                        onChange={(e) =>
-                          handleUpdateStatus(task.id, e.target.value)
-                        }
-                        style={{ padding: "5px", fontSize: "12px" }}
-                      >
-                        <option value="Open">Open</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Overdue">Overdue</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "60px 20px",
-                color: "var(--text-secondary)",
-              }}
-            >
-              <div style={{ fontSize: "48px", marginBottom: "16px" }}>✅</div>
-              <h3 style={{ marginBottom: "8px", color: "var(--text-primary)" }}>
-                {userRole === "fitter" || userRole === "execution"
-                  ? "No Assigned Jobs Yet"
-                  : "No Tasks Yet"}
-              </h3>
-              <p style={{ marginBottom: "24px" }}>
-                {userRole === "fitter" || userRole === "execution"
-                  ? "You don't have any assigned hoarding installation jobs at the moment."
-                  : "Create your first task to start tracking work assignments."}
-              </p>
-              {canCreateTasks && (
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="btn btn-primary"
+          {showForm && canCreateTask && (
+            <div className="card">
+              <h3>Create New Task</h3>
+              <form onSubmit={handleSubmit}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: "15px",
+                  }}
                 >
+                  <div className="form-group">
+                    <label>Title *</label>
+                    <input
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  {canAssignTask && (
+                    <div className="form-group">
+                      <label>Assign To *</label>
+                      <select
+                        value={formData.assignedTo}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            assignedTo: e.target.value,
+                          })
+                        }
+                        required
+                      >
+                        <option value="">Select User</option>
+                        {users.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.name} ({u.role})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                    <label>Description</label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
+                      rows={3}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Due Date *</label>
+                    <input
+                      type="date"
+                      value={formData.dueDate}
+                      onChange={(e) =>
+                        setFormData({ ...formData, dueDate: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Related Hoarding ID</label>
+                    <input
+                      type="text"
+                      value={formData.hoardingId}
+                      onChange={(e) =>
+                        setFormData({ ...formData, hoardingId: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="btn btn-primary">
                   Create Task
                 </button>
-              )}
+              </form>
             </div>
           )}
+
+          <div className="card">
+            <h3>All Tasks</h3>
+            {tasks.length > 0 ? (
+              <table className="table" style={{ marginTop: "16px" }}>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Assigned To</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map((task) => (
+                    <tr
+                      key={task.id}
+                      style={{
+                        backgroundColor:
+                          new Date(task.dueDate) < new Date() &&
+                          task.status !== "Completed"
+                            ? "#fff3cd"
+                            : "white",
+                      }}
+                    >
+                      <td>{task.title}</td>
+                      <td>{getUserName(task.assignedTo)}</td>
+                      <td>{new Date(task.dueDate).toLocaleDateString()}</td>
+                      <td>
+                        <span
+                          style={{
+                            color: getStatusColor(task.status, task.dueDate),
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {task.status}
+                        </span>
+                      </td>
+                      <td>
+                        {canUpdateTask ? (
+                          <select
+                            value={task.status}
+                            onChange={(e) =>
+                              handleUpdateStatus(task.id, e.target.value)
+                            }
+                            style={{ padding: "5px", fontSize: "12px" }}
+                          >
+                            <option value="Open">Open</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Overdue">Overdue</option>
+                          </select>
+                        ) : (
+                          <span>{task.status}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "60px 20px",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                <div style={{ fontSize: "48px", marginBottom: "16px" }}>✅</div>
+                <h3
+                  style={{ marginBottom: "8px", color: "var(--text-primary)" }}
+                >
+                  {userRoleLower === "fitter" || userRoleLower === "execution"
+                    ? "No Assigned Jobs Yet"
+                    : userRoleLower === "designer"
+                    ? "No Design Tasks Yet"
+                    : "No Tasks Yet"}
+                </h3>
+                <p style={{ marginBottom: "24px" }}>
+                  {userRoleLower === "fitter" || userRoleLower === "execution"
+                    ? "You don't have any assigned hoarding installation jobs at the moment."
+                    : userRoleLower === "designer"
+                    ? "You don't have any design tasks assigned at the moment."
+                    : "Create your first task to start tracking work assignments."}
+                </p>
+                {canCreateTask && (
+                  <button
+                    onClick={() => setShowForm(true)}
+                    className="btn btn-primary"
+                  >
+                    Create Task
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </AppLayout>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }
