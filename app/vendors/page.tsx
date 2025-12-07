@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import AppLayout, { useUser } from "@/components/AppLayout";
+import { useUser } from "@/components/AppLayout";
 import AccessDenied from "@/components/AccessDenied";
 import { rentAPI, hoardingsAPI } from "@/lib/api";
 
@@ -172,11 +172,9 @@ export default function Vendors() {
 
   if (!user) {
     return (
-      <AppLayout>
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <p>Loading...</p>
-        </div>
-      </AppLayout>
+      <div style={{ textAlign: "center", padding: "40px" }}>
+        <p>Loading...</p>
+      </div>
     );
   }
 
@@ -190,8 +188,7 @@ export default function Vendors() {
   }
 
   return (
-    <AppLayout>
-      <div>
+    <div>
         <div
           style={{
             display: "flex",
@@ -562,6 +559,5 @@ export default function Vendors() {
           )}
         </div>
       </div>
-    </AppLayout>
   );
 }

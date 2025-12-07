@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, createContext, useContext } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import Toast from "./Toast";
 
@@ -17,43 +17,39 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    console.log("👤 [AppLayout] Initializing user context...");
+    // Re-evaluate auth state on route change as well
+    console.log("👤 [AppLayout] Checking auth state for", pathname);
     const token = localStorage.getItem("token");
-    if (!token) {
-      console.log("👤 [AppLayout] No token found, redirecting to login");
-      router.push("/login");
-      return;
-    }
-
     const userData = localStorage.getItem("user");
-    console.log("👤 [AppLayout] Raw userData from localStorage:", userData);
-    if (userData) {
+
+    // If token & user exist, populate context
+    if (token && userData) {
       try {
         const parsedUser = JSON.parse(userData);
-        console.log("👤 [AppLayout] Parsed user object:", parsedUser);
-        console.log(
-          "👤 [AppLayout] User object keys:",
-          Object.keys(parsedUser)
-        );
-        console.log("👤 [AppLayout] User role property:", parsedUser.role);
-        console.log(
-          "👤 [AppLayout] Full user object:",
-          JSON.stringify(parsedUser, null, 2)
-        );
         setUser(parsedUser);
-        console.log("👤 [AppLayout] User state set, setting loading to false");
         setLoading(false);
-      } catch (error) {
-        console.error("👤 [AppLayout] Error parsing user data:", error);
+        // If we are on /login but already authenticated, go to dashboard
+        if (pathname === "/login") {
+          router.replace("/dashboard");
+        }
+        return;
+      } catch (e) {
+        console.error("👤 [AppLayout] Failed to parse user from storage", e);
+        setUser(null);
         setLoading(false);
       }
-    } else {
-      console.warn("👤 [AppLayout] No user data found in localStorage");
-      setLoading(false);
     }
-  }, [router]);
+
+    // No token/user – if on login, just render the page; otherwise redirect
+    setUser(null);
+    setLoading(false);
+    if (pathname !== "/login") {
+      router.replace("/login");
+    }
+  }, [pathname, router]);
 
   const handleLogout = async () => {
     try {
@@ -83,6 +79,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     }
   };
 
+  // While evaluating, show a small loader (except we already allow login to render below)
   if (loading) {
     return (
       <div className="loading-screen">
@@ -92,9 +89,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
     );
   }
 
-  if (!user) {
-    return null;
+  // On login route, render page even if not authenticated
+  if (pathname === "/login" && !user) {
+    return <>{children}</>;
   }
+
+  // For protected routes, if user is still missing, render nothing (redirect fired above)
+  if (!user) return null;
 
   return (
     <UserContext.Provider value={user}>

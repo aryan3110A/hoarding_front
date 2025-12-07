@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { notificationsAPI } from "@/lib/api";
@@ -9,6 +9,7 @@ import {
   canAccessLocationTracking,
   canAccessAdminSettings,
 } from "@/lib/rbac";
+import * as LucideIcons from "lucide-react";
 
 interface NavbarProps {
   user: any;
@@ -17,9 +18,11 @@ interface NavbarProps {
 
 export default function Navbar({ user, onLogout }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const pathname = usePathname();
+  const profileRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchUnreadCount();
@@ -49,81 +52,81 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
     {
       title: "Dashboard",
       href: "/dashboard",
-      icon: "📊",
-      roles: ["owner", "manager", "sales", "designer", "fitter", "admin"],
+      iconName: "BarChart2",
+      roles: ["owner", "manager", "sales", "admin"],
     },
     {
       title: "Hoardings",
       href: "/hoardings",
-      icon: "🏢",
-      roles: ["owner", "manager", "sales", "admin"], // Fitter sees jobs via Tasks, not hoardings list
+      iconName: "Box",
+      roles: ["owner", "manager", "sales", "admin"],
     },
     {
       title: "Bookings",
       href: "/bookings",
-      icon: "📅",
+      iconName: "Calendar",
       roles: ["owner", "manager", "sales", "admin"],
     },
     {
       title: "Enquiries",
       href: "/enquiries",
-      icon: "📋",
+      iconName: "Clipboard",
       roles: ["owner", "manager", "sales", "admin"],
     },
     {
       title: "Contracts",
       href: "/contracts",
-      icon: "📄",
+      iconName: "FileText",
       roles: ["owner", "manager", "admin"],
     },
     {
       title: "Vendors & Rent",
       href: "/vendors",
-      icon: "💰",
-      roles: ["owner", "manager", "admin"], // Sales cannot access rent
+      iconName: "DollarSign",
+      roles: ["owner", "manager", "admin"],
     },
     {
       title: "Users & Roles",
       href: "/users",
-      icon: "👥",
-      roles: ["owner", "admin"], // Only Owner can manage users/roles
+      iconName: "Users",
+      roles: ["owner", "admin"],
     },
     {
       title: "Design",
       href: "/design",
-      icon: "🎨",
-      roles: ["owner", "manager", "designer", "admin"], // Designer only sees this
+      iconName: "Brush",
+      roles: ["owner", "manager", "designer", "admin"],
     },
     {
       title: "Reports",
       href: "/reports",
-      icon: "📈",
-      roles: ["owner", "manager", "admin"], // Sales cannot access reports
+      iconName: "BarChart2",
+      roles: ["owner", "manager", "admin"],
     },
     {
       title: "Tasks",
       href: "/tasks",
-      icon: "✅",
-      roles: ["owner", "manager", "sales", "designer", "fitter", "admin"], // Fitter sees assigned jobs here
+      iconName: "CheckSquare",
+      roles: ["owner", "manager", "designer", "fitter", "admin"],
     },
     {
       title: "Admin Settings",
       href: "/admin",
-      icon: "⚙️",
-      roles: ["owner", "admin"], // Only Owner
+      iconName: "Settings",
+      roles: ["owner", "admin"],
     },
     {
       title: "Notifications",
       href: "/notifications",
-      icon: "🔔",
+      iconName: "Bell",
       roles: ["owner", "manager", "sales", "designer", "fitter", "admin"],
       badge: unreadCount > 0 ? unreadCount : null,
     },
     {
       title: "Location",
       href: "/location",
-      icon: "📍",
-      roles: ["owner", "sales", "fitter", "admin"],
+      iconName: "MapPin",
+      roles: ["owner", "fitter", "admin"],
     },
   ];
 
@@ -135,14 +138,56 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
     return pathname === href;
   };
 
+  const renderIcon = (iconName?: string, size = 18) => {
+    if (!iconName) return null;
+    const Comp = (LucideIcons as any)[iconName];
+    if (Comp) return <Comp size={size} />;
+    return (
+      <span
+        style={{ display: "inline-block", width: size, textAlign: "center" }}
+      >
+        •
+      </span>
+    );
+  };
+
+  const capitalize = (s?: string | null) => {
+    if (!s) return "";
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  };
+
+  const displayTitle = user?.role ? capitalize(user.role) : user?.name || "";
+
+  // close profile dropdown on outside click or Escape
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (!profileRef.current) return;
+      if (e.target instanceof Node && !profileRef.current.contains(e.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsProfileOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
   return (
     <>
       <nav className="navbar">
         <div className="navbar-container">
           {/* Logo and Brand */}
           <div className="navbar-brand">
-            <h2>Shubham Advertise</h2>
-            <p>Hoarding Management</p>
+            <img
+              src="/LOGO_SHUBHAM_ADVERTISE_FINAL_PNG.png"
+              alt="Shubham Advertise"
+              className="brand-logo-img"
+            />
           </div>
 
           {/* Desktop Menu */}
@@ -153,7 +198,9 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
                 href={item.href}
                 className={`navbar-link ${isActive(item.href) ? "active" : ""}`}
               >
-                <span className="navbar-icon">{item.icon}</span>
+                <span className="navbar-icon">
+                  {renderIcon((item as any).iconName)}
+                </span>
                 <span className="navbar-text">{item.title}</span>
                 {item.badge && item.badge > 0 && (
                   <span className="navbar-badge">{item.badge}</span>
@@ -162,21 +209,48 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
             ))}
           </div>
 
-          {/* User Section */}
-          <div className="navbar-user-section">
-            <div className="navbar-user">
+          {/* User / Profile Section */}
+          <div className="navbar-user-section" ref={profileRef}>
+            <button
+              className="profile-button"
+              aria-haspopup="true"
+              aria-expanded={isProfileOpen}
+              onClick={() => setIsProfileOpen((s) => !s)}
+            >
               <div className="navbar-user-avatar">
-                {user?.name?.charAt(0).toUpperCase()}
+                {displayTitle?.charAt(0)?.toUpperCase()}
               </div>
-              <div className="navbar-user-info">
-                <div className="navbar-user-name">{user?.name}</div>
-                <div className="navbar-user-role">{user?.role}</div>
-              </div>
-            </div>
-            <button onClick={onLogout} className="navbar-logout">
-              <span>Logout</span>
-              <span>🚪</span>
             </button>
+
+            {isProfileOpen && (
+              <div className="profile-menu" role="menu">
+                <div className="profile-menu-header">
+                  <div className="profile-menu-avatar">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="profile-menu-info">
+                    <div className="profile-menu-name">{displayTitle}</div>
+                    <div className="profile-menu-role">
+                      {capitalize(user?.role)}
+                    </div>
+                    <div className="profile-menu-email">{user?.email}</div>
+                  </div>
+                </div>
+                <div className="profile-menu-actions">
+                  <button
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      onLogout();
+                    }}
+                    className="profile-logout-btn"
+                    role="menuitem"
+                  >
+                    {renderIcon("LogOut", 14)}
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -185,9 +259,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            <span className={isMobileMenuOpen ? "open" : ""}></span>
-            <span className={isMobileMenuOpen ? "open" : ""}></span>
-            <span className={isMobileMenuOpen ? "open" : ""}></span>
+            {isMobileMenuOpen ? renderIcon("X", 20) : renderIcon("Menu", 20)}
           </button>
         </div>
 
@@ -199,7 +271,9 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
               href={item.href}
               className={`navbar-link ${isActive(item.href) ? "active" : ""}`}
             >
-              <span className="navbar-icon">{item.icon}</span>
+              <span className="navbar-icon">
+                {renderIcon((item as any).iconName)}
+              </span>
               <span className="navbar-text">{item.title}</span>
               {item.badge && item.badge > 0 && (
                 <span className="navbar-badge">{item.badge}</span>
@@ -209,16 +283,16 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
           <div className="navbar-mobile-user">
             <div className="navbar-user">
               <div className="navbar-user-avatar">
-                {user?.name?.charAt(0).toUpperCase()}
+                {displayTitle?.charAt(0)?.toUpperCase()}
               </div>
               <div className="navbar-user-info">
-                <div className="navbar-user-name">{user?.name}</div>
-                <div className="navbar-user-role">{user?.role}</div>
+                <div className="navbar-user-name">{displayTitle}</div>
+                <div className="navbar-user-role">{capitalize(user?.role)}</div>
               </div>
             </div>
             <button onClick={onLogout} className="navbar-logout">
-              <span>Logout</span>
-              <span>🚪</span>
+              {renderIcon("LogOut", 16)}
+              <span className="logout-text">Logout</span>
             </button>
           </div>
         </div>

@@ -66,7 +66,7 @@ export const rolePermissions: RolePermissions = {
     reports: { component: 'reports', create: false, read: false, update: false, delete: false, notes: 'No access' },
     adminSettings: { component: 'adminSettings', create: false, read: false, update: false, delete: false, notes: 'No access' },
     notifications: { component: 'notifications', create: true, read: true, update: true, delete: true, notes: 'Own notifications' },
-    locationTracking: { component: 'locationTracking', create: true, read: true, update: true, delete: false, notes: 'Check-in enabled' },
+    locationTracking: { component: 'locationTracking', create: false, read: false, update: false, delete: false, notes: 'No access' },
   },
   designer: {
     hoardings: { component: 'hoardings', create: false, read: false, update: false, delete: false, notes: 'No access' },
@@ -244,7 +244,7 @@ export function canViewReports(role: string): boolean {
 
 export function canAccessLocationTracking(role: string): boolean {
   const normalizedRole = role?.toLowerCase() || '';
-  return ['owner', 'sales', 'fitter', 'admin'].includes(normalizedRole);
+  return ['owner', 'fitter', 'admin'].includes(normalizedRole);
 }
 
 export function canAccessAdminSettings(role: string): boolean {

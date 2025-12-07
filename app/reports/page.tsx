@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
-import AppLayout, { useUser } from "@/components/AppLayout";
+import { useUser } from "@/components/AppLayout";
 import AccessDenied from "@/components/AccessDenied";
 
 export default function Reports() {
@@ -135,11 +135,9 @@ export default function Reports() {
 
   if (!user) {
     return (
-      <AppLayout>
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <p>Loading...</p>
-        </div>
-      </AppLayout>
+      <div style={{ textAlign: "center", padding: "40px" }}>
+        <p>Loading...</p>
+      </div>
     );
   }
 
@@ -149,8 +147,7 @@ export default function Reports() {
   }
 
   return (
-    <AppLayout>
-      <div>
+    <div>
         <h1>Reports</h1>
 
         <div className="card">
@@ -351,6 +348,5 @@ export default function Reports() {
           </div>
         )}
       </div>
-    </AppLayout>
   );
 }

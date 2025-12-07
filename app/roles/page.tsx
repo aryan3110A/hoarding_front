@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import AppLayout, { useUser } from "@/components/AppLayout";
+import { useUser } from "@/components/AppLayout";
 import AccessDenied from "@/components/AccessDenied";
 import { rolesAPI } from "@/lib/api";
 
@@ -113,11 +113,9 @@ export default function Roles() {
 
   if (!user) {
     return (
-      <AppLayout>
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <p>Loading...</p>
-        </div>
-      </AppLayout>
+      <div style={{ textAlign: "center", padding: "40px" }}>
+        <p>Loading...</p>
+      </div>
     );
   }
 
@@ -129,8 +127,7 @@ export default function Roles() {
   // Don't show loading spinner - show content immediately with empty state if needed
 
   return (
-    <AppLayout>
-      <div>
+    <div>
         <div
           style={{
             display: "flex",
@@ -316,6 +313,5 @@ export default function Roles() {
           )}
         </div>
       </div>
-    </AppLayout>
   );
 }

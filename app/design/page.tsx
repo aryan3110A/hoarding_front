@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AppLayout, { useUser } from "@/components/AppLayout";
+import { useUser } from "@/components/AppLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { canCreate, canUpdate, canAssignTasks } from "@/lib/rbac";
 import { designAssignmentsAPI, tasksAPI } from "@/lib/api";
@@ -55,11 +55,9 @@ export default function Design() {
 
   if (!user) {
     return (
-      <AppLayout>
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <p>Loading...</p>
-        </div>
-      </AppLayout>
+      <div style={{ textAlign: "center", padding: "40px" }}>
+        <p>Loading...</p>
+      </div>
     );
   }
 
@@ -73,8 +71,7 @@ export default function Design() {
 
   return (
     <ProtectedRoute component="designAssignments">
-      <AppLayout>
-        <div>
+      <div>
           <div
             style={{
               display: "flex",
@@ -237,7 +234,6 @@ export default function Design() {
             </div>
           )}
         </div>
-      </AppLayout>
     </ProtectedRoute>
   );
 }

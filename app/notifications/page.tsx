@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import AppLayout, { useUser } from "@/components/AppLayout";
+import { useUser } from "@/components/AppLayout";
 import { notificationsAPI } from "@/lib/api";
 
 export default function Notifications() {
@@ -62,8 +62,7 @@ export default function Notifications() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <AppLayout>
-      <div>
+    <div>
         <div
           style={{
             display: "flex",
@@ -234,6 +233,5 @@ export default function Notifications() {
           </div>
         )}
       </div>
-    </AppLayout>
   );
 }

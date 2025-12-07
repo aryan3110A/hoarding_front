@@ -20,6 +20,15 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // If already authenticated, go straight to dashboard
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    if (token && user) {
+      router.replace("/dashboard");
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -76,8 +85,22 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>Shubham Advertise</h1>
-        <h2>Hoarding Management System</h2>
+        <div
+          style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}
+        >
+          <img
+            src="/LOGO_SHUBHAM_ADVERTISE_FINAL_PNG.png"
+            alt="Shubham Advertise"
+            className="login-logo"
+            onError={(e) => {
+              const img = e.currentTarget as HTMLImageElement;
+              if (!img.dataset.fallback) {
+                img.dataset.fallback = "1";
+                img.src = "/shubham-logo.svg";
+              }
+            }}
+          />
+        </div>
         {error && <div className="error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -111,7 +134,7 @@ export default function Login() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-        <div
+        {/* <div
           style={{
             marginTop: "24px",
             padding: "16px",
@@ -155,7 +178,7 @@ export default function Login() {
               <strong>Fitter:</strong> fitter@demo.com
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

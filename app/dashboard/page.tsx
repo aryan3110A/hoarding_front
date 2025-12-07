@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AppLayout, { useUser } from "@/components/AppLayout";
+import { useUser } from "@/components/AppLayout";
 import {
   dashboardAPI,
   remindersAPI,
@@ -15,7 +15,7 @@ import {
 } from "@/lib/api";
 import { canViewRent, canAssignTasks } from "@/lib/rbac";
 
-export default function Dashboard() {
+function DashboardContent() {
   const [stats, setStats] = useState<any>(null);
   const [upcomingDues, setUpcomingDues] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -37,6 +37,7 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const userRole = user?.role?.toLowerCase() || "";
+      console.log("Fetching dashboard data for role:", userRole);
 
       // Owner/Manager: Fetch rent overview
       if (["owner", "manager", "admin"].includes(userRole)) {
@@ -265,6 +266,13 @@ export default function Dashboard() {
 
   const userRole = user?.role || "";
   const userRoleLower = userRole?.toLowerCase() || "";
+
+  const capitalize = (s?: string | null) => {
+    if (!s) return "";
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  };
+
+  const displayRole = user?.role ? capitalize(user.role) : "User";
   const canViewRentInfo = canViewRent(userRole);
 
   // Debug: Log user object to see what we're working with
@@ -272,7 +280,7 @@ export default function Dashboard() {
     if (user) {
       console.log("Dashboard - User object:", user);
       console.log("Dashboard - User role:", userRole);
-      console.log("Dashboard - Can view rent:", canViewRent);
+      console.log("Dashboard - Can view rent:", canViewRentInfo);
       fetchDashboardData();
       fetchUnreadCount();
     } else {
@@ -284,7 +292,7 @@ export default function Dashboard() {
   // Don't show loading spinner - show content immediately with empty states if needed
 
   return (
-    <AppLayout>
+    <>
       <div>
         <div style={{ marginBottom: "32px" }}>
           <div
@@ -297,62 +305,19 @@ export default function Dashboard() {
             }}
           >
             <div>
-              <h1>Dashboard</h1>
+              <h1 style={{ color: "#fff" }}>Dashboard</h1>
               <p
                 style={{
-                  color: "var(--text-secondary)",
+                  color: "rgba(255,255,255)",
                   fontSize: "16px",
-                  marginTop: "8px",
+                  marginTop: "0px",
                 }}
               >
-                Welcome back, <strong>{user?.name || "User"}</strong>! Here's
-                your overview.
+                Welcome back, <strong>{displayRole}</strong>! Here's your
+                overview.
               </p>
             </div>
-            {user && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  padding: "12px 20px",
-                  background:
-                    "linear-gradient(135deg, var(--primary-color), var(--primary-light))",
-                  borderRadius: "12px",
-                  color: "white",
-                }}
-              >
-                <div
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "50%",
-                    background: "rgba(255, 255, 255, 0.2)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "20px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {user.name?.charAt(0).toUpperCase() || "U"}
-                </div>
-                <div>
-                  <div style={{ fontWeight: "600", fontSize: "16px" }}>
-                    {user.name || "User"}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      opacity: 0.9,
-                      textTransform: "capitalize",
-                    }}
-                  >
-                    {user.role || "User"} Role
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* user card removed per request to keep navbar compact */}
           </div>
         </div>
 
@@ -393,24 +358,62 @@ export default function Dashboard() {
         {canViewRentInfo && (
           <>
             <div className="grid">
-              <div className="stat-card">
-                <h3>{stats?.totalHoardingsOnRent || 0}</h3>
-                <p>Total Hoardings on Rent</p>
-              </div>
-              <div className="stat-card">
-                <h3>₹{Number(stats?.totalRentAmount || 0).toLocaleString()}</h3>
-                <p>Total Rent Amount</p>
-              </div>
-              <div className="stat-card">
-                <h3>
-                  ₹{Number(stats?.totalAnnualizedRent || 0).toLocaleString()}
-                </h3>
-                <p>Annualized Rent</p>
-              </div>
-              <div className="stat-card">
-                <h3>{upcomingDues.length}</h3>
-                <p>Upcoming Rent Dues</p>
-              </div>
+              {stats?.mode === "property" ? (
+                <>
+                  <div className="stat-card">
+                    <h3>{stats?.totalProperties || 0}</h3>
+                    <p>Total Properties on Rent</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>
+                      ₹
+                      {Number(
+                        stats?.totalMonthlyRentLoad || 0
+                      ).toLocaleString()}
+                    </h3>
+                    <p>Total Monthly Rent Load</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>
+                      ₹
+                      {Number(stats?.totalAnnualizedRent || 0).toLocaleString()}
+                    </h3>
+                    <p>Annualized Rent</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>{(stats?.upcomingDues || []).length}</h3>
+                    <p>Upcoming Due (14d)</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>{(stats?.overduePayments || []).length}</h3>
+                    <p>Overdue Payments</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="stat-card">
+                    <h3>{stats?.totalHoardingsOnRent || 0}</h3>
+                    <p>Total Hoardings on Rent</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>
+                      ₹{Number(stats?.totalRentAmount || 0).toLocaleString()}
+                    </h3>
+                    <p>Total Rent Amount</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>
+                      ₹
+                      {Number(stats?.totalAnnualizedRent || 0).toLocaleString()}
+                    </h3>
+                    <p>Annualized Rent</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>{upcomingDues.length}</h3>
+                    <p>Upcoming Rent Dues</p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Send Reminders Button */}
@@ -479,6 +482,8 @@ export default function Dashboard() {
                               (1000 * 60 * 60 * 24)
                           )
                         : null;
+                      const isOverdue =
+                        daysUntilDue !== null && daysUntilDue < 0;
                       const isUrgent =
                         daysUntilDue !== null &&
                         daysUntilDue <= 7 &&
@@ -487,7 +492,13 @@ export default function Dashboard() {
                       return (
                         <tr
                           key={rent.id}
-                          style={isUrgent ? { backgroundColor: "#fff3cd" } : {}}
+                          style={
+                            isOverdue
+                              ? { backgroundColor: "#ffebee" } // Red tint for overdue
+                              : isUrgent
+                              ? { backgroundColor: "#fff3cd" } // Yellow tint for urgent
+                              : {}
+                          }
                         >
                           <td>
                             <strong>{rent.hoarding?.code || "N/A"}</strong>
@@ -509,7 +520,11 @@ export default function Dashboard() {
                             {daysUntilDue !== null ? (
                               <span
                                 className={`badge ${
-                                  isUrgent ? "badge-warning" : "badge-info"
+                                  isOverdue
+                                    ? "badge-danger"
+                                    : isUrgent
+                                    ? "badge-warning"
+                                    : "badge-success"
                                 }`}
                               >
                                 {daysUntilDue === 0
@@ -551,7 +566,9 @@ export default function Dashboard() {
                     color: "var(--text-secondary)",
                   }}
                 >
-                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>📅</div>
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>
+                    📅
+                  </div>
                   <p style={{ marginTop: "8px" }}>
                     No upcoming rent dues at the moment.
                   </p>
@@ -671,7 +688,9 @@ export default function Dashboard() {
                     color: "var(--text-secondary)",
                   }}
                 >
-                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>📅</div>
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>
+                    📅
+                  </div>
                   <p style={{ marginTop: "8px" }}>No bookings yet.</p>
                 </div>
               </div>
@@ -753,7 +772,9 @@ export default function Dashboard() {
                     color: "var(--text-secondary)",
                   }}
                 >
-                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>📋</div>
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>
+                    📋
+                  </div>
                   <p style={{ marginTop: "8px" }}>No enquiries yet.</p>
                 </div>
               </div>
@@ -831,7 +852,9 @@ export default function Dashboard() {
             <div className="card" style={{ marginTop: "24px" }}>
               <h3>My Design Assignments</h3>
               {loading ? (
-                <p style={{ color: "var(--text-secondary)", marginTop: "16px" }}>
+                <p
+                  style={{ color: "var(--text-secondary)", marginTop: "16px" }}
+                >
                   Loading design assignments...
                 </p>
               ) : tasks.length > 0 ? (
@@ -891,7 +914,9 @@ export default function Dashboard() {
                     color: "var(--text-secondary)",
                   }}
                 >
-                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>🎨</div>
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>
+                    🎨
+                  </div>
                   <p style={{ marginTop: "16px" }}>
                     No design assignments at the moment.
                   </p>
@@ -955,7 +980,9 @@ export default function Dashboard() {
             <div className="card" style={{ marginTop: "24px" }}>
               <h3>My Assigned Installation Jobs</h3>
               {loading ? (
-                <p style={{ color: "var(--text-secondary)", marginTop: "16px" }}>
+                <p
+                  style={{ color: "var(--text-secondary)", marginTop: "16px" }}
+                >
                   Loading installation jobs...
                 </p>
               ) : tasks.length > 0 ? (
@@ -1017,7 +1044,9 @@ export default function Dashboard() {
                     color: "var(--text-secondary)",
                   }}
                 >
-                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>🔧</div>
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>
+                    🔧
+                  </div>
                   <p style={{ marginTop: "16px" }}>
                     No installation jobs assigned at the moment.
                   </p>
@@ -1060,7 +1089,8 @@ export default function Dashboard() {
         )}
 
         {/* Fallback for unknown roles */}
-        {!canViewRentInfo &&
+        {!loading &&
+          !canViewRentInfo &&
           userRoleLower !== "sales" &&
           userRoleLower !== "designer" &&
           userRoleLower !== "fitter" && (
@@ -1093,6 +1123,10 @@ export default function Dashboard() {
             </div>
           )}
       </div>
-    </AppLayout>
+    </>
   );
+}
+
+export default function Dashboard() {
+  return <DashboardContent />;
 }

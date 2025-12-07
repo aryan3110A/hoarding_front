@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import AppLayout, { useUser } from "@/components/AppLayout";
+import { useUser } from "@/components/AppLayout";
 import { canCreate, canUpdate, canEditOwn } from "@/lib/rbac";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -118,11 +118,9 @@ export default function Bookings() {
 
   if (!user) {
     return (
-      <AppLayout>
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <p>Loading...</p>
-        </div>
-      </AppLayout>
+      <div style={{ textAlign: "center", padding: "40px" }}>
+        <p>Loading...</p>
+      </div>
     );
   }
 
@@ -134,172 +132,153 @@ export default function Bookings() {
 
   return (
     <ProtectedRoute component="bookings">
-      <AppLayout>
-        <div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "20px",
-            }}
-          >
-            <h1>Bookings</h1>
-            {canCreateBooking && (
-              <button
-                onClick={() => setShowTokenForm(!showTokenForm)}
-                className="btn btn-primary"
-              >
-                {showTokenForm ? "Cancel" : "Create New Booking"}
-              </button>
-            )}
-          </div>
+      <div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+          }}
+        >
+          <h1>Bookings</h1>
+          {canCreateBooking && (
+            <button
+              onClick={() => setShowTokenForm(!showTokenForm)}
+              className="btn btn-primary"
+            >
+              {showTokenForm ? "Cancel" : "Create New Booking"}
+            </button>
+          )}
+        </div>
 
-          {showTokenForm && canCreateBooking && (
-            <div className="card">
-              <h3>Create New Booking</h3>
-              <form onSubmit={handleCreateBooking}>
-                <div className="form-group">
-                  <label>Hoarding *</label>
-                  <select
-                    value={tokenForm.hoardingId}
-                    onChange={(e) =>
-                      setTokenForm({ ...tokenForm, hoardingId: e.target.value })
-                    }
-                    required
+        {showTokenForm && canCreateBooking && (
+          <div className="card">
+            <h3>Create New Booking</h3>
+            <form onSubmit={handleCreateBooking}>
+              <div className="form-group">
+                <label>Hoarding *</label>
+                <select
+                  value={tokenForm.hoardingId}
+                  onChange={(e) =>
+                    setTokenForm({ ...tokenForm, hoardingId: e.target.value })
+                  }
+                  required
+                >
+                  <option value="">Select Hoarding</option>
+                  {hoardings
+                    .filter((h) => h.status === "available")
+                    .map((h) => (
+                      <option key={h.id} value={h.id}>
+                        {h.city}, {h.area}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Start Date *</label>
+                <input
+                  type="date"
+                  value={tokenForm.startDate}
+                  onChange={(e) =>
+                    setTokenForm({ ...tokenForm, startDate: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>End Date *</label>
+                <input
+                  type="date"
+                  value={tokenForm.endDate}
+                  onChange={(e) =>
+                    setTokenForm({ ...tokenForm, endDate: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <button type="submit" className="btn btn-primary">
+                Create Booking
+              </button>
+            </form>
+          </div>
+        )}
+
+        <div className="card">
+          <h3>All Bookings</h3>
+          {bookings.length > 0 ? (
+            <div className="grid">
+              {bookings.map((booking) => (
+                <div key={booking.id} className="card">
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                    }}
                   >
-                    <option value="">Select Hoarding</option>
-                    {hoardings
-                      .filter((h) => h.status === "available")
-                      .map((h) => (
-                        <option key={h.id} value={h.id}>
-                          {h.city}, {h.area}
-                        </option>
-                      ))}
-                  </select>
+                    <div>
+                      <h3>{getHoardingName(booking.hoardingId)}</h3>
+                      <p className="text-secondary">
+                        Client: {booking.clientName}
+                      </p>
+                      <p className="text-secondary">
+                        Contact: {booking.clientContact}
+                      </p>
+                    </div>
+                    <span
+                      className={`badge ${
+                        booking.status === "confirmed"
+                          ? "badge-success"
+                          : "badge-warning"
+                      }`}
+                    >
+                      {booking.status}
+                    </span>
+                  </div>
+                  <div style={{ marginTop: "16px" }}>
+                    <p>
+                      <strong>From:</strong>{" "}
+                      {new Date(booking.startDate).toLocaleDateString()}
+                    </p>
+                    <p>
+                      <strong>To:</strong>{" "}
+                      {new Date(booking.endDate).toLocaleDateString()}
+                    </p>
+                    {booking.price && (
+                      <p>
+                        <strong>Price:</strong> ₹{booking.price}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>Start Date *</label>
-                  <input
-                    type="date"
-                    value={tokenForm.startDate}
-                    onChange={(e) =>
-                      setTokenForm({ ...tokenForm, startDate: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>End Date *</label>
-                  <input
-                    type="date"
-                    value={tokenForm.endDate}
-                    onChange={(e) =>
-                      setTokenForm({ ...tokenForm, endDate: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <button type="submit" className="btn btn-primary">
-                  Create Booking
+              ))}
+            </div>
+          ) : (
+            <div
+              className="card"
+              style={{ textAlign: "center", padding: "40px" }}
+            >
+              <div style={{ fontSize: "48px", marginBottom: "16px" }}>📅</div>
+              <h3>No Bookings Found</h3>
+              <p style={{ color: "var(--text-secondary)" }}>
+                {loading
+                  ? "Loading bookings..."
+                  : "There are no bookings in the system yet."}
+              </p>
+              {canCreateBooking && (
+                <button
+                  className="btn btn-primary"
+                  style={{ marginTop: "16px" }}
+                  onClick={() => setShowTokenForm(true)}
+                >
+                  Create First Booking
                 </button>
-              </form>
+              )}
             </div>
           )}
-
-          <div className="card">
-            <h3>All Bookings</h3>
-            {bookings.length > 0 ? (
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Hoarding Code</th>
-                    <th>Location</th>
-                    <th>Client Name</th>
-                    <th>Client Contact</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bookings.map((booking: any) => (
-                    <tr key={booking.id}>
-                      <td>
-                        <strong>
-                          {booking.hoarding?.code ||
-                            booking.hoardingId ||
-                            "N/A"}
-                        </strong>
-                      </td>
-                      <td>
-                        {booking.hoarding?.city || ""}
-                        {booking.hoarding?.area && `, ${booking.hoarding.area}`}
-                        {!booking.hoarding?.city &&
-                          !booking.hoarding?.area &&
-                          getHoardingName(booking.hoardingId)}
-                      </td>
-                      <td>{booking.clientName || "N/A"}</td>
-                      <td>{booking.clientContact || "N/A"}</td>
-                      <td>
-                        {booking.startDate
-                          ? new Date(booking.startDate).toLocaleDateString()
-                          : "N/A"}
-                      </td>
-                      <td>
-                        {booking.endDate
-                          ? new Date(booking.endDate).toLocaleDateString()
-                          : "N/A"}
-                      </td>
-                      <td>₹{Number(booking.price || 0).toLocaleString()}</td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            booking.status === "confirmed"
-                              ? "badge-success"
-                              : booking.status === "cancelled"
-                              ? "badge-danger"
-                              : "badge-warning"
-                          }`}
-                        >
-                          {booking.status || "Pending"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "60px 20px",
-                  color: "var(--text-secondary)",
-                }}
-              >
-                <div style={{ fontSize: "48px", marginBottom: "16px" }}>📅</div>
-                <h3
-                  style={{ marginBottom: "8px", color: "var(--text-primary)" }}
-                >
-                  No Bookings Yet
-                </h3>
-                <p style={{ marginBottom: "24px" }}>
-                  Get started by creating your first booking.
-                </p>
-                {canCreateBooking && (
-                  <button
-                    onClick={() => setShowTokenForm(true)}
-                    className="btn btn-primary"
-                  >
-                    Create New Booking
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
         </div>
-      </AppLayout>
+      </div>
     </ProtectedRoute>
   );
 }

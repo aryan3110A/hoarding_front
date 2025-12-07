@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import AppLayout, { useUser } from "@/components/AppLayout";
+import { useUser } from "@/components/AppLayout";
 
 export default function Location() {
   const [checkIns, setCheckIns] = useState<any[]>([]);
@@ -88,11 +88,9 @@ export default function Location() {
 
   if (!user) {
     return (
-      <AppLayout>
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <p>Loading...</p>
-        </div>
-      </AppLayout>
+      <div style={{ textAlign: "center", padding: "40px" }}>
+        <p>Loading...</p>
+      </div>
     );
   }
 
@@ -100,8 +98,7 @@ export default function Location() {
   const isSales = userRole === "sales";
 
   return (
-    <AppLayout>
-      <div>
+    <div>
         <div
           style={{
             display: "flex",
@@ -224,6 +221,5 @@ export default function Location() {
           )}
         </div>
       </div>
-    </AppLayout>
   );
 }

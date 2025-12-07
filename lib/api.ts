@@ -134,6 +134,26 @@ export const rentAPI = {
   },
 };
 
+// Property Rent API (property-level consolidated rent)
+export const propertyRentAPI = {
+  summary: async () => {
+    const response = await api.get('/property-rents/summary');
+    return response.data;
+  },
+  list: async (params?: { page?: number; limit?: number }) => {
+    const response = await api.get('/property-rents', { params });
+    return response.data;
+  },
+  get: async (propertyGroupId: string) => {
+    const response = await api.get(`/property-rents/${propertyGroupId}`);
+    return response.data;
+  },
+  save: async (data: any) => {
+    const response = await api.post('/property-rents', data);
+    return response.data;
+  },
+};
+
 
 // Notifications API
 export const notificationsAPI = {

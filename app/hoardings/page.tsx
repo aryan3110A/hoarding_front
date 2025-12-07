@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import AppLayout, { useUser } from "@/components/AppLayout";
+import { useUser } from "@/components/AppLayout";
+import CustomSelect from "@/components/CustomSelect";
 import { hoardingsAPI } from "@/lib/api";
+import { showSuccess, showError } from "@/lib/toast";
 import {
   canCreate,
   canUpdate,
@@ -25,42 +27,21 @@ export default function Hoardings() {
   const userFromContext = useUser();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  const [filters, setFilters] = useState({
-    city: "",
-    area: "",
-    status: "",
-  });
+  const [filters, setFilters] = useState({ city: "", area: "", status: "" });
+  const [deletingKey, setDeletingKey] = useState<string | null>(null);
 
-  const limit = 20; // Items per page
+  const limit = 100;
 
-  // Get user from context or localStorage as fallback
   useEffect(() => {
-    console.log("📋 [Hoardings Page] Component mounted");
-    console.log("📋 [Hoardings Page] User from context:", userFromContext);
-
-    // Prefer context user if available
     if (userFromContext) {
-      console.log("📋 [Hoardings Page] User found in context");
       setUser(userFromContext);
       return;
     }
-
-    // Fallback to localStorage
     const userData = localStorage.getItem("user");
     if (userData) {
       try {
-        const parsedUser = JSON.parse(userData);
-        console.log(
-          "📋 [Hoardings Page] User found in localStorage:",
-          parsedUser
-        );
-        setUser(parsedUser);
-      } catch (error) {
-        console.error(
-          "📋 [Hoardings Page] Error parsing user from localStorage:",
-          error
-        );
-      }
+        setUser(JSON.parse(userData));
+      } catch (_) {}
     }
   }, [userFromContext]);
 
@@ -76,7 +57,6 @@ export default function Hoardings() {
     // Reset when filters change
     const loadInitial = async () => {
       setPage(1);
-      setHoardings([]);
       setHasMore(true);
       setLoading(true);
 
@@ -101,7 +81,12 @@ export default function Hoardings() {
       }
     };
 
-    loadInitial();
+    // Debounce the API call
+    const timer = setTimeout(() => {
+      loadInitial();
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [filters]);
 
   const fetchHoardings = async (
@@ -154,304 +139,347 @@ export default function Hoardings() {
 
   // Safely extract role from user object
   const userRole = getRoleFromUser(user);
-  console.log("📋 [Hoardings Page] User object:", user);
-  console.log("📋 [Hoardings Page] Extracted role:", userRole);
-  console.log(
-    "📋 [Hoardings Page] User object keys:",
-    user ? Object.keys(user) : "No user"
-  );
 
   const canCreateHoarding = canCreate(userRole, "hoardings");
   const canEditHoarding = canUpdate(userRole, "hoardings");
   const canDeleteHoarding = canDelete(userRole, "hoardings");
 
-  console.log("📋 [Hoardings Page] Permissions:", {
-    role: userRole,
-    canCreate: canCreateHoarding,
-    canEdit: canEditHoarding,
-    canDelete: canDeleteHoarding,
-  });
-
-  if (loading) {
-    return (
-      <AppLayout>
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <div className="loading-spinner" style={{ margin: "0 auto" }}></div>
-          <p>Loading hoardings...</p>
-        </div>
-      </AppLayout>
+  const deleteGroup = async (group: any) => {
+    if (!canDeleteHoarding) return;
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this property and all its hoardings?"
     );
-  }
+    if (!confirmDelete) return;
+
+    try {
+      setDeletingKey(group.uniqueKey);
+      // Delete all hoardings in this grouped property
+      const ids: string[] = (group.hoardings || []).map((h: any) =>
+        String(h.id)
+      );
+      for (const id of ids) {
+        try {
+          await hoardingsAPI.delete(id);
+        } catch (err) {
+          console.error(`Failed to delete hoarding ${id}:`, err);
+        }
+      }
+
+      // Refresh current page
+      await fetchHoardings(1, true);
+      showSuccess("Property deleted successfully.");
+    } catch (error) {
+      console.error("Failed to delete property group:", error);
+      showError("Failed to delete property. Please try again.");
+    } finally {
+      setDeletingKey(null);
+    }
+  };
 
   return (
     <ProtectedRoute component="hoardings">
-      <AppLayout>
-        <div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "20px",
-            }}
-          >
-            <div>
-              <h1>Hoardings Master</h1>
-              <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
-                Total: {total} hoardings
-              </p>
-            </div>
-            {canCreateHoarding && (
-              <Link href="/hoardings/new" className="btn btn-primary">
-                Add New Hoarding
-              </Link>
-            )}
-          </div>
-
-          <div className="card">
-            <h3>Filters</h3>
+      <div>
+        {(() => {
+          // Compute display total: when filtering by On Rent, show number of unique properties
+          // rather than raw hoarding count. Prefer unique propertyGroupId; fallback to grouping key.
+          const isOnRent = (filters.status || "").toLowerCase() === "on_rent";
+          let totalDisplay = total;
+          if (isOnRent && hoardings && hoardings.length) {
+            const unique = new Set<string>();
+            for (const h of hoardings) {
+              if (h.propertyGroupId) {
+                unique.add(String(h.propertyGroupId));
+                continue;
+              }
+              const code: string = h.code || "";
+              const parts = code.split("-");
+              let prefix = code;
+              if (parts.length >= 2) prefix = parts.slice(0, 2).join("-");
+              const locationKey = h.landmark || h.title || h.location || "";
+              const sideKey = h.side || "";
+              unique.add(`${prefix}|${locationKey}|${sideKey}`);
+            }
+            totalDisplay = unique.size;
+          }
+          // Render header with dynamic total count
+          return (
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "10px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "20px",
               }}
             >
-              <div className="form-group">
-                <label>City</label>
-                <input
-                  type="text"
-                  value={filters.city}
-                  onChange={(e) =>
-                    setFilters({ ...filters, city: e.target.value })
-                  }
-                  placeholder="Filter by city"
-                />
-              </div>
-              <div className="form-group">
-                <label>Area</label>
-                <input
-                  type="text"
-                  value={filters.area}
-                  onChange={(e) =>
-                    setFilters({ ...filters, area: e.target.value })
-                  }
-                  placeholder="Filter by area"
-                />
-              </div>
-              <div className="form-group">
-                <label>Status</label>
-                <select
-                  value={filters.status}
-                  onChange={(e) =>
-                    setFilters({ ...filters, status: e.target.value })
-                  }
-                >
-                  <option value="">All</option>
-                  <option value="available">Available</option>
-                  <option value="on_rent">On Rent</option>
-                  <option value="occupied">Occupied</option>
-                  <option value="booked">Booked</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Location</th>
-                  <th>Size</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <th>Base Rate</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {hoardings.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      style={{ textAlign: "center", padding: "40px" }}
-                    >
-                      No hoardings found
-                    </td>
-                  </tr>
-                ) : (
-                  hoardings.map((hoarding) => (
-                    <tr key={hoarding.id}>
-                      <td>
-                        <strong>{hoarding.code}</strong>
-                      </td>
-                      <td>
-                        {hoarding.city || ""}
-                        {hoarding.area && `, ${hoarding.area}`}
-                        {hoarding.landmark && (
-                          <div
-                            style={{
-                              fontSize: "12px",
-                              color: "var(--text-secondary)",
-                            }}
-                          >
-                            {hoarding.landmark}
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        {hoarding.widthCm && hoarding.heightCm
-                          ? `${Math.round(
-                              hoarding.widthCm / 30.48
-                            )}ft x ${Math.round(hoarding.heightCm / 30.48)}ft`
-                          : "N/A"}
-                      </td>
-                      <td>{hoarding.type || "N/A"}</td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            hoarding.status === "available"
-                              ? "badge-success"
-                              : hoarding.status === "on_rent"
-                              ? "badge-info"
-                              : hoarding.status === "occupied"
-                              ? "badge-danger"
-                              : "badge-warning"
-                          }`}
-                        >
-                          {hoarding.status === "on_rent"
-                            ? "On Rent"
-                            : hoarding.status || "available"}
-                        </span>
-                      </td>
-                      <td>
-                        {hoarding.baseRate
-                          ? `₹${Number(hoarding.baseRate).toLocaleString()}`
-                          : "N/A"}
-                      </td>
-                      <td>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "8px",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          {/* Owner can always give hoarding on rent */}
-                          {(userRole?.toLowerCase() === "owner" ||
-                            userRole?.toLowerCase() === "admin" ||
-                            canViewRent(userRole)) && (
-                            <button
-                              className="btn btn-primary"
-                              style={{
-                                padding: "5px 10px",
-                                fontSize: "12px",
-                                fontWeight:
-                                  userRole?.toLowerCase() === "owner"
-                                    ? "600"
-                                    : "normal",
-                              }}
-                              onClick={() =>
-                                router.push(`/hoardings/${hoarding.id}/rent`)
-                              }
-                              title={
-                                userRole?.toLowerCase() === "owner"
-                                  ? "Give this hoarding on rent"
-                                  : "View/Manage Rent"
-                              }
-                            >
-                              {userRole?.toLowerCase() === "owner"
-                                ? "💰 Give on Rent"
-                                : "Rent"}
-                            </button>
-                          )}
-                          <Link
-                            href={`/hoardings/${hoarding.id}`}
-                            className="btn btn-secondary"
-                            style={{ padding: "5px 10px", fontSize: "12px" }}
-                          >
-                            View
-                          </Link>
-                          {canEditHoarding && (
-                            <Link
-                              href={`/hoardings/${hoarding.id}/edit`}
-                              className="btn btn-warning"
-                              style={{ padding: "5px 10px", fontSize: "12px" }}
-                            >
-                              Edit
-                            </Link>
-                          )}
-                          {canDeleteHoarding && (
-                            <button
-                              className="btn btn-danger"
-                              style={{ padding: "5px 10px", fontSize: "12px" }}
-                              onClick={async () => {
-                                if (
-                                  confirm(
-                                    `Are you sure you want to delete hoarding ${hoarding.code}?`
-                                  )
-                                ) {
-                                  try {
-                                    await hoardingsAPI.delete(hoarding.id);
-                                    // Refresh the list
-                                    fetchHoardings(1, true);
-                                  } catch (error: any) {
-                                    alert(
-                                      error.response?.data?.message ||
-                                        "Failed to delete hoarding"
-                                    );
-                                  }
-                                }
-                              }}
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-
-            {hasMore && hoardings.length > 0 && (
-              <div style={{ textAlign: "center", padding: "20px" }}>
-                <button
-                  className="btn btn-primary"
-                  onClick={loadMore}
-                  disabled={loadingMore}
-                  style={{ minWidth: "150px" }}
-                >
-                  {loadingMore ? "Loading..." : "See More"}
-                </button>
-                <p
-                  style={{
-                    marginTop: "10px",
-                    color: "var(--text-secondary)",
-                    fontSize: "14px",
-                  }}
-                >
-                  Showing {hoardings.length} of {total} hoardings
+              <div>
+                <h1>Hoardings Master</h1>
+                <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
+                  {(filters.status || "").toLowerCase() === "on_rent"
+                    ? `Total: ${totalDisplay} properties on rent`
+                    : `Total: ${total} hoardings`}
                 </p>
               </div>
-            )}
+              {canCreateHoarding && (
+                <Link href="/hoardings/new" className="btn btn-primary">
+                  Add New Hoarding
+                </Link>
+              )}
+            </div>
+          );
+        })()}
 
-            {!hasMore && hoardings.length > 0 && (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "20px",
-                  color: "var(--text-secondary)",
-                }}
-              >
-                <p>All {total} hoardings loaded</p>
-              </div>
-            )}
+        <div className="card">
+          <h3>Filters</h3>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "10px",
+            }}
+          >
+            <div className="form-group">
+              <label>City</label>
+              <input
+                type="text"
+                value={filters.city}
+                onChange={(e) =>
+                  setFilters({ ...filters, city: e.target.value })
+                }
+                placeholder="Filter by city"
+              />
+            </div>
+            <div className="form-group">
+              <label>Area</label>
+              <input
+                type="text"
+                value={filters.area}
+                onChange={(e) =>
+                  setFilters({ ...filters, area: e.target.value })
+                }
+                placeholder="Filter by area"
+              />
+            </div>
+            <div className="form-group">
+              <label>Status</label>
+              <CustomSelect
+                value={filters.status}
+                onChange={(val) => setFilters({ ...filters, status: val })}
+                options={[
+                  { value: "", label: "All" },
+                  { value: "available", label: "Available" },
+                  { value: "on_rent", label: "On Rent" },
+                  { value: "occupied", label: "Occupied" },
+                  { value: "booked", label: "Booked" },
+                ]}
+              />
+            </div>
           </div>
         </div>
-      </AppLayout>
+
+        <div className="card">
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "40px" }}>
+              <div
+                className="loading-spinner"
+                style={{ margin: "0 auto" }}
+              ></div>
+              <p>Loading hoardings...</p>
+            </div>
+          ) : (
+            (() => {
+              // Group hoardings by code prefix (first two segments) AND landmark/location
+              // so distinct structures (even with same prefix) are treated as separate properties.
+              const groupsMap: Record<string, any> = {};
+              for (const h of hoardings) {
+                const code = h.code || "";
+                const parts = code.split("-");
+                let prefix = code;
+                if (parts.length >= 2) {
+                  prefix = parts.slice(0, 2).join("-");
+                }
+
+                // Use landmark/title to distinguish structures within the same prefix group
+                const locationKey = h.landmark || h.title || h.location || "";
+                const key = `${prefix}|${locationKey}`;
+
+                if (!groupsMap[key]) {
+                  groupsMap[key] = {
+                    uniqueKey: key,
+                    linkKey: prefix,
+                    // keep original propertyGroupId for display if present
+                    propertyGroupId: h.propertyGroupId || null,
+                    // Display: City as title; Area and Location/Landmark below
+                    title: h.city || "",
+                    subtitle: [h.area, h.location || h.landmark || ""]
+                      .filter(Boolean)
+                      .join(", "),
+                    hoardings: [],
+                  };
+                }
+                groupsMap[key].hoardings.push(h);
+              }
+              const groups = Object.values(groupsMap);
+              if (!groups.length) {
+                return (
+                  <div style={{ textAlign: "center", padding: "40px" }}>
+                    No hoardings found
+                  </div>
+                );
+              }
+              // Helper to format size from cm -> ft string
+              const toFt = (w?: number, h?: number) => {
+                if (!w || !h) return "—";
+                return `${Math.round(w / 30.48)}ft x ${Math.round(
+                  h / 30.48
+                )}ft`;
+              };
+              return (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Property / Location</th>
+                      <th>Hoardings</th>
+                      <th>Total Faces</th>
+                      <th>Sizes</th>
+                      <th>Status Summary</th>
+                      <th>Ownership</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {groups.map((g) => {
+                      const sizes = Array.from(
+                        new Set(
+                          g.hoardings.map((h: any) =>
+                            toFt(h.widthCm, h.heightCm)
+                          )
+                        ).values()
+                      ).filter((s) => s !== "—");
+                      const statusCounts: Record<string, number> = {};
+                      const ownerships = new Set<string>();
+                      g.hoardings.forEach((h: any) => {
+                        statusCounts[h.status] =
+                          (statusCounts[h.status] || 0) + 1;
+                        if (h.ownership) ownerships.add(h.ownership);
+                      });
+                      const statusSummary = Object.entries(statusCounts)
+                        .map(([s, c]) => {
+                          if (s === "on_rent") return "Property On Rent";
+                          if (s === "available") return "Property Available";
+                          return `${c} ${s.replace("_", " ")}`;
+                        })
+                        .join(", ");
+                      const ownershipDisplay = ownerships.size
+                        ? Array.from(ownerships).join(", ")
+                        : "—";
+                      // landlord column removed per request
+
+                      return (
+                        <tr key={g.uniqueKey}>
+                          <td>
+                            <strong>{g.title}</strong>
+                            {g.subtitle && (
+                              <div
+                                style={{
+                                  fontSize: "12px",
+                                  color: "var(--text-secondary)",
+                                }}
+                              >
+                                {g.subtitle}
+                              </div>
+                            )}
+                          </td>
+                          {/* Landlord column removed */}
+                          <td>
+                            {g.hoardings.map((h: any) => (
+                              <div key={h.id} style={{ fontSize: "12px" }}>
+                                {h.code} {h.side && `(${h.side})`}
+                              </div>
+                            ))}
+                          </td>
+                          <td>{g.hoardings.length}</td>
+                          <td>{sizes.length ? sizes.join(" | ") : "—"}</td>
+                          <td style={{ fontSize: "12px" }}>
+                            {statusSummary || "—"}
+                          </td>
+                          <td>{ownershipDisplay}</td>
+                          <td>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "8px",
+                                flexWrap: "nowrap",
+                                alignItems: "center",
+                                justifyContent: "flex-start",
+                              }}
+                            >
+                              {canViewRent(userRole) && (
+                                <Link
+                                  href={`/property-rents/${encodeURIComponent(
+                                    g.linkKey
+                                  )}`}
+                                  className="btn btn-primary"
+                                  style={{
+                                    padding: "5px 10px",
+                                    fontSize: "12px",
+                                  }}
+                                >
+                                  Rent
+                                </Link>
+                              )}
+                              {canEditHoarding && (
+                                <Link
+                                  href={`/hoardings/${g.hoardings[0].id}/edit`}
+                                  className="btn btn-warning"
+                                  style={{
+                                    padding: "5px 10px",
+                                    fontSize: "12px",
+                                  }}
+                                >
+                                  Edit
+                                </Link>
+                              )}
+                              {canDeleteHoarding && (
+                                <button
+                                  className="btn btn-danger"
+                                  style={{
+                                    padding: "7.5px 10px",
+                                    fontSize: "12px",
+                                    opacity:
+                                      deletingKey === g.uniqueKey ? 0.7 : 1,
+                                  }}
+                                  onClick={() => deleteGroup(g)}
+                                  disabled={deletingKey === g.uniqueKey}
+                                >
+                                  {deletingKey === g.uniqueKey
+                                    ? "Deleting..."
+                                    : "Delete"}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              );
+            })()
+          )}
+
+          {!loading && hasMore && (
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              <button
+                className="btn btn-secondary"
+                onClick={loadMore}
+                disabled={loadingMore}
+              >
+                {loadingMore ? "Loading..." : "Load More"}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </ProtectedRoute>
   );
 }

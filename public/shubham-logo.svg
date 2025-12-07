@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120" viewBox="0 0 320 120">
+  <defs>
+    <linearGradient id="g1" x1="0%" x2="100%" y1="0%" y2="0%">
+      <stop offset="0%" stop-color="#FFCC29"/>
+      <stop offset="50%" stop-color="#F37535"/>
+      <stop offset="100%" stop-color="#00BBF1"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#00BBF1"/>
+      <stop offset="100%" stop-color="#1F5CA9"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="120" fill="transparent" />
+  <g transform="translate(10,10)">
+    <path d="M40 0 C70 10 90 10 120 40 C150 70 110 90 80 110 C50 90 30 80 10 60 C-10 40 10 10 40 0 Z" fill="url(#g1)" />
+    <path d="M180 10 C220 40 240 60 260 90 L220 100 C200 70 180 50 160 30 Z" fill="url(#g2)" />
+    <text x="10" y="95" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="22" fill="#333">SHUBHAM</text>
+    <text x="10" y="115" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="14" fill="#F37535">ADVERTISE</text>
+  </g>
+</svg>

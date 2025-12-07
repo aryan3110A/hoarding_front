@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AppLayout, { useUser } from "./AppLayout";
+import { useUser } from "./AppLayout";
 import AccessDenied from "./AccessDenied";
 import { canAccess, getRoleFromUser } from "@/lib/rbac";
 
@@ -98,14 +98,21 @@ export default function ProtectedRoute({
             console.error("🔐 [ProtectedRoute] Error on retry:", error);
           }
         }
-        if (requireAuth) {
+
+        // Even if retry fails, if we have a token, we might still be loading
+        // Don't redirect immediately if we have a token but no user data yet
+        // Let the AppLayout handle the fetch
+        if (requireAuth && !localStorage.getItem("token")) {
           console.log(
             "🔐 [ProtectedRoute] Still no user after retry, redirecting to login"
           );
           router.push("/login");
+        } else {
+          // If we have token but no user, stop checking and let AppLayout handle it
+          // This prevents infinite loading state
+          setCheckingUser(false);
         }
-        setCheckingUser(false);
-      }, 100); // Wait 100ms for AppLayout to load
+      }, 500); // Increased timeout to 500ms
 
       // Cleanup timeout if component unmounts or dependencies change
       return () => {
@@ -128,7 +135,14 @@ export default function ProtectedRoute({
 
   if (checkingUser) {
     console.log("🔐 [ProtectedRoute] Checking user, showing loading...");
-    return null; // Still checking
+    // Don't return null, return a loading indicator or just the children if we want to be optimistic
+    // Returning null causes the "blank screen" effect
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner"></div>
+        <p>Verifying access...</p>
+      </div>
+    );
   }
 
   if (requireAuth && !user) {
