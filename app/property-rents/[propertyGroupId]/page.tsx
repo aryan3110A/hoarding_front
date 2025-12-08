@@ -26,6 +26,9 @@ export default function PropertyRentPage() {
     rentAmount: "",
     incrementCycleYears: 1,
     incrementRate: 10,
+    incrementType: "PERCENTAGE", // PERCENTAGE | AMOUNT
+    incrementValue: "", // number as string
+    rentStartDate: "",
     paymentFrequency: "Monthly",
     paymentMode: "Cash",
     chequeName: "",
@@ -37,6 +40,10 @@ export default function PropertyRentPage() {
     reminderDays: [14] as number[],
   });
   const [nextDueDate, setNextDueDate] = useState<string>("");
+  const [nextIncrementPreview, setNextIncrementPreview] = useState<{
+    nextDate?: string;
+    nextRent?: number;
+  }>({});
 
   useEffect(() => {
     const load = async () => {
@@ -86,6 +93,11 @@ export default function PropertyRentPage() {
             rentAmount: String(r.rentAmount || ""),
             incrementCycleYears: r.incrementCycleYears || 1,
             incrementRate: r.incrementRate ? Number(r.incrementRate) * 100 : 10,
+            incrementType: (r as any).incrementType || "PERCENTAGE",
+            incrementValue: (r as any).incrementValue
+              ? String((r as any).incrementValue)
+              : "",
+            rentStartDate: r.rentStartDate ? r.rentStartDate.split("T")[0] : "",
             paymentMode: (r as any).paymentMode || "Cash",
             chequeName: (r as any).chequeName || "",
             bankName: (r as any).bankName || "",
@@ -100,6 +112,18 @@ export default function PropertyRentPage() {
           });
 
           if (r.nextDueDate) setNextDueDate(r.nextDueDate.split("T")[0]);
+          if ((r as any).nextIncrementDate && r.baseRent) {
+            const nextDate = (r as any).nextIncrementDate.split("T")[0];
+            // Preview next rent on client using current rule
+            const current = Number(r.baseRent || r.rentAmount || 0);
+            const type = (r as any).incrementType || "PERCENTAGE";
+            const incVal = Number((r as any).incrementValue || 0);
+            const nextRent =
+              type === "PERCENTAGE"
+                ? current + (current * incVal) / 100
+                : current + incVal;
+            setNextIncrementPreview({ nextDate, nextRent });
+          }
         } else {
           const landlordFromGroup =
             group && group.length
@@ -127,6 +151,32 @@ export default function PropertyRentPage() {
 
     if (propertyGroupId) load();
   }, [propertyGroupId]);
+  // Client-side preview for next increment values when user edits form
+  useEffect(() => {
+    if (form.rentStartDate && form.incrementCycleYears) {
+      const next = new Date(form.rentStartDate);
+      next.setFullYear(
+        next.getFullYear() + Number(form.incrementCycleYears || 1)
+      );
+      const nextDate = next.toISOString().split("T")[0];
+      const current = Number(form.rentAmount || 0);
+      const incVal = Number(form.incrementValue || form.incrementRate); // fallback to rate if value empty
+      const nextRent =
+        form.incrementType === "AMOUNT"
+          ? current + incVal
+          : current + (current * incVal) / 100;
+      setNextIncrementPreview({ nextDate, nextRent });
+    } else {
+      setNextIncrementPreview({});
+    }
+  }, [
+    form.rentStartDate,
+    form.incrementCycleYears,
+    form.rentAmount,
+    form.incrementType,
+    form.incrementValue,
+    form.incrementRate,
+  ]);
 
   useEffect(() => {
     if (form.lastPaymentDate && form.paymentFrequency) {
@@ -173,9 +223,13 @@ export default function PropertyRentPage() {
         location: form.location,
         rentAmount: form.rentAmount ? Number(form.rentAmount) : 0,
         incrementCycleYears: form.incrementCycleYears,
-        incrementRate: form.incrementRate
-          ? Number(form.incrementRate) / 100
-          : undefined,
+        // New increment fields
+        incrementType: form.incrementType,
+        incrementValue:
+          form.incrementValue !== ""
+            ? Number(form.incrementValue)
+            : Number(form.incrementRate),
+        rentStartDate: form.rentStartDate || undefined,
         paymentFrequency: form.paymentFrequency,
         lastPaymentDate: form.lastPaymentDate || undefined,
         reminderDays: form.reminderDays,
@@ -302,18 +356,57 @@ export default function PropertyRentPage() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Increment Rate (%)</label>
-                  <input
-                    type="number"
-                    value={form.incrementRate}
+                  <label>Increment Type</label>
+                  <select
+                    value={form.incrementType}
                     onChange={(e) =>
-                      setForm({
-                        ...form,
-                        incrementRate: Number(e.target.value),
-                      })
+                      setForm({ ...form, incrementType: e.target.value })
                     }
-                    min={0}
-                    step={0.1}
+                  >
+                    <option value="PERCENTAGE">Percentage</option>
+                    <option value="AMOUNT">Fixed Amount</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  {form.incrementType === "PERCENTAGE" ? (
+                    <>
+                      <label>Increment Rate (%)</label>
+                      <input
+                        type="number"
+                        value={form.incrementRate}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            incrementRate: Number(e.target.value),
+                          })
+                        }
+                        min={0}
+                        step={0.1}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <label>Increment Amount (₹)</label>
+                      <input
+                        type="number"
+                        value={form.incrementValue}
+                        onChange={(e) =>
+                          setForm({ ...form, incrementValue: e.target.value })
+                        }
+                        min={0}
+                        step={1}
+                      />
+                    </>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label>Rent Start Date</label>
+                  <input
+                    type="date"
+                    value={form.rentStartDate}
+                    onChange={(e) =>
+                      setForm({ ...form, rentStartDate: e.target.value })
+                    }
                   />
                 </div>
                 <div className="form-group">
@@ -418,6 +511,20 @@ export default function PropertyRentPage() {
                 <div className="form-group">
                   <label>Next Due Date</label>
                   <input type="date" value={nextDueDate} disabled />
+                </div>
+                <div className="form-group">
+                  <label>Next Increment Preview</label>
+                  <div className="card" style={{ padding: "8px" }}>
+                    <div>
+                      Next Increment On: {nextIncrementPreview.nextDate || "--"}
+                    </div>
+                    <div>
+                      Expected Next Rent:{" "}
+                      {nextIncrementPreview.nextRent != null
+                        ? nextIncrementPreview.nextRent
+                        : "--"}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="form-group">

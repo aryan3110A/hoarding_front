@@ -122,12 +122,12 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       roles: ["owner", "manager", "sales", "designer", "fitter", "admin"],
       badge: unreadCount > 0 ? unreadCount : null,
     },
-    {
-      title: "Location",
-      href: "/location",
-      iconName: "MapPin",
-      roles: ["owner", "fitter", "admin"],
-    },
+    // {
+    //   title: "Location",
+    //   href: "/location",
+    //   iconName: "MapPin",
+    //   roles: ["owner", "fitter", "admin"],
+    // },
   ];
 
   const filteredMenuItems = menuItems.filter((item) =>

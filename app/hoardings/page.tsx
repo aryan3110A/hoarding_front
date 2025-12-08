@@ -287,25 +287,51 @@ export default function Hoardings() {
             </div>
           ) : (
             (() => {
-              // Group hoardings by code prefix (first two segments) AND landmark/location
-              // so distinct structures (even with same prefix) are treated as separate properties.
+              // Group hoardings by propertyGroupId when available.
+              // Fallback to code prefix (first two segments) + landmark/location.
               const groupsMap: Record<string, any> = {};
               for (const h of hoardings) {
-                const code = h.code || "";
-                const parts = code.split("-");
-                let prefix = code;
-                if (parts.length >= 2) {
-                  prefix = parts.slice(0, 2).join("-");
+                // Prefer explicit backend grouping id to ensure all faces/directions
+                // of the same property are counted as one.
+                const groupId: string | null = h.propertyGroupId
+                  ? String(h.propertyGroupId)
+                  : null;
+
+                // IMPORTANT: Split properties by facing direction/roadName even if
+                // they share the same propertyGroupId. This ensures Solo vs LHS/RHS
+                // on opposite directions are treated as separate properties.
+                const directionKey = (h.roadName || "")
+                  .toString()
+                  .trim()
+                  .toLowerCase();
+
+                let key = groupId || "";
+                let linkKey = groupId || ""; // keep rent link pointing to group id
+
+                if (!key) {
+                  const code = h.code || "";
+                  const parts = code.split("-");
+                  let prefix = code;
+                  if (parts.length >= 2) {
+                    prefix = parts.slice(0, 2).join("-");
+                  }
+
+                  // Use landmark/title to distinguish structures within the same prefix group
+                  const locationKey = h.landmark || h.title || h.location || "";
+                  key = `${prefix}|${locationKey}`;
+                  linkKey = prefix;
                 }
 
-                // Use landmark/title to distinguish structures within the same prefix group
-                const locationKey = h.landmark || h.title || h.location || "";
-                const key = `${prefix}|${locationKey}`;
+                // If we have a propertyGroupId, refine unique grouping by direction/road
+                // so opposite facing properties are not merged.
+                if (groupId) {
+                  key = `${groupId}|${directionKey || ""}`;
+                }
 
                 if (!groupsMap[key]) {
                   groupsMap[key] = {
                     uniqueKey: key,
-                    linkKey: prefix,
+                    linkKey: linkKey,
                     // keep original propertyGroupId for display if present
                     propertyGroupId: h.propertyGroupId || null,
                     // Display: City as title; Area and Location/Landmark below
@@ -362,13 +388,20 @@ export default function Hoardings() {
                           (statusCounts[h.status] || 0) + 1;
                         if (h.ownership) ownerships.add(h.ownership);
                       });
-                      const statusSummary = Object.entries(statusCounts)
-                        .map(([s, c]) => {
-                          if (s === "on_rent") return "Property On Rent";
-                          if (s === "available") return "Property Available";
-                          return `${c} ${s.replace("_", " ")}`;
-                        })
-                        .join(", ");
+                      // Consider a property "on rent" only if ALL its faces/entries
+                      // in this grouped direction are on rent. This prevents rent state
+                      // from leaking to other faces when the backend attaches group rent.
+                      const isGroupOnRent =
+                        g.hoardings.length > 0 &&
+                        g.hoardings.every(
+                          (h: any) =>
+                            (h.status || "").toLowerCase() === "on_rent"
+                        );
+                      const statusSummary = isGroupOnRent
+                        ? "Property On Rent"
+                        : statusCounts["available"]
+                        ? "Property Available"
+                        : "—";
                       const ownershipDisplay = ownerships.size
                         ? Array.from(ownerships).join(", ")
                         : "—";
