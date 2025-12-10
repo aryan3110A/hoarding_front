@@ -375,6 +375,26 @@ export const bookingsAPI = {
   },
 };
 
+// Booking Tokens API
+export const bookingTokensAPI = {
+  create: async (data: { hoardingId: string; dateFrom: string; dateTo: string }) => {
+    const response = await api.post('/booking-tokens', data);
+    return response.data;
+  },
+  confirm: async (id: string) => {
+    const response = await api.post(`/booking-tokens/${id}/confirm`);
+    return response.data;
+  },
+  cancel: async (id: string) => {
+    const response = await api.post(`/booking-tokens/${id}/cancel`);
+    return response.data;
+  },
+  mine: async () => {
+    const response = await api.get('/booking-tokens/mine');
+    return response.data;
+  },
+};
+
 // Dashboard API
 export const dashboardAPI = {
   getOwnerDashboard: async () => {

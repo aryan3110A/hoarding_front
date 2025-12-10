@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useUser } from "@/components/AppLayout";
 import CustomSelect from "@/components/CustomSelect";
 import { hoardingsAPI } from "@/lib/api";
+import { bookingTokensAPI } from "@/lib/api";
 import { showSuccess, showError } from "@/lib/toast";
 import {
   canCreate,
@@ -143,6 +144,7 @@ export default function Hoardings() {
   const canCreateHoarding = canCreate(userRole, "hoardings");
   const canEditHoarding = canUpdate(userRole, "hoardings");
   const canDeleteHoarding = canDelete(userRole, "hoardings");
+  const isSalesRole = (userRole || "").toLowerCase() === "sales";
 
   const deleteGroup = async (group: any) => {
     if (!canDeleteHoarding) return;
@@ -176,6 +178,38 @@ export default function Hoardings() {
     }
   };
 
+  // Per-hoarding selected date range for Sales tokenization
+  const [bookingDatesById, setBookingDatesById] = useState<
+    Record<string, { from: string; to: string }>
+  >({});
+  const createToken = async (hoardingId: string) => {
+    try {
+      const current = bookingDatesById[hoardingId] || { from: "", to: "" };
+      if (!current.from || !current.to) {
+        showError("Select date range first");
+        return;
+      }
+      const resp = await bookingTokensAPI.create({
+        hoardingId,
+        dateFrom: current.from,
+        dateTo: current.to,
+      });
+      if (resp.success) {
+        const pos = resp.data.queuePosition || 1;
+        showSuccess(`Token created. You are #${pos} in queue.`);
+        // Persist the selected dates in UI for this hoarding row
+        setBookingDatesById((prev) => ({
+          ...prev,
+          [hoardingId]: { ...current },
+        }));
+      } else {
+        showError(resp.message || "Failed to create token");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to create token");
+    }
+  };
+
   return (
     <ProtectedRoute component="hoardings">
       <div>
@@ -183,6 +217,7 @@ export default function Hoardings() {
           // Compute display total: when filtering by On Rent, show number of unique properties
           // rather than raw hoarding count. Prefer unique propertyGroupId; fallback to grouping key.
           const isOnRent = (filters.status || "").toLowerCase() === "on_rent";
+          const isSalesView = isSalesRole;
           let totalDisplay = total;
           if (isOnRent && hoardings && hoardings.length) {
             const unique = new Set<string>();
@@ -201,6 +236,16 @@ export default function Hoardings() {
             }
             totalDisplay = unique.size;
           }
+          // For sales view on rent, total should reflect individual hoardings in rented properties
+          if (isSalesView && hoardings && hoardings.length) {
+            totalDisplay = hoardings.filter((h) => {
+              // Consider hoardings belonging to a propertyGroupId that has rent attached
+              // or the hoarding itself marked on_rent
+              const status = (h.status || "").toLowerCase();
+              const hasGroupRent = !!h.propertyRent || !!h.propertyGroupId; // backend attaches propertyRent on items in rented groups
+              return status === "on_rent" || hasGroupRent;
+            }).length;
+          }
           // Render header with dynamic total count
           return (
             <div
@@ -214,7 +259,9 @@ export default function Hoardings() {
               <div>
                 <h1>Hoardings Master</h1>
                 <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
-                  {(filters.status || "").toLowerCase() === "on_rent"
+                  {isSalesView
+                    ? `Total: ${isOnRent ? totalDisplay : total} hoardings`
+                    : (filters.status || "").toLowerCase() === "on_rent"
                     ? `Total: ${totalDisplay} properties on rent`
                     : `Total: ${total} hoardings`}
                 </p>
@@ -264,13 +311,23 @@ export default function Hoardings() {
               <CustomSelect
                 value={filters.status}
                 onChange={(val) => setFilters({ ...filters, status: val })}
-                options={[
-                  { value: "", label: "All" },
-                  { value: "available", label: "Available" },
-                  { value: "on_rent", label: "On Rent" },
-                  { value: "occupied", label: "Occupied" },
-                  { value: "booked", label: "Booked" },
-                ]}
+                options={(() => {
+                  if (isSalesRole) {
+                    return [
+                      { value: "", label: "All" },
+                      { value: "available", label: "Available" },
+                      { value: "booked", label: "Booked" },
+                      { value: "tokenized", label: "Book (Tokenized)" },
+                    ];
+                  }
+                  return [
+                    { value: "", label: "All" },
+                    { value: "available", label: "Available" },
+                    { value: "on_rent", label: "On Rent" },
+                    { value: "occupied", label: "Occupied" },
+                    { value: "booked", label: "Booked" },
+                  ];
+                })()}
               />
             </div>
           </div>
@@ -350,6 +407,125 @@ export default function Hoardings() {
                   <div style={{ textAlign: "center", padding: "40px" }}>
                     No hoardings found
                   </div>
+                );
+              }
+
+              // Sales view: always list individual hoardings with status filter
+              if (isSalesRole) {
+                const toFt = (w?: number, h?: number) => {
+                  if (!w || !h) return "—";
+                  return `${Math.round(w / 30.48)}ft x ${Math.round(
+                    h / 30.48
+                  )}ft`;
+                };
+                const statusFilter = (filters.status || "").toLowerCase();
+                const list = hoardings;
+                const filtered = (() => {
+                  if (!statusFilter) return list;
+                  if (statusFilter === "tokenized") {
+                    // Use backend-computed flag to avoid confusion
+                    return list.filter((h: any) => h.hasActiveToken === true);
+                  }
+                  return list.filter(
+                    (h: any) => (h.status || "").toLowerCase() === statusFilter
+                  );
+                })();
+                if (!filtered.length) {
+                  return (
+                    <div style={{ textAlign: "center", padding: "40px" }}>
+                      No hoardings found
+                    </div>
+                  );
+                }
+                return (
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        {/* Hide Hoarding ID for Sales */}
+                        {!isSalesRole && <th>Hoarding ID</th>}
+                        <th>Code</th>
+                        <th>City</th>
+                        <th>Area</th>
+                        <th>Location</th>
+                        <th>Size</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((h: any) => (
+                        <tr key={h.id}>
+                          {!isSalesRole && <td>{h.id}</td>}
+                          <td>
+                            {h.code} {h.side ? `(${h.side})` : ""}
+                          </td>
+                          <td>{h.city || "—"}</td>
+                          <td>{h.area || "—"}</td>
+                          <td>{h.landmark || h.location || h.title || "—"}</td>
+                          <td>{toFt(h.widthCm, h.heightCm)}</td>
+                          <td>
+                            {(h.status || "").toLowerCase() === "available"
+                              ? "Hoarding Available"
+                              : (h.status || "").toLowerCase() === "booked"
+                              ? "Booked"
+                              : (h.status || "").toLowerCase() === "occupied"
+                              ? "Occupied"
+                              : (h.status || "").toLowerCase() === "on_rent"
+                              ? "Hoarding On Rent"
+                              : h.status || "—"}
+                          </td>
+                          <td>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "6px",
+                                alignItems: "center",
+                              }}
+                            >
+                              <input
+                                type="date"
+                                value={bookingDatesById[h.id]?.from || ""}
+                                onChange={(e) =>
+                                  setBookingDatesById((prev) => ({
+                                    ...prev,
+                                    [h.id]: {
+                                      from: e.target.value,
+                                      to: prev[h.id]?.to || "",
+                                    },
+                                  }))
+                                }
+                                style={{ fontSize: "12px" }}
+                              />
+                              <input
+                                type="date"
+                                value={bookingDatesById[h.id]?.to || ""}
+                                onChange={(e) =>
+                                  setBookingDatesById((prev) => ({
+                                    ...prev,
+                                    [h.id]: {
+                                      from: prev[h.id]?.from || "",
+                                      to: e.target.value,
+                                    },
+                                  }))
+                                }
+                                style={{ fontSize: "12px" }}
+                              />
+                              <button
+                                className="btn btn-secondary"
+                                style={{
+                                  padding: "5px 10px",
+                                  fontSize: "12px",
+                                }}
+                                onClick={() => createToken(h.id)}
+                              >
+                                Book (Token)
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 );
               }
               // Helper to format size from cm -> ft string
@@ -488,6 +664,63 @@ export default function Hoardings() {
                                     ? "Deleting..."
                                     : "Delete"}
                                 </button>
+                              )}
+                              {isSalesRole && (
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: "6px",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <input
+                                    type="date"
+                                    value={
+                                      bookingDatesById[g.hoardings[0].id]
+                                        ?.from || ""
+                                    }
+                                    onChange={(e) =>
+                                      setBookingDatesById((prev) => ({
+                                        ...prev,
+                                        [g.hoardings[0].id]: {
+                                          from: e.target.value,
+                                          to: prev[g.hoardings[0].id]?.to || "",
+                                        },
+                                      }))
+                                    }
+                                    style={{ fontSize: "12px" }}
+                                  />
+                                  <input
+                                    type="date"
+                                    value={
+                                      bookingDatesById[g.hoardings[0].id]?.to ||
+                                      ""
+                                    }
+                                    onChange={(e) =>
+                                      setBookingDatesById((prev) => ({
+                                        ...prev,
+                                        [g.hoardings[0].id]: {
+                                          from:
+                                            prev[g.hoardings[0].id]?.from || "",
+                                          to: e.target.value,
+                                        },
+                                      }))
+                                    }
+                                    style={{ fontSize: "12px" }}
+                                  />
+                                  <button
+                                    className="btn btn-secondary"
+                                    style={{
+                                      padding: "5px 10px",
+                                      fontSize: "12px",
+                                    }}
+                                    onClick={() =>
+                                      createToken(g.hoardings[0].id)
+                                    }
+                                  >
+                                    Book (Token)
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </td>
