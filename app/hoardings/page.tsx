@@ -98,12 +98,12 @@ export default function Hoardings() {
     if (!isSalesRole) return;
     // SSE: listen for backend push updates, patch only volatile fields
     const source = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/events/hoarding-status`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/events/hoarding-status`,
       { withCredentials: true } as any
     );
     source.onmessage = (evt) => {
       try {
-        const payload = JSON.parse(evt.data || '{}') as {
+        const payload = JSON.parse(evt.data || "{}") as {
           hoardingId?: string;
           status?: string;
           hasActiveToken?: boolean;
@@ -115,13 +115,16 @@ export default function Hoardings() {
             String(h.id) === String(payload.hoardingId)
               ? {
                   ...h,
-                  status: typeof payload.status !== 'undefined' ? payload.status : h.status,
+                  status:
+                    typeof payload.status !== "undefined"
+                      ? payload.status
+                      : h.status,
                   hasActiveToken:
-                    typeof payload.hasActiveToken !== 'undefined'
+                    typeof payload.hasActiveToken !== "undefined"
                       ? payload.hasActiveToken
                       : h.hasActiveToken,
                   propertyRent:
-                    typeof payload.propertyRent !== 'undefined'
+                    typeof payload.propertyRent !== "undefined"
                       ? payload.propertyRent
                       : h.propertyRent,
                 }
@@ -134,7 +137,9 @@ export default function Hoardings() {
       // silently ignore errors; browser will attempt reconnect
     };
     return () => {
-      try { source.close(); } catch (_) {}
+      try {
+        source.close();
+      } catch (_) {}
     };
   }, [isSalesRole]);
 
@@ -186,7 +191,6 @@ export default function Hoardings() {
     fetchHoardings(nextPage, false);
   };
 
-
   const deleteGroup = async (group: any) => {
     if (!canDeleteHoarding) return;
     const confirmDelete = window.confirm(
@@ -224,7 +228,9 @@ export default function Hoardings() {
     Record<string, { from: string; to: string }>
   >({});
   // Track hoardings tokenized by the current user (UI-only isolation)
-  const [myTokenizedById, setMyTokenizedById] = useState<Record<string, boolean>>({});
+  const [myTokenizedById, setMyTokenizedById] = useState<
+    Record<string, boolean>
+  >({});
   const createToken = async (hoardingId: string) => {
     try {
       const current = bookingDatesById[hoardingId] || { from: "", to: "" };
