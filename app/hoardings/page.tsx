@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@/components/AppLayout";
 import CustomSelect from "@/components/CustomSelect";
@@ -12,7 +11,6 @@ import {
   canCreate,
   canUpdate,
   canDelete,
-  canAccess,
   getRoleFromUser,
   canViewRent,
 } from "@/lib/rbac";
@@ -26,12 +24,18 @@ export default function Hoardings() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const userFromContext = useUser();
-  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [filters, setFilters] = useState({ city: "", area: "", status: "" });
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
 
-  const limit = 100;
+  const limit = 20;
+
+  // Safely extract role from user object (declare early for effects below)
+  const userRole = getRoleFromUser(user);
+  const canCreateHoarding = canCreate(userRole, "hoardings");
+  const canEditHoarding = canUpdate(userRole, "hoardings");
+  const canDeleteHoarding = canDelete(userRole, "hoardings");
+  const isSalesRole = (userRole || "").toLowerCase() === "sales";
 
   useEffect(() => {
     if (userFromContext) {
@@ -46,7 +50,6 @@ export default function Hoardings() {
     }
   }, [userFromContext]);
 
-  // Update user when context user becomes available
   useEffect(() => {
     if (userFromContext && userFromContext !== user) {
       console.log("📋 [Hoardings Page] User updated from context");
@@ -89,6 +92,51 @@ export default function Hoardings() {
 
     return () => clearTimeout(timer);
   }, [filters]);
+
+  // Lightweight polling in Sales view to keep statuses fresh
+  useEffect(() => {
+    if (!isSalesRole) return;
+    // SSE: listen for backend push updates, patch only volatile fields
+    const source = new EventSource(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/events/hoarding-status`,
+      { withCredentials: true } as any
+    );
+    source.onmessage = (evt) => {
+      try {
+        const payload = JSON.parse(evt.data || '{}') as {
+          hoardingId?: string;
+          status?: string;
+          hasActiveToken?: boolean;
+          propertyRent?: unknown;
+        };
+        if (!payload?.hoardingId) return;
+        setHoardings((prev) =>
+          (prev || []).map((h: any) =>
+            String(h.id) === String(payload.hoardingId)
+              ? {
+                  ...h,
+                  status: typeof payload.status !== 'undefined' ? payload.status : h.status,
+                  hasActiveToken:
+                    typeof payload.hasActiveToken !== 'undefined'
+                      ? payload.hasActiveToken
+                      : h.hasActiveToken,
+                  propertyRent:
+                    typeof payload.propertyRent !== 'undefined'
+                      ? payload.propertyRent
+                      : h.propertyRent,
+                }
+              : h
+          )
+        );
+      } catch (_) {}
+    };
+    source.onerror = () => {
+      // silently ignore errors; browser will attempt reconnect
+    };
+    return () => {
+      try { source.close(); } catch (_) {}
+    };
+  }, [isSalesRole]);
 
   const fetchHoardings = async (
     pageNum: number = page,
@@ -138,13 +186,6 @@ export default function Hoardings() {
     fetchHoardings(nextPage, false);
   };
 
-  // Safely extract role from user object
-  const userRole = getRoleFromUser(user);
-
-  const canCreateHoarding = canCreate(userRole, "hoardings");
-  const canEditHoarding = canUpdate(userRole, "hoardings");
-  const canDeleteHoarding = canDelete(userRole, "hoardings");
-  const isSalesRole = (userRole || "").toLowerCase() === "sales";
 
   const deleteGroup = async (group: any) => {
     if (!canDeleteHoarding) return;
@@ -182,6 +223,8 @@ export default function Hoardings() {
   const [bookingDatesById, setBookingDatesById] = useState<
     Record<string, { from: string; to: string }>
   >({});
+  // Track hoardings tokenized by the current user (UI-only isolation)
+  const [myTokenizedById, setMyTokenizedById] = useState<Record<string, boolean>>({});
   const createToken = async (hoardingId: string) => {
     try {
       const current = bookingDatesById[hoardingId] || { from: "", to: "" };
@@ -202,6 +245,27 @@ export default function Hoardings() {
           ...prev,
           [hoardingId]: { ...current },
         }));
+        // Mark button as tokenized for this user only
+        setMyTokenizedById((prev) => ({ ...prev, [hoardingId]: true }));
+        // Immediately reflect tokenized status in the table
+        setHoardings((prev) =>
+          (prev || []).map((h: any) =>
+            String(h.id) === String(hoardingId)
+              ? {
+                  ...h,
+                  hasActiveToken: true,
+                  status:
+                    (h.status || "").toLowerCase() === "available"
+                      ? "tokenized"
+                      : h.status,
+                }
+              : h
+          )
+        );
+        // Soft refresh current list shortly after to sync from server
+        setTimeout(() => {
+          fetchHoardings(page, true);
+        }, 300);
       } else {
         showError(resp.message || "Failed to create token");
       }
@@ -464,7 +528,10 @@ export default function Hoardings() {
                           <td>{h.landmark || h.location || h.title || "—"}</td>
                           <td>{toFt(h.widthCm, h.heightCm)}</td>
                           <td>
-                            {(h.status || "").toLowerCase() === "available"
+                            {h.hasActiveToken === true ||
+                            (h.status || "").toLowerCase() === "tokenized"
+                              ? "tokenized"
+                              : (h.status || "").toLowerCase() === "available"
                               ? "Hoarding Available"
                               : (h.status || "").toLowerCase() === "booked"
                               ? "Booked"
@@ -517,8 +584,11 @@ export default function Hoardings() {
                                   fontSize: "12px",
                                 }}
                                 onClick={() => createToken(h.id)}
+                                disabled={myTokenizedById[h.id] === true}
                               >
-                                Book (Token)
+                                {myTokenizedById[h.id] === true
+                                  ? "Tokenized"
+                                  : "Book (Token)"}
                               </button>
                             </div>
                           </td>
