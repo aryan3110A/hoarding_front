@@ -1,573 +1,573 @@
-Hoarding Code,City,(Area/Zone),Location / Landmark,Facing Direction,Size (Width x Height),Position,Hoarding Type,Illumination,Latitude,Longitude,Ownership,Price per Month,Status,Past Price History,Previous Clients,Rent,Payment Mode,Contract Period,Due Date,Landloard Name/Number
-MENG-AH-S,Mehsana,Nagalpur,Nr. Maruti Starline Showroom,Mehsana to Ahmedabad,77 x 10,Solo,Gantry,NL,23.581427,72.370017,GOV - R & B Mehsana,,,,,,,,,
-MEMC-BN-S,Mehsana,Modhera Circle,"Nr. Joyos Hubtown, Nr. Modhera Circle,  ST Workshop Road",Modhera Circle to Bhamariya Nala,70 x 10,Solo,Gantry,NL,23.594335,72.38093,GOV - MMC,,,,,,,,,
-MEBN-MC-S,Mehsana,Bhamariya Nala,"BK Cinema, ST Workshop Road",Bhamariya Nala to Modhera circle,50 X 10,Solo,Gantry,NL,23.595229,72.385683,GOV - MMC,,,,,,,,,
-MEBN-BN-S,Mehsana,Bhamariya Nala,"Apna Bazar, Nr. Bhamariya Nala",Modhera Circle to Bhamariya Nala,67 x 10,Solo,Gantry,NL,23.59573,72.387532,GOV - MMC,,,,,,,,,
-MEGN-FV-S,Mehsana,Gopi Nala,"MG Shoping Center, Nr. Ganpati Temple, Fuvara, Rajmahel Road",Bus Stand to Fuvara,55 x 10,Solo,Gantry,NL,23.604455,72.390394,GOV - MMC,,,,,,,,,
-METC-TC-S,Mehsana,Toranwali Chowk,"Ranjan no Dhal, Nr. Nagarpalika Office, Main Bazar",Arvind Baug to Toranwali Mata Chowk,50 x 10,Solo,Gantry,NL,23.603211,72.391711,GOV - MMC,,,,,,,,,
-MERC-GN-S,Mehsana,Radhanpur Circle,Nr. Radhanpur Circle,Radhanpur Circle to Gopi Nala,40 x 10,Solo,Gantry,NL,23.606333,72.381942,GOV - MMC,,,,,,,,,
-BEMP-VG-S,Bechraji,Maruti Plant,"Nr. Maruti Plant, Hansalpur Circle, On Becharaji to Viramgam Highway",Bechraji to Viramgam,70 x 10,Solo,Gantry,NL,23.487564,72.017006,GOV - R & B Ahmedabad,,,,,,,,,
-BEMP-BE-S,Bechraji,Maruti Plant,"Bechraji Entrance, Viramgam Bechraji Highway",Viramgam to Bechraji,70 x 10,Solo,Gantry,NL,23.4921185,72.0291664,GOV - R & B Ahmedabad,,,,,,,,,
-HIMO-BS-S,Himmatnagar,Motipura Circle,Motipura Circle,Motipura Circle to Bus Stand,86 x 10,Solo,Gantry,NL,23.58239962,72.95844305,GOV - R & B Himmatnagar,,,,,,,,,
-HIMO-MO-S,Himmatnagar,Motipura Circle,Motipura Circle,Bus Stand to Motipura,86 x 10,Solo,Gantry,NL,23.58239962,72.95844305,GOV - R & B Himmatnagar,,,,,,,,,
-HIMO-BS-SA,Himmatnagar,Motipura Circle,"Umashankar Joshi Bridge, Nr. Motipura Circle",Motipura Circle to Bus Stand,50 x 10,Solo,Gantry,NL,23.585027,72.95788,GOV - R & B Himmatnagar,,,,,,,,,
-HIMO-MO-SA,Himmatnagar,Motipura Circle,"Umashankar Joshi Bridge, Nr. Motipura Circle",Bus Stand to Motipura,50 x 10,Solo,Gantry,NL,23.585027,72.95788,GOV - R & B Himmatnagar,,,,,,,,,
-HIBS-CC-S,Himmatnagar,Bus Stand,At Bus Stand,Motipura Circle to Civil Circle,60 x 10,Solo,Gantry,NL,23.59281,72.958388,GOV - R & B Himmatnagar,,,,,,,,,
-HIBS-MO-S,Himmatnagar,Bus Stand,At Bus Stand,Civil Circle to Motipura Circle,60 x 10,Solo,Gantry,NL,23.59281,72.958388,GOV - R & B Himmatnagar,,,,,,,,,
-HICC-MV-S,Himmatnagar,Chhapariya Circle,Chhapariya Circle,Motipura Circle to Mahavirnagar Circle,75 x 10,Solo,Gantry,NL,23.59314,72.965271,GOV - R & B Himmatnagar,,,,,,,,,
-HICC-MO-S,Himmatnagar,Chhapariya Circle,Chhapariya Circle,Mahavirnagar Circle to Motipura Circle,75 x 10,Solo,Gantry,NL,23.59314,72.965271,GOV - R & B Himmatnagar,,,,,,,,,
-HIMV-MV-S,Himmatnagar,Mahavirnagar Circle,"Purnima Dairy, Nr. Mahavirnagar Circle",Chhapariya Circle to Mahavirnagar Circle,45 x 10,Solo,Gantry,NL,23.5958365,72.9688414,GOV - R & B Himmatnagar,,,,,,,,,
-HIMV-CP-S,Himmatnagar,Mahavirnagar Circle,"Purnima Dairy, Nr. Mahavirnagar Circle",Mahavirnagar Circle to Chhapariya Circle,45 x 10,Solo,Gantry,NL,23.5958365,72.9688414,GOV - R & B Himmatnagar,,,,,,,,,
-HIMH-HI-S,Himmatnagar,Mehtapura Circle,"Mehtapura Circle, Hathmati Bridge",Idar to Himmatnagar,75 x 10,Solo,Gantry,NL,23.609224,72.96396,GOV - R & B Himmatnagar,,,,,,,,,
-PABD-BS-S,Patan,Bagwada Darwaja,Bagwada Darwaja,Railway Station to Bus Stand & Market,60 x 10,Solo,Gantry,NL,23.852147,72.125305,GOV - Patan Nagarpalika,,,,,,,,,
-PABD-RS-S,Patan,Bagwada Darwaja,Nr. City Point Market,Market to Railway Station,64 x 10,Solo,Gantry,NL,23.852508,72.126564,GOV - Patan Nagarpalika,,,,,,,,,
-PABS-BS-S,Patan,Bus Stand,Nr. Jayveernagar Three Road,Towards Bus Stand,40 x 10,Solo,Gantry,NL,23.852508,72.12426436,GOV - Patan Nagarpalika,,,,,,,,,
-PAAS-SC-S,Patan,Anand Sarovar,Nr. Anand Sarovar ,Anand Sarovar to Shubhash Chowk,64 x 10,Solo,Gantry,NL,23.85581013,72.1271676,GOV - Patan Nagarpalika,,,,,,,,,
-MEAH-ME-U,Mehsana,Ahmedabad Mehsana Highway,"Opp. Nirma Factory, Nr. Bhagyoday Hotel",Ahmedabad to Mehsana,40 x 20,Upper,Hoarding,NL,23.4440542,72.3931908,Private,,,,,,,,,
-MEAH-ME-D,Mehsana,Ahmedabad Mehsana Highway,"Opp. Nirma Factory, Nr. Bhagyoday Hotel",Ahmedabad to Mehsana,40 x 20,Lower,Hoarding,NL,23.4440542,72.3931908,Private,,,,,,,,,
-MEAH-AH-U,Mehsana,Ahmedabad Mehsana Highway,Nr. Nirma Factory,Mehsana to Ahmedabad,40 x 20,Upper,Hoarding,NL,23.436237,72.394231,Private,,,,,,,,,
-MEAH-AH-D,Mehsana,Ahmedabad Mehsana Highway,Nr. Nirma Factory,Mehsana to Ahmedabad,40 x 20,Lower,Hoarding,NL,23.436237,72.394231,Private,,,,,,,,,
-MESW-SW-L,Mehsana,Shanku's Water Park,Opp. Water Park / Divine International School / SMC Medicity Hospital,Opp Shankus Water Park,20 x 20,LHS,Hoarding,NL,23.473661,72.393336,Private,,,,,,,,,
-MESW-SW-R,Mehsana,Shanku's Water Park,Opp. Water Park / Divine International School / SMC Medicity Hospital,Opp Shankus Water Park,20 x 20,RHS,Hoarding,NL,23.473661,72.393336,Private,,,,,,,,,
-MESA-SA-U,Mehsana,Saffrony Collage,Opp. Saffrony Collage / Tapovan International School,Opp Saffrony Collage,20 x 10,Upper,Hoarding,NL,23.484428,72.395673,Private,,,,,,,,,
-MESA-SA-D,Mehsana,Saffrony Collage,Opp. Saffrony Collage / Tapovan International School,Opp Saffrony Collage,20 x 10,Lower,Hoarding,NL,23.484428,72.395673,Private,,,,,,,,,
-MEMT-ME-U,Mehsana,Mevad Toll Plaza,Tollplaza Mehsana,Ahmedabad to Mehsana,30 x 15,Upper,Hoarding,NL,23.5279589,72.3875136,Private,,,,,,,,,
-MEMT-ME-D,Mehsana,Mevad Toll Plaza,Tollplaza Mehsana,Ahmedabad to Mehsana,30 x 15,Lower,Hoarding,NL,23.5279589,72.3875136,Private,,,,,,,,,
-MESH-AH-LU,Mehsana,Shivala Circle,Shivala Circle,Mehsana to Ahmedabad,20 x 10,LHS Upper,Hoarding,NL,23.5439075,72.3807785,GOV - MMC,,,,,,,,,
-MESH-AH-LD,Mehsana,Shivala Circle,Shivala Circle,Mehsana to Ahmedabad,20 x 10,LHS Lower,Hoarding,NL,23.5439075,72.3807785,GOV - MMC,,,,,,,,,
-MESH-AH-S,Mehsana,Shivala Circle,Shivala Circle,Mehsana to Ahmedabad,20 x 15,Solo,Hoarding,NL,23.5449535,72.3803614,GOV - MMC,,,,,,,,,
-MESH-BP-S,Mehsana,Shivala Circle,Shivala Circle,Mehsana Bypass to ,20 x 15,Solo,Hoarding,NL,23.5444297,72.3805968,GOV - MMC,,,,,,,,,
-MESH-ME-U,Mehsana,Shivala Circle,Shivala Circle,Ahmedabad to Mehsana,20 x 10,Upper,Hoarding,NL,23.5448911,72.3798411,GOV - MMC,,,,,,,,,
-MESH-ME-D,Mehsana,Shivala Circle,Shivala Circle,Ahmedabad to Mehsana,20 x 10,Lower,Hoarding,NL,23.5448911,72.3798411,GOV - MMC,,,,,,,,,
-MESH-ME-S,Mehsana,Shivala Circle,Shivala Circle,Ahmedabad to Mehsana,20 x 10,Solo,Hoarding,NL,23.5448911,72.3798411,GOV - MMC,,,,,,,,,
-MESH-ME-SA,Mehsana,Shivala Circle,"Shivala Circle, Mehsana Entrance, Nr. KIA Showroom",Ahmedabad to Mehsana,30 x 20,Solo,Hoarding,NL,23.5497569,72.3779468,Private,,,,,,,,,
-MEOC-AH-U,Mehsana,ONGC Circle,At ONGC (Palavasana) Circle,Mehsana to Ahmedabad & Himmatnagar,20 x 10,Upper,Hoarding,NL,23.5673833,72.3714656,GOV - MMC,,,,,,,,,
-MEOC-AH-D,Mehsana,ONGC Circle,At ONGC (Palavasana) Circle,Mehsana to Ahmedabad & Himmatnagar,20 x 10,Lower,Hoarding,NL,23.5673833,72.3714656,GOV - MMC,,,,,,,,,
-MEOC-AH-S,Mehsana,ONGC Circle,At ONGC (Palavasana) Circle,Mehsana to Ahmedabad,20 x 15,Solo,Hoarding,NL,23.5671125,72.3715246,GOV - MMC,,,,,,,,,
-MEOC-ME-1,Mehsana,ONGC Circle,At ONGC (Palavasana) Circle,Ahmedabad to Mehsana,20 x 10,First,Hoarding,NL,23.5678436,72.3707501,GOV - MMC,,,,,,,,,
-MEOC-ME-2,Mehsana,ONGC Circle,At ONGC (Palavasana) Circle,Ahmedabad to Mehsana & Bechraji,20 x 10,Second,Hoarding,NL,23.5698881,72.3699025,GOV - MMC,,,,,,,,,
-MEKN-ME-S,Mehsana,Khari Nadi,"Opp. Janpath, Bechraji Chowkadi",Ahmedabad to Mehsana & Bechraji,20 x 10,Solo,Hoarding,NL,23.5706761,72.3695877,GOV - MMC,,,,,,,,,
-MEKN-ME-SA,Mehsana,Khari Nadi,Nr. RTO,Ahmedabad to Mehsana,20 x 10,Solo,Hoarding,NL,23.5711533,72.3693879,GOV - MMC,,,,,,,,,
-MEKN-ME-U1,Mehsana,Khari Nadi,"RTO, Mehsana Entrance, Nr. Khari Nadi, First",Ahmedabad to Mehsana,20 x 10,Upper,Hoarding,NL,23.5735164,72.3685255,GOV - MMC,,,,,,,,,
-MEKN-ME-D1,Mehsana,Khari Nadi,"RTO, Mehsana Entrance, Nr. Khari Nadi, First",Ahmedabad to Mehsana,20 x 10,Lower,Hoarding,NL,23.5735164,72.3685255,GOV - MMC,,,,,,,,,
-MEKN-ME-U2,Mehsana,Khari Nadi,"RTO, Mehsana Entrance, Nr. Khari Nadi, Second",Ahmedabad to Mehsana,20 x 10,Upper,Hoarding,NL,23.5744488,72.3682228,GOV - MMC,,,,,,,,,
-MEKN-ME-D2,Mehsana,Khari Nadi,"RTO, Mehsana Entrance, Nr. Khari Nadi, Second",Ahmedabad to Mehsana,20 x 10,Lower,Hoarding,NL,23.5744488,72.3682228,GOV - MMC,,,,,,,,,
-MEKN-AH-SR,Mehsana,Khari Nadi,"Opp. RTO, Nr. Palavasana (ONGC) Circle",Mehsana to Ahmedabad,20 x 10,Solo,Hoarding,NL,23.5741581,72.3687207,GOV - MMC,,,,,,,,,
-MEKN-AH-ST,Mehsana,Khari Nadi,Nr. Tata Cargo & Mahindra Showroom,Mehsana to Ahmedabad,30 x 30,Solo,Hoarding,NL,23.5724894,72.3693714,LOF,,,,,,,,,
-MEKN-ME-S,Mehsana,Khari Nadi,"Nr. Wide Angel Cinema, Mehsana Entrance",Ahmedabad to Mehsana,60 x 40,Solo,Hoarding,NL,23.5778499,72.3666225,Private,,,,,,,,,
-MEKN-ME-L,Mehsana,Khari Nadi,"City Entry, Nr. Himalaya Royal, Opp. Wide Angel Cinema",Ahmedabad to Mehsana,30 x 30,LHS,Hoarding,NL,23.5783157,72.3665484,Private,,,,,,,,,
-MEKN-ME-R,Mehsana,Khari Nadi,"City Entry, Nr. Himalaya Royal, Opp. Wide Angel Cinema",Ahmedabad to Mehsana,30 x 30,RHS,Hoarding,NL,23.5783157,72.3665484,Private,,,,,,,,,
-MENG-ME-L,Mehsana,Nagalpur,"Nr. Wide Angel Cinema, Nr. Nagalpur Cross Road",Ahmedabad to Mehsana,30 x 30,LHS,Hoarding,NL,23.5808468,72.3689745,Private,,,,,,,,,
-MENG-ME-R,Mehsana,Nagalpur,"Nr. Wide Angel Cinema, Nr. Nagalpur Cross Road",Ahmedabad to Mehsana,30 x 30,RHS,Hoarding,NL,23.5808468,72.3689745,Private,,,,,,,,,
-MENG-AH-L,Mehsana,Nagalpur,"Nr. Wide Angel Cinema, Nr. Nagalpur Cross Road",Mehsana to Ahmedabad,30 x 30,LHS,Hoarding,NL,23.5808468,72.3689745,Private,,,,,,,,,
-MENG-AH-R,Mehsana,Nagalpur,"Nr. Wide Angel Cinema, Nr. Nagalpur Cross Road",Mehsana to Ahmedabad,30 x 30,RHS,Hoarding,NL,23.5808468,72.3689745,Private,,,,,,,,,
-MENG-MC-L,Mehsana,Nagalpur,Nr. Nagalpur College,ONGC Circle to Modhera Circle,20 x 10,LHS,Hoarding,NL,23.5855456,72.3738356,GOV - MMC,,,,,,,,,
-MENG-MC-M,Mehsana,Nagalpur,Nr. Nagalpur College,ONGC Circle to Modhera Circle,20 x 10,Middle,Hoarding,NL,23.5855456,72.3738356,GOV - MMC,,,,,,,,,
-MENG-MC-R,Mehsana,Nagalpur,Nr. Nagalpur College,ONGC Circle to Modhera Circle,20 x 10,RHS,Hoarding,NL,23.5855456,72.3738356,GOV - MMC,,,,,,,,,
-MENG-MC-S,Mehsana,Nagalpur,"Nr. Nagalpur College, Next to Pay and Use Toilet",ONGC Circle to Modhera Circle,20 x 10,Solo,Hoarding,NL,23.5856439,72.3740076,GOV - MMC,,,,,,,,,
-MENG-CE-L,Mehsana,Nagalpur,Nagalpur Collage,Collage Entry,20 x 10,LHS,Hoarding,NL,23.5858999,72.3742457,GOV - MMC,,,,,,,,,
-MENG-CE-M,Mehsana,Nagalpur,Nagalpur Collage,Collage Entry,20 x 10,Middle,Hoarding,NL,23.5858999,72.3742457,GOV - MMC,,,,,,,,,
-MENG-CE-R,Mehsana,Nagalpur,Nagalpur Collage,Collage Entry,20 x 10,RHS,Hoarding,NL,23.5858999,72.3742457,GOV - MMC,,,,,,,,,
-MENG-AH-S,Mehsana,Nagalpur,"Nr. Gaytri Temple, Highway",Palanpur to Ahmedabad ,15 x 31,Solo,Hoarding,NL,23.5889987,72.3777728,Private,,,,,,,,,
-MENG-NC-S,Mehsana,Nagalpur,Opp. Gaytri Temple,Dharam Cinema Road to Nagalpur College,20 x 10,Solo,Hoarding,NL,23.5891907,72.3779736,Private,,,,,,,,,
-MEMC-DG-S,Mehsana,Modhera Circle,Modhera Circle,Modhera Circle to Dediyasan GIDC,20 x 10,Solo,Hoarding,NL,23.5941568,72.3781956,GOV - MMC,,,,,,,,,
-MEMC-PA-SC,Mehsana,Modhera Circle,Modhera Circle,Ahmedabad to Palanpur,20 x 20,Solo,Hoarding,NL,23.5937368,72.3784142,Private,,,,,,,,,
-MEMC-CP-S,Mehsana,Modhera Circle,Modhera Circle,City to Ahmedabad & Palanpur & Modhera,61 x 20,Solo,Hoarding,NL,23.5937368,72.3784142,Private,,,,,,,,,
-MEMC-BS-S,Mehsana,Modhera Circle,Opp. Bus Terminal,Opp Bus Stand,59 x 41,Solo,Hoarding,NL,23.5936594,72.3782827,Private,,,,,,,,,
-MEMC-AH-S,Mehsana,Modhera Circle,"Opp. Rajkamal Petrol Pump,",Palanpur to Ahmedabad ,35 x 23,Solo,Hoarding,NL,23.595871,72.3795947,Private,,,,,,,,,
-MEMC-PA-SR,Mehsana,Modhera Circle,"Opp. Rajkamal Petrol Pump,",Ahmedabad to Palanpur,50 x 30,Solo,Hoarding,NL,23.5961773,72.3796859,Private,,,,,,,,,
-MEMR-MC-S,Mehsana,Modhera Road,"At Poojan Complex, Nr. Lucky Park",Dediyasan GIDC to Modhera circle,30 x 19,Solo,Hoarding,NL,23.5943569,72.3761638,Private,,,,,,,,,
-MEMR-MC-L,Mehsana,Modhera Road,Nr. Avsar Party plot,Dediyasan GIDC to Modhera circle,20 x 30,LHS,Hoarding,NL,23.5942558,72.3618019,Private,,,,,,,,,
-MEMR-MC-R,Mehsana,Modhera Road,Nr. Avsar Party plot,Dediyasan GIDC to Modhera circle,20 x 30,RHS,Hoarding,NL,23.5942558,72.3618019,Private,,,,,,,,,
-MEMR-DG-U1,Mehsana,Modhera Road,Nr. Avsar Party plot First,Modhera Circle to Dediyasan GIDC,20 x 10,Upper,Hoarding,NL,23.5942294,72.3611022,Private,,,,,,,,,
-MEMR-DG-M1,Mehsana,Modhera Road,Nr. Avsar Party plot First,Modhera Circle to Dediyasan GIDC,20 x 10,Middle,Hoarding,NL,23.5942294,72.3611022,Private,,,,,,,,,
-MEMR-DG-D1,Mehsana,Modhera Road,Nr. Avsar Party plot First,Modhera Circle to Dediyasan GIDC,20 x 10,Lower,Hoarding,NL,23.5942294,72.3611022,Private,,,,,,,,,
-MEMR-DG-U2,Mehsana,Modhera Road,Nr. Avsar Party plot Second,Modhera Circle to Dediyasan GIDC,20 x 10,Upper,Hoarding,NL,23.594171,72.3606697,Private,,,,,,,,,
-MEMR-DG-M2,Mehsana,Modhera Road,Nr. Avsar Party plot Second,Modhera Circle to Dediyasan GIDC,20 x 10,Middle,Hoarding,NL,23.594171,72.3606697,Private,,,,,,,,,
-MEMR-DG-D2,Mehsana,Modhera Road,Nr. Avsar Party plot Second,Modhera Circle to Dediyasan GIDC,20 x 10,Lower,Hoarding,NL,23.594171,72.3606697,Private,,,,,,,,,
-MEMR-MC-UA,Mehsana,Modhera Road,Opp Avsar Party Plot,Dediyasan GIDC to Modhera circle,20 x 10,Upper,Hoarding,NL,23.5938302,72.3595773,Private,,,,,,,,,
-MEMR-MC-MA,Mehsana,Modhera Road,Opp Avsar Party Plot,Dediyasan GIDC to Modhera circle,20 x 10,Middle,Hoarding,NL,23.5938302,72.3595773,Private,,,,,,,,,
-MEMR-MC-DA,Mehsana,Modhera Road,Opp Avsar Party Plot,Dediyasan GIDC to Modhera circle,20 x 10,Lower,Hoarding,NL,23.5938302,72.3595773,Private,,,,,,,,,
-MEMR-DG-U,Mehsana,Modhera Road,Opp Avsar Party Plot,Modhera Circle to Dediyasan GIDC,20 x 10,Upper,Hoarding,NL,23.5938302,72.3595773,Private,,,,,,,,,
-MEMR-DG-M,Mehsana,Modhera Road,Opp Avsar Party Plot,Modhera Circle to Dediyasan GIDC,20 x 10,Middle,Hoarding,NL,23.5938302,72.3595773,Private,,,,,,,,,
-MEMR-DG-D,Mehsana,Modhera Road,Opp Avsar Party Plot,Modhera Circle to Dediyasan GIDC,20 x 10,Lower,Hoarding,NL,23.5938302,72.3595773,Private,,,,,,,,,
-MEMR-IC-S,Mehsana,Modhera Road,Dediyasan GIDC Gate No. 1,Modhera Circle to Iskon Circle,20 x 10,Solo,Hoarding,NL,23.5938551,72.356462,Private,,,,,,,,,
-MEMR-MC-U,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Iskon Circle to Modhera Circle,20 x 10,Upper,Hoarding,NL,23.5923948,72.3494054,Private,,,,,,,,,
-MEMR-MC-M,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Iskon Circle to Modhera Circle,20 x 10,Middle,Hoarding,NL,23.5923948,72.3494054,Private,,,,,,,,,
-MEMR-MC-D,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Iskon Circle to Modhera Circle,20 x 10,Lower,Hoarding,NL,23.5923948,72.3494054,Private,,,,,,,,,
-MEMR-IC-U,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Modhera Circle to Iskon Circle,20 x 10,Upper,Hoarding,NL,23.5923948,72.3494054,Private,,,,,,,,,
-MEMR-IC-M,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Modhera Circle to Iskon Circle,20 x 10,Middle,Hoarding,NL,23.5923948,72.3494054,Private,,,,,,,,,
-MEMR-IC-D,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Modhera Circle to Iskon Circle,20 x 10,Lower,Hoarding,NL,23.5923948,72.3494054,Private,,,,,,,,,
-MEMR-MC-DC,Mehsana,Modhera Road,At Cambridge Health Care,Dediyasan GIDC to Modhera circle,20 x 10,Lower,Hoarding,NL,23.5940505,72.3714599,Private,,,,,,,,,
-MEMR-MC-UC,Mehsana,Modhera Road,At Cambridge Health Care,Dediyasan GIDC to Modhera circle,20 x 20,Upper,Hoarding,NL,23.5940505,72.3714599,Private,,,,,,,,,
-MEMR-ME-LU1,Mehsana,Modhera Road,"Iskon Circle, First Board",Modhera to Mehsana ,20 x 10,LHS Upper,Hoarding,NL,23.5963063,72.32977,Private,,,,,,,,,
-MEMR-ME-LD1,Mehsana,Modhera Road,"Iskon Circle, First Board",Modhera to Mehsana ,20 x 10,LHS Lower,Hoarding,NL,23.5963063,72.32977,Private,,,,,,,,,
-MEMR-ME-RU,Mehsana,Modhera Road,Iskon Circle,Modhera to Mehsana ,20 x 10,RHS Upper,Hoarding,NL,23.5959545,72.32977,Private,,,,,,,,,
-MEMR-ME-RD,Mehsana,Modhera Road,Iskon Circle,Modhera to Mehsana ,20 x 10,RHS Lower,Hoarding,NL,23.5959545,72.32977,Private,,,,,,,,,
-MEMR-ME-LU,Mehsana,Modhera Road,Iskon Circle,Modhera to Mehsana ,20 x 10,LHS Upper,Hoarding,NL,23.5959545,72.32977,Private,,,,,,,,,
-MEMR-ME-LD,Mehsana,Modhera Road,Iskon Circle,Modhera to Mehsana ,20 x 10,LHS Lower,Hoarding,NL,23.5959545,72.32977,Private,,,,,,,,,
-MESG-MC-U,Mehsana,Shilpa Garage,Nr. Mehsana Urban Bank HO,Radhanpur Circle to Modhera Circle,30 x 15,Upper,Hoarding,NL,23.5989935,72.3803517,Private,,,,,,,,,
-MESG-MC-D,Mehsana,Shilpa Garage,Nr. Mehsana Urban Bank HO,Radhanpur Circle to Modhera Circle,30 x 15,Lower,Hoarding,NL,23.5989935,72.3803517,Private,,,,,,,,,
-MESG-RC-U,Mehsana,Shilpa Garage,Nr. Mehsana Urban Bank HO,Modhera Circle to Radhanpur Circle,30 x 15,Upper,Hoarding,NL,23.5989935,72.3803517,Private,,,,,,,,,
-MESG-RC-D,Mehsana,Shilpa Garage,Nr. Mehsana Urban Bank HO,Modhera Circle to Radhanpur Circle,30 x 15,Lower,Hoarding,NL,23.5989935,72.3803517,Private,,,,,,,,,
-MEMC-MC-S,Mehsana,Modhera Circle,Opp. Rajkamal Petrol Pump,Radhanpur Circle to Modhera Circle & Malgodown Road,20 x 20,Solo,Hoarding,NL,23.596565,72.3797489,Private,,,,,,,,,
-MERC-RR-S,Mehsana,Radhanpur Circle,Opp. Police Chowki,Radhanpur Circle to Radhanpur road,20 x 10,Solo,Unipoll,NL,23.6058142,72.3811296,GOV - R & B Mehsana,,,,,,,,,
-MERC-ME-U,Mehsana,Radhanpur Circle,"Opp. Dudh Sagar Dairy,",Palanpur to Mehsana,30 x 15,Upper,Hoarding,NL,23.6090606,72.3824254,Private,,,,,,,,,
-MERC-ME-D,Mehsana,Radhanpur Circle,"Opp. Dudh Sagar Dairy,",Palanpur to Mehsana,30 x 15,Lower,Hoarding,NL,23.6090606,72.3824254,Private,,,,,,,,,
-MERR-RC-U,Mehsana,Radhanpur Road,"Opp. DMart Mall, City Entry,",Panchot to Radhanpur Circle,60 x 20,Upper,Hoarding,NL,23.6202163,72.3435307,Private,,,,,,,,,
-MERR-RC-D,Mehsana,Radhanpur Road,"Opp. DMart Mall, City Entry,",Panchot to Radhanpur Circle,60 x 20,Lower,Hoarding,NL,23.6202163,72.3435307,Private,,,,,,,,,
-MERR-AR-S,Mehsana,Radhanpur Road,DMart Circle ,Bypass & Panchot to Ahmedabad & Radhanpur Circle,20 x 10,Solo,Hoarding,NL,23.6190533,72.34635,GOV - MMC,,,,,,,,,
-MERR-EX-S,Mehsana,Radhanpur Road,Dmart Mall,Exit from Dmart,20 x 15,Solo,Hoarding,NL,23.6201321,72.3449117,Private,,,,,,,,,
-MERR-DC-U1,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Radhanpur Circle to Dmart Circle,30 x 20,Upper,Hoarding,NL,23.618112,72.348466,Private,,,,,,,,,
-MERR-DC-D1,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Radhanpur Circle to Dmart Circle,30 x 20,Lower,Hoarding,NL,23.618112,72.348466,Private,,,,,,,,,
-MERR-RC-S1,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Dmart Circle to Radhanpur Circle,30 x 15,Solo,Hoarding,NL,23.618112,72.348466,Private,,,,,,,,,
-MERR-RC-U2,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Dmart Circle to Radhanpur Circle,30 x 20,Upper,Hoarding,NL,23.6178841,72.3490356,Private,,,,,,,,,
-MERR-RC-D2,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Dmart Circle to Radhanpur Circle,30 x 20,Lower,Hoarding,NL,23.6178841,72.3490356,Private,,,,,,,,,
-MERR-DC-S2,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Radhanpur Circle to Dmart Circle,15 x 30,Solo,Hoarding,NL,23.6178841,72.3490356,Private,,,,,,,,,
-MERR-DC-S3,Mehsana,Radhanpur Road,"Nr. Aelinor Hotel, Opp. Tanishq Showroom",Radhanpur Circle to Dmart Circle,40 x 30,Solo,Hoarding,NL,23.6176294,72.3494725,Private,,,,,,,,,
-MERR-DC-L,Mehsana,Radhanpur Road,"Nr. Domino's Pizza, Nr, 52 Street",Radhanpur Circle to Dmart Circle,30 x 30,LHS,Hoarding,NL,23.6162047,72.3517973,Private,,,,,,,,,
-MERR-DC-R,Mehsana,Radhanpur Road,"Nr. Domino's Pizza, Nr, 52 Street",Radhanpur Circle to Dmart Circle,30 x 30,RHS,Hoarding,NL,23.6162047,72.3517973,Private,,,,,,,,,
-MERR-RC-S2,Mehsana,Radhanpur road,Nr. Kashi Vishwanath Temple,Dmart Circle to Radhanpur Circle,40 x 20,Solo,Hoarding,NL,23.6133434,72.3580106,Private,,,,,,,,,
-MERR-DC-S4,Mehsana,Radhanpur road,Nr. Kashi Vishwanath Temple,Radhanpur Circle to Dmart Circle,20 x 20,Solo,Hoarding,NL,23.6133434,72.3580106,Private,,,,,,,,,
-MERR-DC-U2,Mehsana,Radhanpur road,Opp. Kashi Vishwanath Temple,Radhanpur Circle to Dmart Circle,15 x 15,Upper,Hoarding,NL,23.613227,72.3573763,Private,,,,,,,,,
-MERR-DC-D2,Mehsana,Radhanpur road,Opp. Kashi Vishwanath Temple,Radhanpur Circle to Dmart Circle,15 x 15,Lower,Hoarding,NL,23.613227,72.3573763,Private,,,,,,,,,
-MERR-RC-U3,Mehsana,Radhanpur road,Opp. Kashi Vishwanath Temple,Dmart Circle to Radhanpur Circle,15 x 15,Upper,Hoarding,NL,23.613227,72.3573763,Private,,,,,,,,,
-MERR-RC-D3,Mehsana,Radhanpur road,Opp. Kashi Vishwanath Temple,Dmart Circle to Radhanpur Circle,15 x 15,Lower,Hoarding,NL,23.613227,72.3573763,Private,,,,,,,,,
-MERR-RC-U4,Mehsana,Radhanpur road,Nr. Arush Icon Flat,Dmart Circle to Radhanpur Circle,30 x 15,Upper,Hoarding,NL,23.611576,72.3614589,Private,,,,,,,,,
-MERR-RC-D4,Mehsana,Radhanpur road,Nr. Arush Icon Flat,Dmart Circle to Radhanpur Circle,30 x 15,Lower,Hoarding,NL,23.611576,72.3614589,Private,,,,,,,,,
-MERR-DC-U3,Mehsana,Radhanpur road,Nr. Arush Icon Flat,Radhanpur Circle to Dmart Circle,30 x 20,Upper,Hoarding,NL,23.611576,72.3614589,Private,,,,,,,,,
-MERR-DC-D3,Mehsana,Radhanpur road,Nr. Arush Icon Flat,Radhanpur Circle to Dmart Circle,30 x 20,Lower,Hoarding,NL,23.611576,72.3614589,Private,,,,,,,,,
-MERR-DC-S5,Mehsana,Radhanpur road,Nr. Kalapinagar Society,Radhanpur Circle to Dmart Circle,25 x 25,Solo,Hoarding,NL,23.6112691,72.3640402,Private,,,,,,,,,
-MERR-RC-S3,Mehsana,Radhanpur road,Nr. Kalapinagar Society,Dmart Circle to Radhanpur Circle,25 x 25,Solo,Hoarding,NL,23.6112691,72.3640402,Private,,,,,,,,,
-MERR-DC-S6,Mehsana,Radhanpur road,Nr. Bata Showroom,Radhanpur Circle to Dmart Circle,25 x 20,Solo,Hoarding,NL,23.6103051,72.3658162,Private,,,,,,,,,
-MERR-RC-S4,Mehsana,Radhanpur road,Nr. Bata Showroom,Dmart Circle to Radhanpur Circle,10 x 20,Solo,Hoarding,NL,23.6103051,72.3658162,Private,,,,,,,,,
-MERR-DC-S7,Mehsana,Radhanpur road,Nr. Kalapinagar Society,Radhanpur Circle to Dmart Circle,30 x 15,Solo,Hoarding,NL,23.6107672,72.3654225,Private,,,,,,,,,
-MERR-RC-S5,Mehsana,Radhanpur road,Nr. Kalapinagar Society,Dmart Circle to Radhanpur Circle,30 x 15,Solo,Hoarding,NL,23.6107672,72.3654225,Private,,,,,,,,,
-MERR-DC-U4,Mehsana,Radhanpur road,Nr. Rajdhani Township,Radhanpur Circle to Dmart Circle,40 x 20,Upper,Hoarding,NL,23.6104338,72.3667288,Private,,,,,,,,,
-MERR-DC-D4,Mehsana,Radhanpur road,Nr. Rajdhani Township,Radhanpur Circle to Dmart Circle,40 x 15,Lower,Hoarding,NL,23.6104338,72.3667288,Private,,,,,,,,,
-MERR-RC-U5,Mehsana,Radhanpur road,"Nr. Kamalpath, Opp. Rajdhani Township",Dmart Circle to Radhanpur Circle,25 x 15,Upper,Hoarding,NL,23.6098222,72.3673098,Private,,,,,,,,,
-MERR-RC-D5,Mehsana,Radhanpur road,"Nr. Kamalpath, Opp. Rajdhani Township",Dmart Circle to Radhanpur Circle,25 x 15,Lower,Hoarding,NL,23.6098222,72.3673098,Private,,,,,,,,,
-MERR-DC-U5,Mehsana,Radhanpur road,"Nr. Kamalpath, Opp. Rajdhani Township",Radhanpur Circle to Dmart Circle,30 x 15,Upper,Hoarding,NL,23.609718,72.3676632,Private,,,,,,,,,
-MERR-DC-D5,Mehsana,Radhanpur road,"Nr. Kamalpath, Opp. Rajdhani Township",Radhanpur Circle to Dmart Circle,30 x 15,Lower,Hoarding,NL,23.609718,72.3676632,Private,,,,,,,,,
-MERR-RC-S8,Mehsana,Radhanpur road,Nr. Kamalpath,Dmart Circle to Radhanpur Circle,20 x 10,Solo,Hoarding,NL,23.6099918,72.3679817,GOV - MMC,,,,,,,,,
-MERR-DC-S8,Mehsana,Radhanpur road,Nr. Kamalpath,Radhanpur Circle to Dmart Circle,20 x 10,Solo,Hoarding,NL,23.6099918,72.3679817,GOV - MMC,,,,,,,,,
-MERR-RC-S9,Mehsana,Radhanpur road,Nr. Kamalpath,Dmart Circle to Radhanpur Circle,20 x 10,Solo,Hoarding,NL,23.6098885,72.3683358,GOV - MMC,,,,,,,,,
-MERR-DC-S9,Mehsana,Radhanpur road,Nr. Kamalpath,Radhanpur Circle to Dmart Circle,20 x 10,Solo,Hoarding,NL,23.6098885,72.3683358,GOV - MMC,,,,,,,,,
-MEFC-PM-U,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Palanpur to Mehsana & Bypass,20 x 10,Upper,Hoarding,NL,23.6423426,72.3859907,GOV - MMC,,,,,,,,,
-MEFC-PM-M,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Palanpur to Mehsana & Bypass,20 x 10,Middle,Hoarding,NL,23.6423426,72.3859907,GOV - MMC,,,,,,,,,
-MEFC-PM-D,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Palanpur to Mehsana & Bypass,20 x 10,Lower,Hoarding,NL,23.6423426,72.3859907,GOV - MMC,,,,,,,,,
-MEFC-BM-S,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Bypass to Mehsana & Palanpur,20 x 10,Solo,Hoarding,NL,23.6429489,72.385977,GOV - MMC,,,,,,,,,
-MEFC-PM-S1,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Palanpur to Mehsana & Bypass,20 x 21,Solo,Hoarding,NL,23.643175,72.3859257,GOV - MMC,,,,,,,,,
-MEFC-PM-S2,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Palanpur to Mehsana & Bypass,39 x 21,Solo,Hoarding,NL,23.6435546,72.3858744,GOV - MMC,,,,,,,,,
-MEFC-BP-S,Mehsana,Fatehpura Circle,"At Fatehpura Bypass Circle, Nr. Malgudi Hotel",Bypass & Mehsana to Palanpur,20 x 21,Solo,Hoarding,NL,23.643686,72.3854533,GOV - MMC,,,,,,,,,
-MEFC-PM-S3,Mehsana,Fatehpura Circle,"At Fatehpura Bypass Circle, Nr. Malgudi Hotel",Palanpur to Mehsana,20 x 21,Solo,Hoarding,NL,23.643686,72.3854533,GOV - MMC,,,,,,,,,
-MEFC-PM-LU,Mehsana,Fatehpura Circle,"Nr. Fatepura Bypass Circle, Nr. Ashok Layland Showroom",Palanpur to Mehsana,40 x 20,LHS Upper,Hoarding,NL,23.6284069,72.3888057,Private,,,,,,,,,
-MEFC-PM-LD,Mehsana,Fatehpura Circle,"Nr. Fatepura Bypass Circle, Nr. Ashok Layland Showroom",Palanpur to Mehsana,40 x 20,LHS Lower,Hoarding,NL,23.6284069,72.3888057,Private,,,,,,,,,
-MEFC-PM-RU,Mehsana,Fatehpura Circle,"Nr. Fatepura Bypass Circle, Nr. Ashok Layland Showroom",Palanpur to Mehsana,40 x 20,RHS Upper,Hoarding,NL,23.6284069,72.3888057,Private,,,,,,,,,
-MEFC-PM-RD,Mehsana,Fatehpura Circle,"Nr. Fatepura Bypass Circle, Nr. Ashok Layland Showroom",Palanpur to Mehsana,40 x 20,RHS Lower,Hoarding,NL,23.6284069,72.3888057,Private,,,,,,,,,
-MERB-PM-U,Mehsana,Ramosana Bridge,Ramosana Bridge,Palanpur to Mehsana,30 x 15,Upper,Hoarding,NL,23.618167,72.3863341,Private,,,,,,,,,
-MERB-PM-D,Mehsana,Ramosana Bridge,Ramosana Bridge,Palanpur to Mehsana,30 x 15,Lower,Hoarding,NL,23.618167,72.3863341,Private,,,,,,,,,
-MERB-PA-U,Mehsana,Ramosana Bridge,Ramosana Bridge,Mehsana to Palanpur,30 x 15,Upper,Hoarding,NL,23.618167,72.3863341,Private,,,,,,,,,
-MERB-PA-D,Mehsana,Ramosana Bridge,Ramosana Bridge,Mehsana to Palanpur,30 x 15,Lower,Hoarding,NL,23.618167,72.3863341,Private,,,,,,,,,
-MERB-FB-S,Mehsana,Ramosana Bridge,Ramosana Circle,Rahdanpur Circle to Fatepura Bypass & Manav Ashram Circle,20 x 10,Solo,Hoarding,NL,23.6173966,72.3852105,GOV - MMC,,,,,,,,,
-MEJH-BN-U,Mehsana,Joyos Hub town,"Opp. Joyos Hub Town, Nr. BK Cenema ",Modhera Circle to Bhamariya Nala,20 x 10,Upper,Hoarding,NL,23.5947578,72.3834131,Private,,,,,,,,,
-MEJH-BN-D,Mehsana,Joyos Hub town,"Opp. Joyos Hub Town, Nr. BK Cenema ",Modhera Circle to Bhamariya Nala,20 x 10,Lower,Hoarding,NL,23.5947578,72.3834131,Private,,,,,,,,,
-MEJH-BK-L,Mehsana,Joyos Hub town,"Opp. Joyos Hub Town, Nr. BK Cenema ",Aashray Hotel to BK Road,20 x 21,LHS,Hoarding,NL,23.5947578,72.3834131,Private,,,,,,,,,
-MEJH-BK-C,Mehsana,Joyos Hub town,"Opp. Joyos Hub Town, Nr. BK Cenema ",Aashray Hotel to BK Road,20 x 21,Centre,Hoarding,NL,23.5947578,72.3834131,Private,,,,,,,,,
-MEJH-BK-R,Mehsana,Joyos Hub town,"Opp. Joyos Hub Town, Nr. BK Cenema ",Aashray Hotel to BK Road,20 x 21,RHS,Hoarding,NL,23.5947578,72.3834131,Private,,,,,,,,,
-MEBN-MC-U,Mehsana,Bhamariya Nala,"Opp. Apna Bazar, Nr. Bhamariya Nala",Bhamariya Nala to Modhera circle,20 x 10,Upper,Hoarding,NL,23.5955806,72.3875575,Private,,,,,,,,,
-MEBN-MC-D,Mehsana,Bhamariya Nala,"Opp. Apna Bazar, Nr. Bhamariya Nala",Bhamariya Nala to Modhera circle,20 x 10,Lower,Hoarding,NL,23.5955806,72.3875575,Private,,,,,,,,,
-MEBN-MC-S,Mehsana,Bhamariya Nala,Nr. Bhamariya Nala,Bhamariya Nala to Modhera circle,20 x 10,Solo,Hoarding,NL,23.5960627,72.3885298,Private,,,,,,,,,
-MEMG-RP-S,Mehsana,Malgodown,At Malgodown,Bhamariya Nala to Rajkamal Petrol pump,20 x 10,Solo,Hoarding,NL,23.5971347,72.3884386,GOV - MMC,,,,,,,,,
-MEBN-MB-U1,Mehsana,Bhamariya Nala,"Nr. Bhamariya Nala, Opp APMC Gate",Bhamariya Nala to Main Bazar,20 x 10,Upper,Hoarding,NL,23.596868,72.3894079,Private,,,,,,,,,
-MEBN-MB-D1,Mehsana,Bhamariya Nala,"Nr. Bhamariya Nala, Opp APMC Gate",Bhamariya Nala to Main Bazar,20 x 10,Lower,Hoarding,NL,23.596868,72.3894079,Private,,,,,,,,,
-MEBN-MB-U2,Mehsana,Bhamariya Nala,"Opp. Dutt Temple, Krishna Dhal",Bhamariya Nala to Main Bazar,20 x 10,Upper,Hoarding,NL,23.59759,72.3898001,Private,,,,,,,,,
-MEBN-MB-D2,Mehsana,Bhamariya Nala,"Opp. Dutt Temple, Krishna Dhal",Bhamariya Nala to Main Bazar,20 x 10,Lower,Hoarding,NL,23.59759,72.3898001,Private,,,,,,,,,
-MEKD-MB-S1,Mehsana,Krushna No Dhal,"Krushna No Dhal, Nr. Krishna Shopping Centre",Bhamariya Nala to Main Bazar,15 x 20,Solo,Hoarding,NL,23.5987317,72.3903855,Private,,,,,,,,,
-MEKD-MB-LU1,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,LHS Upper,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,,,,,,,,,
-MEKD-MB-LD1,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,LHS Lower,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,,,,,,,,,
-MEKD-MB-LU2,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,LHS Second Upper,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,,,,,,,,,
-MEKD-MB-LD2,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,LHS SEcond Lower,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,,,,,,,,,
-MEKD-MB-RU1,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,RHS Upper,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,,,,,,,,,
-MEKD-MB-RD1,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,RHS Lower,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,,,,,,,,,
-MEKD-MB-RU2,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,RHS Second Upper,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,,,,,,,,,
-MEKD-MB-RD2,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,RHS Second Lower,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,,,,,,,,,
-MEKD-MB-R2,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,20 x 10,RHS,Hoarding,NL,23.5992998,72.3906675,GOV - MMC,,,,,,,,,
-MEKD-BN-L,Mehsana,Krushna No Dhal,Krushna No Dhal,Main Bazar to Bhamariya Nala,20 x 10,LHS,Hoarding,NL,23.5992076,72.3907999,GOV - MMC,,,,,,,,,
-MEKD-BN-R,Mehsana,Krushna No Dhal,Krushna No Dhal,Main Bazar to Bhamariya Nala,20 x 10,RHS,Hoarding,NL,23.5992076,72.3907999,GOV - MMC,,,,,,,,,
-MEKD-MB-R3,Mehsana,Krushna No Dhal,Nr. Krishna Shopping Centre,Bhamariya Nala to Main Bazar,15 x 10,RHS,Hoarding,NL,23.5993763,72.3902766,GOV - Railway,,,,,,,,,
-MEKD-MB-L3,Mehsana,Krushna No Dhal,Nr. Krishna Shopping Centre,Bhamariya Nala to Main Bazar,15 x 10,LHS,Hoarding,NL,23.5993763,72.3902766,GOV - Railway,,,,,,,,,
-MEKD-BN-S2,Mehsana,Krushna No Dhal,Nr. Krishna Shopping Centre,Main Bazar to Bhamariya Nala,30 x 20,Solo,Hoarding,NL,23.5991962,72.3903359,Private,,,,,,,,,
-METC-MB-S,Mehsana,Toranwali Chowk,Opp. BJP Office,Krishna No dhal to Main Bazar,20 x 10,Solo,Hoarding,NL,23.6008903,72.3903728,GOV - MMC,,,,,,,,,
-METC-MB-RU,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,RHS Upper,Hoarding,NL,23.6020934,72.390238,GOV - Railway,,,,,,,,,
-METC-MB-RM,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,RHS Middle,Hoarding,NL,23.6020934,72.390238,GOV - Railway,,,,,,,,,
-METC-MB-RD,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,RHS Lower,Hoarding,NL,23.6020934,72.390238,GOV - Railway,,,,,,,,,
-METC-MB-LU,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,LHS Upper,Hoarding,NL,23.6020934,72.390238,GOV - Railway,,,,,,,,,
-METC-MB-LM,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,LHS Middle,Hoarding,NL,23.6020934,72.390238,GOV - Railway,,,,,,,,,
-METC-MB-LD,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,LHS Lower,Hoarding,NL,23.6020934,72.390238,GOV - Railway,,,,,,,,,
-METC-SC-R1,Mehsana,Toranwali Chowk,"Opp. Town Hall, Nr. Mangalam Coldrink",Gopinala to Samarpan Chowk,20 x 10,RHS First,Hoarding,NL,23.603813,72.3910098,GOV - MMC,,,,,,,,,
-METC-SC-R2,Mehsana,Toranwali Chowk,"Opp. Town Hall, Nr. Mangalam Coldrink",Gopinala to Samarpan Chowk,20 x 10,RHS Second,Hoarding,NL,23.603813,72.3910098,GOV - MMC,,,,,,,,,
-METC-BS-S,Mehsana,Toranwali Chowk,Opp. Sarvajanik School,Nagrik Bank to Bus Stand,20 x 10,Solo,Hoarding,NL,23.6050754,72.3919757,Private,,,,,,,,,
-MESC-SC-U,Mehsana,Samarpan Chowk,At Haidari Chowk,Biladi Baug to Samarpan Chowk & Fuvara,20 x 10,Upper,Hoarding,NL,23.6054984,72.3963072,Private,,,,,,,,,
-MESC-SC-D,Mehsana,Samarpan Chowk,At Haidari Chowk,Biladi Baug to Samarpan Chowk & Fuvara,20 x 10,Lower,Hoarding,NL,23.6054984,72.3963072,Private,,,,,,,,,
-MESC-FV-U,Mehsana,Samarpan Chowk,At Samarpan Chowk,Samarpan Chowk to Fuvara,20 x 10,Upper,Hoarding,NL,23.6057488,72.3978558,Private,,,,,,,,,
-MESC-FV-D,Mehsana,Samarpan Chowk,At Samarpan Chowk,Samarpan Chowk to Fuvara,20 x 10,Lower,Hoarding,NL,23.6057488,72.3978558,Private,,,,,,,,,
-MESC-PT-RU,Mehsana,Samarpan Chowk,Para Tower,Siddhpuri Bazar to Para Tower,20 x 10,RHS Upper,Hoarding,NL,23.6026563,72.3982555,Private,,,,,,,,,
-MESC-PT-RD,Mehsana,Samarpan Chowk,Para Tower,Siddhpuri Bazar to Para Tower,20 x 10,RHS Lower,Hoarding,NL,23.6026563,72.3982555,Private,,,,,,,,,
-MESC-PT-LU,Mehsana,Samarpan Chowk,Para Tower,Siddhpuri Bazar to Para Tower,20 x 10,LHS Upper,Hoarding,NL,23.6026563,72.3982555,Private,,,,,,,,,
-MESC-PT-LD,Mehsana,Samarpan Chowk,Para Tower,Siddhpuri Bazar to Para Tower,20 x 10,LHS Lower,Hoarding,NL,23.6026563,72.3982555,Private,,,,,,,,,
-MEBB-BB-L,Mehsana,Biladi Baug,Jhulelal Chowk,Haidri Chowk to Biladi Baug,20 x 10,LHS,Hoarding,NL,23.609444,72.396388,GOV - MMC,,,,,,,,,
-MEBB-BB-L2,Mehsana,Biladi Baug,Biladi Baug ,Manav Ashram To Biladi Bagh ,20 x 10 ,LHS Second ,Hoarding,NL,23.6112,72.3966964,GOV - MMC,,,,,,,,,
-MEBB-BB-L3,Mehsana,Biladi Baug,Biladi Baug ,Manav Ashram To Biladi Bagh ,20 x 10 ,LHS Third,Hoarding,NL,23.6112,72.3966964,GOV - MMC,,,,,,,,,
-MEBB-BB-L4,Mehsana,Biladi Baug,Biladi Baug ,Manav Ashram To Biladi Bagh ,20 x 10 ,LHS Fourth,Hoarding,NL,23.6112,72.3966964,GOV - MMC,,,,,,,,,
-MEBB-BB-U,Mehsana,Biladi Baug,"Nr. Passport Office Circle, Opp. GEB",Manav Ashram To Biladi Bagh ,20 x 10 ,Upper,Hoarding,NL,23.6114132,72.3999325,Private,,,,,,,,,
-MEBB-BB-D,Mehsana,Biladi Baug,"Nr. Passport Office Circle, Opp. GEB",Manav Ashram To Biladi Bagh ,20 x 10 ,Lower,Hoarding,NL,23.6114132,72.3999325,Private,,,,,,,,,
-MEBB-MA-U,Mehsana,Biladi Baug,"Nr. Passport Office Circle, Opp. GEB",Biladi Baug to Manav Ashram,20 x 10 ,Upper,Hoarding,NL,23.6114132,72.3999325,Private,,,,,,,,,
-MEBB-MA-D,Mehsana,Biladi Baug,"Nr. Passport Office Circle, Opp. GEB",Biladi Baug to Manav Ashram,20 x 10 ,Lower,Hoarding,NL,23.6114132,72.3999325,Private,,,,,,,,,
-MEMA-BB-U,Mehsana,Manav Ashram,"Opp. Anup Aarcade, Nr. Manav Ashram Circle",Manav Ashram To Biladi Bagh ,20 x 10,Upper,Hoarding,NL,23.6121997,72.4019237,Private,,,,,,,,,
-MEMA-MA-S1,Mehsana,Manav Ashram,"Opp. Decent Hotel, Nr. Dhanlaxmi Market",Biladi Baug to Manav Ashram,20 x 30,Solo,Hoarding,NL,23.6134291,72.4040722,Private,,,,,,,,,
-MEMA-BB-U2,Mehsana,Manav Ashram,"Opp. Decent Hotel, Nr. Dhanlaxmi Market",Manav Ashram To Biladi Bagh ,30 x 20,Upper,Hoarding,NL,23.6134291,72.4040722,Private,,,,,,,,,
-MEMA-BB-D2,Mehsana,Manav Ashram,"Opp. Decent Hotel, Nr. Dhanlaxmi Market",Manav Ashram To Biladi Bagh ,30 x 10,Lower,Hoarding,NL,23.6134291,72.4040722,Private,,,,,,,,,
-MEMA-MA-S2,Mehsana,Manav Ashram,"Opp. Astha Mall, Nr. Manav Ashram Circle",Biladi Baug to Manav Ashram,20 x 10,Solo,Hoarding,NL,23.614571,72.4066806,Private,,,,,,,,,
-MEMA-MA-S3,Mehsana,Manav Ashram,At Manav Ashram Circle,Ramosana to Manav Ashram Circle,20 x 10,Solo,Hoarding,NL,23.6152207,72.407728,GOV - MMC,,,,,,,,,
-MEMA-MA-S4,Mehsana,Manav Ashram,"Nr. Manav Ashram Circle, Ramosana Road",Ramosana to Manav Ashram Circle,20 x 10,Solo,Hoarding,NL,23.61529,72.4066,Private,,,,,,,,,
-MEMA-MA-S5,Mehsana,Manav Ashram,"Nr. Manav Ashram Circle, Ramosana Road",Ramosana to Manav Ashram Circle,20 x 10,Solo,Hoarding,NL,23.6151974,72.4059826,Private,,,,,,,,,
-MEMA-RA-S,Mehsana,Manav Ashram,"Nr. Manav Ashram Circle, Ramosana Road",Manav Ashram Circle to Ramosana,20 x 10,Solo,Hoarding,NL,23.6151974,72.4059826,Private,,,,,,,,,
-MEMA-VR-U,Mehsana,Manav Ashram,At Manav Ashram Circle,Biladi Baug to Visnagar & Ramosana & Rampura ,20 x 10,Upper,Hoarding,NL,23.6152554,72.4081957,Private,,,,,,,,,
-MEMA-VR-D,Mehsana,Manav Ashram,At Manav Ashram Circle,Biladi Baug to Visnagar & Ramosana & Rampura ,20 x 10,Lower,Hoarding,NL,23.6152554,72.4081957,Private,,,,,,,,,
-MEVR-ME-U,Mehsana,Visnagar Road,"Nr. Ratna Vihar Party Plot, Mehsana Entry",Visnagar to Mehsana,30 x 10,Upper,Hoarding,NL,23.6167241,72.4117118,Private,,,,,,,,,
-MEVR-ME-M,Mehsana,Visnagar Road,"Nr. Ratna Vihar Party Plot, Mehsana Entry",Visnagar to Mehsana,30 x 10,Middle,Hoarding,NL,23.6167241,72.4117118,Private,,,,,,,,,
-MEVR-ME-D,Mehsana,Visnagar Road,"Nr. Ratna Vihar Party Plot, Mehsana Entry",Visnagar to Mehsana,30 x 10,Lower,Hoarding,NL,23.6167241,72.4117118,Private,,,,,,,,,
-MEVR-VS-U,Mehsana,Visnagar Road,Opp. One Ten Hotel,Mehsana to Visnagar,30 x 10,Upper,Hoarding,NL,23.6180392,72.4148258,Private,,,,,,,,,
-MEVR-VS-M,Mehsana,Visnagar Road,Opp. One Ten Hotel,Mehsana to Visnagar,30 x 10,Middle,Hoarding,NL,23.6180392,72.4148258,Private,,,,,,,,,
-MEVR-VS-D,Mehsana,Visnagar Road,Opp. One Ten Hotel,Mehsana to Visnagar,30 x 10,Lower,Hoarding,NL,23.6180392,72.4148258,Private,,,,,,,,,
-MEVR-ME-U2,Mehsana,Visnagar Road,Opp. One Ten Hotel,Visnagar to Mehsana,30 x 10,Upper,Hoarding,NL,23.6180392,72.4148258,Private,,,,,,,,,
-MEVR-ME-M2,Mehsana,Visnagar Road,Opp. One Ten Hotel,Visnagar to Mehsana,30 x 10,Middle,Hoarding,NL,23.6180392,72.4148258,Private,,,,,,,,,
-MEVR-ME-D2,Mehsana,Visnagar Road,Opp. One Ten Hotel,Visnagar to Mehsana,30 x 10,Lower,Hoarding,NL,23.6180392,72.4148258,Private,,,,,,,,,
-MESB-MP-U,Mehsana,Sai Baba Temple,Nr. Sai Baba Temple,Rampura Circle to Manav Ashram & Pata Tower,20 x 10,Upper,Hoarding,NL,23.5990712,72.408589,GOV - MMC,,,,,,,,,
-MESB-MP-D,Mehsana,Sai Baba Temple,Nr. Sai Baba Temple,Rampura Circle to Manav Ashram & Pata Tower,20 x 10,Lower,Hoarding,NL,23.5990712,72.408589,GOV - MMC,,,,,,,,,
-MERP-OC-S,Mehsana,Rampura Circle,At. Rampura Circle,Vijapur to ONGC Circle & Gozariya,20 x 10,Solo,Hoarding,NL,23.564619,72.4250289,GOV - MMC,,,,,,,,,
-MEGN-FV-U,Mehsana,Gopi Nala,"Bus Stand, Raj Mahel Road",Biladi Baug to Fuvara,20 x 10,Upper,Hoarding,NL,23.6072093,72.3914007,GOV - MMC,,,,,,,,,
-MEGN-FV-D,Mehsana,Gopi Nala,"Bus Stand, Raj Mahel Road",Biladi Baug to Fuvara,20 x 10,Lower,Hoarding,NL,23.6072093,72.3914007,GOV - MMC,,,,,,,,,
-MEGN-RC-U,Mehsana,Gopi Nala,Nr. New Railway Station,Gopinala to Radhanpur Circle,20 x 10,Upper,Hoarding,NL,23.603985,72.3881311,GOV - Railway,,,,,,,,,
-MEGN-RC-D,Mehsana,Gopi Nala,Nr. New Railway Station,Gopinala to Radhanpur Circle,20 x 10,Lower,Hoarding,NL,23.603985,72.3881311,GOV - Railway,,,,,,,,,
-MEGU-EX-T,Mehsana,Ganpat University,"Opp. Ganpat Collage, Kherva",Exit from Ganpat Collage,20 x 10,Teress,Hoarding,NL,23.5307067,72.4581368,Private,,,,,,,,,
-MEGU-EX-G,Mehsana,Ganpat University,"Opp. Ganpat Collage, Kherva",Exit from Ganpat Collage,20 x 10,Ground,Hoarding,NL,23.5303953,72.4584526,Private,,,,,,,,,
-MEGU-EX-L,Mehsana,Ganpat University,"Opp. Ganpat Collage, Kherva",Exit from Ganpat Collage,20 x 10,LHS,Hoarding,NL,23.5305494,72.4584348,Private,,,,,,,,,
-MEGU-EX-R,Mehsana,Ganpat University,"Opp. Ganpat Collage, Kherva",Exit from Ganpat Collage,20 x 10,RHS,Hoarding,NL,23.5305494,72.4584348,Private,,,,,,,,,
-NAAH-ME-U,Nandasan,Ahmedabad Mehsana Highway,"Nr. Shiv Shakti Hotel, Ganeshpura",Ahmedabad to Mehsana,30 x 15,Upper,Hoarding,NL,23.4005435,72.39843348,Private,,,,,,,,,
-NAAH-ME-D,Nandasan,Ahmedabad Mehsana Highway,"Nr. Shiv Shakti Hotel, Ganeshpura",Ahmedabad to Mehsana,30 x 15,Lower,Hoarding,NL,23.4005435,72.39843348,Private,,,,,,,,,
-NAAH-AH-U,Nandasan,Ahmedabad Mehsana Highway,"Nr. Shiv Shakti Hotel, Ganeshpura",Mehsana to Ahmedabad,30 x 15,Upper,Hoarding,NL,23.4005435,72.39843348,Private,,,,,,,,,
-NAAH-AH-D,Nandasan,Ahmedabad Mehsana Highway,"Nr. Shiv Shakti Hotel, Ganeshpura",Mehsana to Ahmedabad,30 x 15,Lower,Hoarding,NL,23.4005435,72.39843348,Private,,,,,,,,,
-NANB-AH-S,Nandasan,Nandasan Bridge,Opp. Meldi mata Temple,Mehsana to Ahmedabad,30 x 40,Solo,Hoarding,NL,23.373483,72.4077847,Private,,,,,,,,,
-NANB-NA-R,Nandasan,Nandasan Bridge,Nandasan Bridge,Mehsana to Nandasan & Ahmedabad,20 x 10,RHS,Hoarding,NL,23.3794697,72.4060406,GOV - GRICL,,,,,,,,,
-NANB-AM-L,Nandasan,Nandasan Bridge,Nandasan Bridge,Nandasan to Ahmedabad & Mehsana,20 x 10,LHS,Hoarding,NL,23.3798618,72.4056627,GOV - GRICL,,,,,,,,,
-CHCB-ME-S,Chhatral,Chhatral Bridge,Chhartal GIDC,Ahmedabad to Mehsana,30 x 30,Solo,Hoarding,NL,23.2840231,72.440343,Private,,,,,,,,,
-CHCB-AH-U,Chhatral,Chhatral Bridge,Nr. Chhatral Bridge,Mehsana to Ahmedabad,20 x 10,Upper,Hoarding,NL,23.2840231,72.440343,Private,,,,,,,,,
-CHCB-AH-M,Chhatral,Chhatral Bridge,Nr. Chhatral Bridge,Mehsana to Ahmedabad,20 x 10,Middle,Hoarding,NL,23.2840231,72.440343,Private,,,,,,,,,
-CHCB-AH-D,Chhatral,Chhatral Bridge,Nr. Chhatral Bridge,Mehsana to Ahmedabad,20 x 10,Lower,Hoarding,NL,23.2840231,72.440343,Private,,,,,,,,,
-CHCB-AH-S1,Chhatral,Chhatral Bridge,"Opp. V Trans, Chhatral Bridge",Mehsana to Ahmedabad,20 x 10,Solo,Hoarding,NL,23.2760699,72.4445128,Private,,,,,,,,,
-CHCB-ME-S2,Chhatral,Chhatral Bridge,"Opp. V Trans, Chhatral Bridge",Ahmedabad to Mehsana,20 x 15,Solo,Hoarding,NL,23.2759402,72.4447167,Private,,,,,,,,,
-CHCB-AH-S2,Chhatral,Chhatral Bridge,Nr. Mansarovar Township,Mehsana to Ahmedabad,20 x 10,Solo,Hoarding,NL,23.274018,72.4513709,GOV - GRICL,,,,,,,,,
-CHCB-KD-S,Chhatral,Chhatral Bridge,"Opp. Chhatral Police Chowki, Main Circle",Ahmedabad & Mehsana to Kadi,20 x 15,Solo,Hoarding,NL,23.277759,72.441231,GOV - GRICL,,,,,,,,,
-CHCB-KD-S2,Chhatral,Chhatral Bridge,Main Circle,Ahmedabad to Kadi & Mehsana,20 x 10,Solo,Hoarding,NL,23.278095,72.441584,GOV - GRICL,,,,,,,,,
-KAAH-AH-U1,Kalol,Amrit Hotel,"Opp. Oswal, Idustries",Mehsana to Ahmedabad,40 x 20,Upper,Hoarding,NL,23.260456,72.474186,Private,,,,,,,,,
-KAAH-AH-U2,Kalol,Amrit Hotel,"Opp. Oswal, Idustries",Mehsana to Ahmedabad,40 x 20,Upper,Hoarding,NL,23.260456,72.474186,Private,,,,,,,,,
-KADM-EX-L1,Kalol,Dmart,Opp. Dmart Mall,From Dmart Exit,20 x 10,LHS First,Hoarding,NL,23.250076,72.48529,GOV - GRICL,,,,,,,,,
-KADM-EX-L2,Kalol,Dmart,Opp. Dmart Mall,From Dmart Exit,20 x 10,LHS Second,Hoarding,NL,23.250076,72.48529,GOV - GRICL,,,,,,,,,
-KADM-EX-L3,Kalol,Dmart,Opp. Dmart Mall,From Dmart Exit,20 x 10,LHS Third,Hoarding,NL,23.250076,72.48529,GOV - GRICL,,,,,,,,,
-KADM-EX-L4,Kalol,Dmart,Opp. Dmart Mall,From Dmart Exit,20 x 10,LHS Fourth,Hoarding,NL,23.250076,72.48529,GOV - GRICL,,,,,,,,,
-KABC-KC-L,Kalol,Borisana Chowkadi,At Borisana Circle,Khatraj GIDC to Kalol & Chhatral,20 x 10,LHS,Hoarding,NL,23.241116,72.48803,GOV - GRICL,,,,,,,,,
-KABC-KC-S,Kalol,Borisana Chowkadi,At Borisana Circle,Shriji Parlour to Khatraj GIDC & Chhatral,20 x 10,Solo,Hoarding,NL,23.241069,72.488171,GOV - GRICL,,,,,,,,,
-KADC-KG-R,Kalol,Damru Circle,At Damru Circle,Kalol City to Khatraj GIDC,20 x 10,RHS,Hoarding,NL,23.241148,72.488535,GOV - GRICL,,,,,,,,,
-KADC-KG-S,Kalol,Damru Circle,At Damru Circle,Kalol City to Khatraj GIDC,20 x 10,Solo,Hoarding,NL,23.241264,72.48837,GOV - GRICL,,,,,,,,,
-KACC-HW-R1,Kalol,Cobra Circle,At Cobra Circle,City to Highway,20 x 10,RHS First,Hoarding,NL,23.238457,72.492535,GOV - GRICL,,,,,,,,,
-KASP-HW-R1,Kalol,Shriji Parlour,At Shriji Parlour,Hanuman Temple to Highway,15 x 10,RHS First,Hoarding,NL,23.237177,72.49402,GOV - GRICL,,,,,,,,,
-KASP-HW-L1,Kalol,Shriji Parlour,At Shriji Parlour,Hanuman Temple to Highway,20 x 10,LHS First,Hoarding,NL,23.237433,72.493668,GOV - GRICL,,,,,,,,,
-KASP-AH-L,Kalol,Shriji Parlour,"Opp. Domino's Pizza, Highway",Mehsana to Ahmedabad,20 x 15,LHS,Hoarding,NL,23.2366467,72.4957098,GOV - GRICL,,,,,,,,,
-KAMA-AH-S,Kalol,Majur Adalat,"Nr. ITI, Opp. Police Station",Mehsana to Ahmedabad,20 x 15,Solo,Hoarding,NL,23.2357046,72.4978985,GOV - GRICL,,,,,,,,,
-KAMA-ME-S2,Kalol,Majur Adalat,"Nr. Majur Adalat, Tiranga Bridge",Ahmedabad to Mehsana,30 x 30,Solo,Hoarding,NL,23.2346242,72.5007497,Private,,,,,,,,,
-KASB-ME-S,Kalol,Saij Bridge,Nr. Jogani mata Temple,Ahmedabad to Mehsana,20 x 20,Solo,Hoarding,NL,23.2155117,72.5201156,Private,,,,,,,,,
-GAGC-GF-S,Gandhinagar,GIFT City,"Shahpur Circle, GIFT City Entrance",Shahpur Circle to GIFT city,30 x 41,Solo,Hoarding,NL,23.1815461,72.6745448,Private,,,,,,,,,
-GAGC-SH-S,Gandhinagar,GIFT City,"Shahpur Circle, GIFT City Exit",GIFT city to Shahpur Circle,81 x 40,Solo,Hoarding,NL,23.1817224,72.673898,Private,,,,,,,,,
-GAGC-DC-S2,Gandhinagar,GIFT City,Opp. Lilavati Hospital,East Gate to D Circle ,60 x 40,Solo,Hoarding,NL,23.165176,72.6887937,Private,,,,,,,,,
-GACH-AH-S,Gandhinagar/Ahmedabad,Chiloda,Chiloda Circle,"Gandhinagar to Ahmedabad, Dehgam & Himmatnagar",20 x 21,Solo,Hoarding,NL,23.2267342,72.7313691,Private,,,,,,,,,
-GAAD-GA-LU,Gandhinagar/Ahmedabad,Adalaj,Nr. Trimandir,North Gujarat to Gandhinagar,40 x 20,LHS Upper,Hoarding,NL,23.1755686,72.5802742,Private,,,,,,,,,
-GAAD-GA-LD,Gandhinagar/Ahmedabad,Adalaj,Nr. Trimandir,North Gujarat to Gandhinagar,40 x 20,LHS Lower,Hoarding,NL,23.1755686,72.5802742,Private,,,,,,,,,
-GAAD-GA-RU,Gandhinagar/Ahmedabad,Adalaj,Nr. Trimandir,North Gujarat to Gandhinagar,40 x 20,RHS Upper,Hoarding,NL,23.1755686,72.5802742,Private,,,,,,,,,
-GAAD-GA-RD,Gandhinagar/Ahmedabad,Adalaj,Nr. Trimandir,North Gujarat to Gandhinagar,40 x 20,RHS Lower,Hoarding,NL,23.1755686,72.5802742,Private,,,,,,,,,
-GAAD-GA-S2,Gandhinagar/Ahmedabad,Adalaj,"On SG Highway, Opp. Shreya Farm, Butter Fly Circle",Ahmedabad to Gandhinagar,90 x 60,Solo,Hoarding,NL,23.1753264,72.5813826,Private,,,,,,,,,
-GAKH-AH-S,Gandhinagar/Ahmedabad,Khoraj,"On SG Highway, Khoraj",Gandhinagar to Ahmedabad,60 x 40,Solo,Hoarding,NL,23.1568287,72.5544687,Private,,,,,,,,,
-GAVD-GS-U,Gandhinagar/Ahmedabad,Vaishno Devi Circle,"On Vaishnodevi Circle, SG Highway",Ahmedabad to Gandhinagar & SP Ring Road,100 x 25,Upper,Hoarding,NL,23.1364861,72.541814,Private,,,,,,,,,
-GAKB-AH-S,Gandhinagar/Ahmedabad,,"Khoraj Bridge, Nr. Adani Shantigram",Gandhinagar to Ahmedabad,90 x 30,Solo,Hoarding,NL,23.1596777,72.555676,Private,,,,,,,,,
-GAKB-GA-S,Gandhinagar/Ahmedabad,,"Khoraj Bridge, After Narmda Canal, On SG Highway", Ahmedabad to Gandhinagar & Adalaj,60 x 30,Solo,Hoarding,NL,23.1596777,72.555676,Private,,,,,,,,,
-AHCD-AK-S,Ahmedabad,Chandalodiya,Nr. Silvar Star Circle,Gota to Akhbarnagar,20 x 20,Solo,Hoarding,FL,23.0809322,72.5488726,Private,,,,,,,,,
-AHCD-AK-U,Ahmedabad,Chandalodiya,At. Chandalodiya Bridg,Gota to Akhbarnagar,30 x 15,Upper,Hoarding,BL,23.0798854,72.5522337,Private,,,,,,,,,
-AHCD-AK-D,Ahmedabad,Chandalodiya,At. Chandalodiya Bridg,Gota to Akhbarnagar,30 x 15,Lower,Hoarding,BL,23.0798854,72.5522337,Private,,,,,,,,,
-AHMM-PC-S,Ahmedabad,Memnagar,"Naranpura AEC, Valinath Chowk",Memnagar to Pallav Cross Road,40 x 20,Solo,Hoarding,BL,23.0480632,72.5439175,Private,,,,,,,,,
-AHLD-BI-S,Ahmedabad,Lad Darwaja,"At. Lal Darvaja P & T Building Wall, Opp Panchayat Bhavan",Can Be View at the Bank of india,20 x 10,Solo,Hoarding,BL,23.0249931,72.5807275,GOV - AMC,,,,,,,,,
-AHNF-KP-S,Ahmedabad,Naroda Fruit Market,"Opp Naroda Fruit Market, Nr B R T S Bus Stop",Memco Cross Road to Kalupur,20 x 15,Solo,Hoarding,BL,23.0507491,72.6258037,GOV - AMC,,,,,,,,,
-AHGH-KP-S,Ahmedabad,GCS Hospital,"GCS Medical Hospital, Nr. Amdupura Police Chowky, Chamunda Bridge",Memco to Kalupur,20 x 10,Solo,Hoarding,BL,23.0406377,72.6112276,GOV - AMC,,,,,,,,,
-AHST-MC-S,Ahmedabad,Saijpur Tower,"Saijpur Tower Cross Road, Naroda Road",Naroda Patiya to Memco Cross Road,20 x 10,Solo,Hoarding,BL,23.0608249,72.6392422,GOV - AMC,,,,,,,,,
-AHVG-VG-S,Ahmedabad,Vijalighar,Vijalighar,,20 x 10,Solo,Hoarding,BL,23.026468,72.5806068,GOV - AMC,,,,,,,,,
-AHGD-BP-L,Ahmedabad,Godhavi,"Nr. Bus Stop, Godhavi",Sanand to Bopal,40 x 40,LHS,Hoarding,NL,23.0239199,72.4107355,Private,,,,,,,,,
-AHGD-BP-R,Ahmedabad,Godhavi,"Nr. Bus Stop, Godhavi",Sanand to Bopal,40 x 40,RHS,Hoarding,NL,23.0239199,72.4107355,Private,,,,,,,,,
-AHBK-KS-S,Ahmedabad,Bakrol,"Opp. Jain Derasar, Visalpur",Bakrol Circle to Kashindra,30 x 30,Solo,Hoarding,NL,22.9334401,72.4965018,Private,,,,,,,,,
-AHBK-KS-U1,Ahmedabad,Bakrol,"Opp. Meladimata Temple, Vishalpur",Bakrol Circle to Kashindra,50 x 25,Upper,Hoarding,NL,22.9179705,72.4858692,Private,,,,,,,,,
-AHBK-KS-D1,Ahmedabad,Bakrol,"Opp. Meladimata Temple, Vishalpur",Bakrol Circle to Kashindra,50 x 25,Lower,Hoarding,NL,22.9179705,72.4858692,Private,,,,,,,,,
-AHBK-KS-U2,Ahmedabad,Bakrol,Nr. Meladimata Temple,Bakrol Circle to Kashindra,25 x 15,Upper,Hoarding,NL,22.9177491,72.4861199,Private,,,,,,,,,
-AHBK-KS-D2,Ahmedabad,Bakrol,Nr. Meladimata Temple,Bakrol Circle to Kashindra,25 x 15,Lower,Hoarding,NL,22.9177491,72.4861199,Private,,,,,,,,,
-AHBK-KS-R,Ahmedabad,Bakrol,Kashindra,Bakrol Circle to Kashindra,40 x 40,RHS,Hoarding,NL,22.8893173,72.4812189,Private,,,,,,,,,
-AHBK-BC-L,Ahmedabad,Bakrol,Kashindra,Kashindra to Bakrol Circle,40 x 40,LHS,Hoarding,NL,22.8893173,72.4812189,Private,,,,,,,,,
-AHMR-AH-S,Ahmedabad,Moraiya,Changodar GIDC,Bavla to Ahmedabad,25 x 30,Solo,Hoarding,NL,22.9069193,72.4267449,Private,,,,,,,,,
-AHMR-BA-S,Ahmedabad,Moraiya,Changodar GIDC,Ahmedabad to Bavla,25 x 30,Solo,Hoarding,NL,22.9069193,72.4267449,Private,,,,,,,,,
-SADM-AH-S,Sanand,Dmart,Shantipura Circle ,Sanand to Ahmedabad,20 x 30,Solo,Hoarding,NL,22.9860054,72.3962834,Private,,,,,,,,,
-HIMV-CR-S,Himmatnagar,Mahavirnagar,At. Mahavirnagar Circle,Main Bazar to Chhapariya & Reliance Mall,20 x 10,Solo,Hoarding,NL,23.5972348,72.9695828,GOV - R & B Himmatnagar,,,,,,,,,
-HIMO-HC-1,Himmatnagar,Motipura Circle ,At. Motipura Circle,Ahmedabad to Himmatnagar City & Udaipur,20 x 10,First,Hoarding,NL,23.581241,72.9592552,GOV - R & B Himmatnagar,,,,,,,,,
-HIMO-HC-2,Himmatnagar,Motipura Circle ,At. Motipura Circle,Ahmedabad to Himmatnagar City & Udaipur,20 x 10,Second,Hoarding,NL,23.5813286,72.9596147,GOV - R & B Himmatnagar,,,,,,,,,
-HIMO-HW-S,Himmatnagar,Motipura Circle ,Nr. Motipura Circle,City to Highway,20 x 10,Solo,Hoarding,NL,23.5814598,72.9596183,GOV - R & B Himmatnagar,,,,,,,,,
-HIMO-MO-S,Himmatnagar,Motipura Circle ,Nr. Motipura Circle,Bus Depo to Motipura Circle,12 x 20,Solo,Hoarding,NL,23.5817969,72.9585019,GOV - R & B Himmatnagar,,,,,,,,,
-HIMO-CM-S,Himmatnagar,Motipura Circle ,Nr. Motipura Circle,Bus Depo to Chhapariya & Motipura Circle,20 x 10,Solo,Hoarding,NL,23.5835677,72.9583084,GOV - R & B Himmatnagar,,,,,,,,,
-HIBS-CC-S1,Himmatnagar,Bus Stand,"Nr. Civil Circle, Bus Stand First",Bus Depo to Civil Circle,20 x 10,Solo,Hoarding,NL,23.5936803,72.9588573,GOV - R & B Himmatnagar,,,,,,,,,
-HIBS-BS-S,Himmatnagar,Bus Stand,"Bus Stand, Nr. Umashankar Joshi Bridge",Motipura to Bus Stand,20 x 10,Solo,Hoarding,NL,23.5916908,72.9578759,GOV - R & B Himmatnagar,,,,,,,,,
-HIBS-MO-S,Himmatnagar,Bus Stand,"Bus Stand, Depo Entry",Civil Circle to Motipura Circle,20 x 10,Solo,Hoarding,NL,23.5929156,72.9585394,GOV - R & B Himmatnagar,,,,,,,,,
-HIMH-NM-R2,Himmatnagar,Mehtapura Circle,"Mehtapura Circle, City Entry",RTO Circle to Nyay Mandir,18 x 10,RHS Second,Hoarding,NL,23.6123011,72.9649539,GOV - R & B Himmatnagar,,,,,,,,,
-HISJ-MO-U,Himmatnagar,Sahkari Jin,Nr. Sahkari Jin,Himmatnagar to Modasa,20 x 10,Upper,Hoarding,NL,23.5806043,72.9745308,GOV - R & B Himmatnagar,,,,,,,,,
-HISJ-MO-D,Himmatnagar,Sahkari Jin,Nr. Sahkari Jin,Himmatnagar to Modasa,20 x 10,Lower,Hoarding,NL,23.5806043,72.9745308,GOV - R & B Himmatnagar,,,,,,,,,
-VITB-HW-U,Vijapur,T B Road,Nr. T B Circle,City to Highway,20 x 10,Upper,Hoarding,NL,23.5658621,72.7450074,Private,,,,,,,,,
-VITB-HW-D,Vijapur,T B Road,Nr. T B Circle,City to Highway,20 x 10,Lower,Hoarding,NL,23.5658621,72.7450074,Private,,,,,,,,,
-VITB-CT-S1,Vijapur,T B Road,Nr. Reliance Trends,Highway to City,20 x 25,Solo,Hoarding,NL,23.5548644,72.7407954,Private,,,,,,,,,
-VITB-HW-S2,Vijapur,T B Road,Nr. Reliance Trends,City  to Highway,20 x 25,Solo,Hoarding,NL,23.5548644,72.7407954,Private,,,,,,,,,
-VITB-CT-L,Vijapur,T B Road,Nr. Reliance Trends,Highway to City,20 x 20,LHS,Hoarding,NL,23.5556696,72.7416738,Private,,,,,,,,,
-VITB-CT-R,Vijapur,T B Road,Nr. Reliance Trends,Highway to City,20 x 20,RHS,Hoarding,NL,23.5556696,72.7416738,Private,,,,,,,,,
-VIPC-MA-U,Vijapur,Pilvai Circle,Nr. Pilvai Circle,Mansa to Mahudi & Vijapur,20 x 10,Upper,Hoarding,NL,23.5319889,72.717957,Private,,,,,,,,,
-VIPC-MA-D,Vijapur,Pilvai Circle,Nr. Pilvai Circle,Mansa to Mahudi & Vijapur,20 x 10,Lower,Hoarding,NL,23.5319889,72.717957,Private,,,,,,,,,
-VIPC-MM-C,Vijapur,Pilvai Circle,Nr. Pilvai Circle,Mahudi to Mansa & Vijapur,20 x 10,Centre,Hoarding,NL,23.5320491,72.7176184,LOF,,,,,,,,,
-VIPC-MV-L,Vijapur,Pilvai Circle,On Circle,Mehsana to Vijapur & Mansa,20 x 20,LHS ,Hoarding,NL,23.5304166,72.7169284,Private,,,,,,,,,
-VIPC-MV-R,Vijapur,Pilvai Circle,On Circle,Mehsana to Vijapur & Mansa,20 x 20,RHS,Hoarding,NL,23.5304166,72.7169284,Private,,,,,,,,,
-VIPC-VM-S,Vijapur,Pilvai Circle,Nr. Pilvai Circle,Vijapur to Mansa & Mehsana,20 x 10,Solo,Hoarding,NL,23.5353333,72.7201303,LOF,,,,,,,,,
-VIMA-MT-U,Vijapur,Mahudi,Mahudi Pratij Circle,Way to Mahudi Temple,20 x 10,Upper,Hoarding,NL,23.4945535,72.7802014,Private,,,,,,,,,
-VIMA-MT-D,Vijapur,Mahudi,Mahudi Pratij Circle,Way to Mahudi Temple,20 x 10,Lower,Hoarding,NL,23.4945535,72.7802014,Private,,,,,,,,,
-MAIC-VJ-S,Mansa,Itadara Circle,Bus Stand Circle,Gandhinagar to Vijapur,40 x 30,Solo,Hoarding,NL,23.4272219,72.6513249,Private,,,,,,,,,
-MAGC-GA-U,Mansa,GEB Circle,"Mansa Entry, Opp GEB",Vijapur & Visnagar to Gandhinagar,25 x 15,Upper,Hoarding,NL,23.4347281,72.6565468,Private,,,,,,,,,
-MAGC-GA-D,Mansa,GEB Circle,"Mansa Entry, Opp GEB",Vijapur & Visnagar to Gandhinagar,25 x 15,Lower,Hoarding,NL,23.4347281,72.6565468,Private,,,,,,,,,
-MANC-GA-U,Mansa,Narsary Circle,Nr. Narsary Circle ,Mansa to Gandhinagar,40 x 20,Upper,Hoarding,NL,23.4144799,72.6491795,Private,,,,,,,,,
-MANC-GA-D,Mansa,Narsary Circle,Nr. Narsary Circle ,Mansa to Gandhinagar,40 x 20,Lower,Hoarding,NL,23.4144799,72.6491795,Private,,,,,,,,,
-MABC-GA-U,Mansa,Balva Circle,"Pratap Pura, Nr. Balva Circle",Mansa to Gandhinagar,40 x 20,Upper,Hoarding,NL,23.3666197,72.6460366,Private,,,,,,,,,
-MABC-GA-D,Mansa,Balva Circle,"Pratap Pura, Nr. Balva Circle",Mansa to Gandhinagar,40 x 20,Lower,Hoarding,NL,23.3666197,72.6460366,Private,,,,,,,,,
-MABC-GA-S,Mansa,Balva Circle,At. Balva Circle,Gozariya to Gandhinagar,20 x 15,Solo,Hoarding,NL,23.3519665,72.6431438,Private,,,,,,,,,
-GOMC-GZ-U,Gozariya,Main Circle,Nr. Main Circle,Mehsana to Gozariya,20 x 10,Upper,Hoarding,NL,23.4805706,72.565974,Private,,,,,,,,,
-GOMC-GZ-D,Gozariya,Main Circle,Nr. Main Circle,Mehsana to Gozariya,20 x 10,Lower,Hoarding,NL,23.4805706,72.565974,Private,,,,,,,,,
-GOMC-MV-U,Gozariya,Main Circle,Nr. Main Circle,Gozariya to Mehsana & Visnagar,30 x 10,Upper,Hoarding,NL,23.4805706,72.565974,Private,,,,,,,,,
-GOMC-MV-D,Gozariya,Main Circle,Nr. Main Circle,Gozariya to Mehsana & Visnagar,30 x 10,Lower,Hoarding,NL,23.4805706,72.565974,Private,,,,,,,,,
-GOMU-GZ-L,Gozariya,Meu Circle,At. Meu Circle,Mehsana to Gozariya,20 x 20,LHS,Hoarding,NL,23.4824295,72.5660555,Private,,,,,,,,,
-GOMU-GZ-R,Gozariya,Meu Circle,At. Meu Circle,Mehsana to Gozariya,20 x 20,RHS,Hoarding,NL,23.4824295,72.5660555,Private,,,,,,,,,
-VSMC-MC-L,Visnagar,Mehsana Circle,S K Collage road,Lavaris Stand to Mehsana Circle,20 x 10,LHS,Hoarding,NL,23.6895089,72.5405453,LOF,,,,,,,,,
-VSMC-VS-U,Visnagar,Mehsana Circle,Visnagar Entrance,Mehsana to Visnagar,20 x 10,Upper,Hoarding,NL,23.689865,72.5403656,Private,,,,,,,,,
-VSMC-VS-D,Visnagar,Mehsana Circle,Visnagar Entrance,Mehsana to Visnagar,20 x 10,Lower,Hoarding,NL,23.689865,72.5403656,Private,,,,,,,,,
-VSKC-GZ-S,Visnagar,Kada Circle,Nr. S K Collage,Mehsana Circle to Gozariya,20 x 15,Solo,Hoarding,NL,23.6862169,72.5532124,Private,,,,,,,,,
-VSIC-MC-S,Visnagar,ITI Circle,Opp. ITI Collage,Kansa Circle to Mehsana Circle,15 x 15,Solo,Hoarding,NL,23.7020217,72.5346844,Private,,,,,,,,,
-VSIC-KN-S,Visnagar,ITI Circle,Nr. ITI Collage,Mehsana Circle to Kansa Circle,31 x 15,Solo,Hoarding,NL,23.7025543,72.5351846,Private,,,,,,,,,
-VSIC-LS-U,Visnagar,ITI Circle,M N Collage Road,ITI Circle to Lavaris Stand,20 x 10,Upper,Hoarding,NL,23.7016032,72.535146,Private,,,,,,,,,
-VSIC-LS-D,Visnagar,ITI Circle,M N Collage Road,ITI Circle to Lavaris Stand,20 x 10,Lower,Hoarding,NL,23.7016032,72.535146,Private,,,,,,,,,
-VSPC-KN-U,Visnagar,Paldi Circle,Opp. Matel Hotel,Paladi Circle to Kansa Circle,20 x 10,Upper,Hoarding,NL,23.7134589,72.5492508,Private,,,,,,,,,
-VSPC-KN-D,Visnagar,Paldi Circle,Opp. Matel Hotel,Paladi Circle to Kansa Circle,20 x 10,Lower,Hoarding,NL,23.7134589,72.5492508,Private,,,,,,,,,
-VSPC-KV-U,Visnagar,Paldi Circle,At. Paladi Circle,Visnagar to Kheralu & Vadnagar,20 x 10,Upper,Hoarding,NL,23.7149584,72.5506197,LOF,,,,,,,,,
-VSPC-KV-D,Visnagar,Paldi Circle,At. Paladi Circle,Visnagar to Kheralu & Vadnagar,20 x 10,Lower,Hoarding,NL,23.7149584,72.5506197,LOF,,,,,,,,,
-VSPC-VS-S,Visnagar,Paldi Circle,At. Paladi Circle,Kheralu to Visnagar,20 x 10,Solo,Hoarding,NL,23.7149339,72.5507518,LOF,,,,,,,,,
-VATC-VN-U,Vadnagar,Toranvaad Circle,"At. Toranvaad Circle, Vadnagar Entry",Visnagar to Vadnagar,20 x 10,Upper,Hoarding,NL,23.7944675,72.6258831,Private,,,,,,,,,
-VATC-VN-D,Vadnagar,Toranvaad Circle,"At. Toranvaad Circle, Vadnagar Entry",Visnagar to Vadnagar,20 x 10,Lower,Hoarding,NL,23.7944675,72.6258831,Private,,,,,,,,,
-KHDD-KH-U,Kheralu,Dudh Sagar Dairy,Opp. Dudh Sagar Dairy,Vadnagar to Kheralu,20 x 10,Upper,Hoarding,NL,23.8816617,72.6100075,LOF,,,,,,,,,
-KHDD-KH-D,Kheralu,Dudh Sagar Dairy,Opp. Dudh Sagar Dairy,Vadnagar to Kheralu,20 x 10,Lower,Hoarding,NL,23.8816617,72.6100075,LOF,,,,,,,,,
-KHDD-VV-S,Kheralu,Dudh Sagar Dairy,Opp. Dudh Sagar Dairy,Kheralu to Vadnagar & Visnagar,20 x 15,Solo,Hoarding,NL,23.8816617,72.6100075,LOF,,,,,,,,,
-UNBH-UN-S,Unjha,Bhandu,Nr. LCIT Collage,Mehsana to Unjha,25 x 31,Solo,Hoarding,NL,23.6863204,72.3849903,Private,,,,,,,,,
-UNBH-ME-S,Unjha,Bhandu,Nr. LCIT Collage,Unjha to Mehsana,25 x 31,Solo,Hoarding,NL,23.6863204,72.3849903,Private,,,,,,,,,
-UNUV-UN-S,Unjha,Unava,Nr. Comfy Hotel,Mehsana to Unjha,20 x 20,Solo,Hoarding,NL,23.7406335,72.3683391,Private,,,,,,,,,
-UNUV-UN-S1,Unjha,Unava,"Nr. APMC Market, Opp. Essar Petrol Pump",Mehsana to Unjha,20 x 20,First,Hoarding,NL,23.7735623,72.3703816,LOF,,,,,,,,,
-UNUV-UN-S3,Unjha,Unava,"Nr. APMC Market, Opp. Essar Petrol Pump",Mehsana to Unjha,20 x 20,Third,Hoarding,NL,23.773967,72.3706337,LOF,,,,,,,,,
-UNUC-UN-S,Unjha,Umiya Circle,Opp. Tannu Motors,Mehsana to Unjha,20 x 20,Solo,Hoarding,NL,23.7880701,72.3812043,GOV - Unjha Nagarpalika,,,,,,,,,
-UNUC-ME-S1,Unjha,Umiya Circle,Opp. Tannu Motors,Unjha to Mehsana,20 x 20,Solo,Hoarding,NL,23.7880701,72.3812043,GOV - Unjha Nagarpalika,,,,,,,,,
-UNUC-ME-S2,Unjha,Umiya Circle,Nr. Reliance Petrol Pump,Unjha to Mehsana ,20 x 15,Solo,Hoarding,NL,23.7943497,72.3812962,GOV - Unjha Nagarpalika,,,,,,,,,
-UNAC-PU-U,Unjha,APMC Circle,Nr. Bus Stand,Patan to Unjha & Mehsana,20 x 10,Upper,Hoarding,NL,23.8048855,72.3796832,GOV - Unjha Nagarpalika,,,,,,,,,
-UNAC-PU-D,Unjha,APMC Circle,Nr. Bus Stand,Patan to Unjha & Mehsana,20 x 10,Lower,Hoarding,NL,23.8048855,72.3796832,GOV - Unjha Nagarpalika,,,,,,,,,
-UNAC-CM-S,Unjha,APMC Circle,"Nr. Bus Stand, City Emtry",Highway to City & Mehsana,20 x 10,Solo,Hoarding,NL,23.8042698,72.3798934,GOV - Unjha Nagarpalika,,,,,,,,,
-UNSC-UT-S1,Unjha,Sardar Chowk,Nr. APMC Marcket,APMC Circle to Umiya mata temple,20 x 21,Solo,Hoarding,NL,23.8041474,72.3844297,Private,,,,,,,,,
-UNSC-UT-S2,Unjha,Sardar Chowk,Above Chhanaji Gota,Highway to APMC & Umiyamata Temple,20 x 10,Solo,Hoarding,NL,23.8038367,72.384192,GOV - Unjha Nagarpalika,,,,,,,,,
-UNGC-UT-S,Unjha,Gandhi Chowak,"On Canal, Opp Nagarpalika",Sardar Chowk to Umiyamata Temple,20 x 10,Solo,Hoarding,NL,23.8035861,72.3903245,GOV - Unjha Nagarpalika,,,,,,,,,
-UNUT-UT-S1,Unjha,Umiyamata Temple,Desh Ni Vaadi,Agni Circle to Umiyamata Temple,20 x 10,Solo,Hoarding,NL,23.8005694,72.396157,GOV - Unjha Nagarpalika,,,,,,,,,
-UNUT-EX-R,Unjha,Umiyamata Temple,Umiyamata Temple Chowk,Umiyamata Temple Exit,20 x 21,RHS,Hoarding,NL,23.8008927,72.3962884,GOV - Unjha Nagarpalika,,,,,,,,,
-UNUT-CA-S,Unjha,Umiyamata Temple,Umiyamata Temple Chowk,Umiyamata Temple to City & Agni Circle,20 x 21,Solo,Hoarding,NL,23.8009348,72.3960363,GOV - Unjha Nagarpalika,,,,,,,,,
-UNUT-EX-S2,Unjha,Umiyamata Temple,Umiyamata Temple Chowk,Umiyamata Temple Exit,41 x 10,Solo,Hoarding,NL,23.8014514,72.3959471,GOV - Unjha Nagarpalika,,,,,,,,,
-UNUT-EX-S3,Unjha,Umiyamata Temple,Umiyamata Temple Chowk,Umiyamata Temple Exit,12 x 20,Solo,Hoarding,NL,23.8017501,72.3958328,GOV - Unjha Nagarpalika,,,,,,,,,
-UNUT-EX-S4,Unjha,Umiyamata Temple,Umiyamata Temple Chowk,Umiyamata Temple Exit,18 x 21,Solo,Hoarding,NL,23.8019041,72.3957107,Private,,,,,,,,,
-UNVC-UT-S,Unjha,Vaadipara Chowk,Nr. Falku Canal,Old Bazar to Umiyamata Temple,20 x 10,Solo,Hoarding,NL,23.8073656,72.3921125,GOV - Unjha Nagarpalika,,,,,,,,,
-UNAC-UT-L,Unjha,Agni Circle,At. Agni Circle ,Aithore to Umiyamata Temple,20 x 25,LHS,Hoarding,NL,23.7978012,72.3953815,GOV - Unjha Nagarpalika,,,,,,,,,
-UNAC-HW-U,Unjha,Agni Circle,"Behind APMC Marcket, Umiyamata Temple road",City to Highway,20 x 10,Upper,Hoarding,NL,23.7984917,72.3889646,Private,,,,,,,,,
-UNAC-HW-D,Unjha,Agni Circle,"Behind APMC Marcket, Umiyamata Temple road",City to Highway,20 x 10,Lower,Hoarding,NL,23.7984917,72.3889646,Private,,,,,,,,,
-UNAC-CT-S,Unjha,Agni Circle,"Behind APMC Marcket, Umiyamata Temple road",Highway to City,20 x 15,Solo,Hoarding,NL,23.7984917,72.3889646,Private,,,,,,,,,
-PADH-UN-S,Patan,Dharpur,Medical Collage,Patan to Unjha,25 x 25,Solo,Hoarding,NL,23.8442163,72.1905586,Private,,,,,,,,,
-PAHA-US-L,Patan,Hansapur,At. Hansapur Circle ,Patan to Unjha & Siddhpur,20 x 20,LHS,Hoarding,NL,23.8526326,72.1445919,Private,,,,,,,,,
-PAHA-US-R,Patan,Hansapur,At. Hansapur Circle ,Patan to Unjha & Siddhpur,20 x 20,RHS,Hoarding,NL,23.8526326,72.1445919,Private,,,,,,,,,
-PANC-DC-S,Patan,Navjivan Circle,Nr. Navjivan Hotel,Deesa to Chanashma ,30 x 30,Solo,Hoarding,NL,23.8511463,72.1378898,Private,,,,,,,,,
-PANC-JH-R,Patan,Navjivan Circle,Opp. Tirupati Marcket,Navjivan Circle to Janta Hospital,20 x 20,RHS,Hoarding,NL,23.8509249,72.1365651,Private,,,,,,,,,
-PANC-JH-L,Patan,Navjivan Circle,Opp. Tirupati Marcket,Navjivan Circle to Janta Hospital,20 x 20,LHS,Hoarding,NL,23.8509249,72.1365651,Private,,,,,,,,,
-PAJH-NC-L,Patan,Navjivan Circle,Opp. Tirupati Marcket,Janta Hospital to Navjivan Circle,20 x 20,LHS,Hoarding,NL,23.8509249,72.1365651,Private,,,,,,,,,
-PAJH-NC-R,Patan,Navjivan Circle,Opp. Tirupati Marcket,Janta Hospital to Navjivan Circle,20 x 20,RHS,Hoarding,NL,23.8509249,72.1365651,Private,,,,,,,,,
-PAJH-JH-U,Patan,Janta Hospital,B M Highschool,Subhas Chowk to Janta Hospital,20 x 10,Upper,Hoarding,NL,23.8492454,72.1303507,Private,,,,,,,,,
-PAJH-JH-D,Patan,Janta Hospital,B M Highschool,Subhas Chowk to Janta Hospital,20 x 10,Lower,Hoarding,NL,23.8492454,72.1303507,Private,,,,,,,,,
-PAJH-SC-U,Patan,Janta Hospital,B M Highschool,Janta Hospital to Subhas Chowk,20 x 10,Upper,Hoarding,NL,23.8492454,72.1303507,Private,,,,,,,,,
-PAJH-SC-D,Patan,Janta Hospital,B M Highschool,Janta Hospital to Subhas Chowk,20 x 10,Lower,Hoarding,NL,23.8492454,72.1303507,Private,,,,,,,,,
-PANC-PC-L,Patan,Navjivan Circle,Railway Overbridge,Navjivan Circle to Padmanaabh Circle,25 x 31,LHS,Hoarding,NL,23.8441617,72.1366556,Private,,,,,,,,,
-PANC-PC-R,Patan,Navjivan Circle,Railway Overbridge,Navjivan Circle to Padmanaabh Circle,20 x 20,RHS,Hoarding,NL,23.844054,72.1365258,Private,,,,,,,,,
-PAPC-NC-S,Patan,Navjivan Circle,Railway Overbridge,Padmanaabh Circle to Navjivan Circle,30 x 20,Solo,Hoarding,NL,23.8439878,72.1364937,Private,,,,,,,,,
-PAPC-CT-S,Patan,Padmanaabh Circle,Opp. Police Chowki,Chanashma to City,20 x 10,Solo,Hoarding,NL,23.8375938,72.1270057,GOV - Patan Nagarpalika,,,,,,,,,
-PAPC-CN-L,Patan,Padmanaabh Circle,Opp. Police Chowki,Chanashma to City & Navjivan Circle,20 x 10,LHS,Hoarding,NL,23.837783,72.1267794,GOV - Patan Nagarpalika,,,,,,,,,
-PAAS-SC-L,Patan,Anand Sarovar,At. Panchal Samaj Vaadi,Janta Hospital to Subhas Chowk,12 x 15,LHS,Hoarding,NL,23.8485588,72.127811,Private,,,,,,,,,
-PAAS-AS-R,Patan,Anand Sarovar,At. Panchal Samaj Vaadi,Bagvada Darwaja to Anand Sarovar,20 x 20 ,RHS,Hoarding,NL,23.8485481,72.1274868,Private,,,,,,,,,
-PAAS-AS-L,Patan,Anand Sarovar,At. Panchal Samaj Vaadi,Bagvada Darwaja to Anand Sarovar,20 x 20 ,LHS,Hoarding,NL,23.8485481,72.1274868,Private,,,,,,,,,
-PLGC-HW-L,Palanpur,Gurunanak Chowk,At. Gurunanak Chowk,City to Highway,20 x 20,LHS,Hoarding,NL,24.1711175,72.4315491,Private,,,,,,,,,
-DEMV-PA-S,Deesa,Mota Village,Nr. Bus Stop,Deesa to Palanpur,20 x 21,Solo,Hoarding,NL,24.231044,72.2720525,Private,,,,,,,,,
-DERM-DE-LU,Deesa,Raajmandir,Nr. Somnath Hotel,Palanpur to Deesa,30 x 20,LHS Upper,Hoarding,NL,24.2496583,72.1978643,Private,,,,,,,,,
-DERM-DE-LD,Deesa,Raajmandir,Nr. Somnath Hotel,Palanpur to Deesa,30 x 20,LHS Lower,Hoarding,NL,24.2496583,72.1978643,Private,,,,,,,,,
-DEFC-FV-LU,Deesa,Fuvara Circle,At. Fuvara Circle,Gayatri Temple to Fuvara Circle,30 x 15,LHS Upper,Hoarding,NL,24.2566827,72.1779395,Private,,,,,,,,,
-DEFC-FV-LD,Deesa,Fuvara Circle,At. Fuvara Circle,Gayatri Temple to Fuvara Circle,30 x 15,LHS Lower,Hoarding,NL,24.2566827,72.1779395,Private,,,,,,,,,
-DEGN-GT-U,Deesa,Gulbani nagar,Nr. Dr. Jayesh shah Hospital,Fuvara Circle to Gayatri Temple,20 x 10,Upper,Hoarding,NL,24.2645245,72.1813492,Private,,,,,,,,,
-DEGN-GT-D,Deesa,Gulbani nagar,Nr. Dr. Jayesh shah Hospital,Fuvara Circle to Gayatri Temple,20 x 10,Lower,Hoarding,NL,24.2645245,72.1813492,private,,,,,,,,,
-SIBS-BD-U,Siddhpur,Bindu Sarovar Road,Nr. Genaral Hospital,Highway to Bindu Sarovar,20 x 10,Upper,Hoarding,NL,23.912971,72.3698894,private,,,,,,,,,
-SIBS-BD-D,Siddhpur,Bindu Sarovar Road,Nr. Genaral Hospital,Highway to Bindu Sarovar,20 x 10,Lower,Hoarding,NL,23.912971,72.3698894,private,,,,,,,,,
-SIBS-HW-U,Siddhpur,Bindu Sarovar Road,Nr. Genaral Hospital,Bindu Sarovar to Highway,15 x 10,Upper,Hoarding,NL,23.912971,72.3698894,private,,,,,,,,,
-SIBS-HW-D,Siddhpur,Bindu Sarovar Road,Nr. Genaral Hospital,Bindu Sarovar to Highway,15 x 10,Lower,Hoarding,NL,23.912971,72.3698894,private,,,,,,,,,
-SIBT-BS-U,Siddhpur,Bus Stand,Nr. APMC Marcket,Tavadiya Circle to Bus stand,25 x 15,Upper,Hoarding,NL,23.9218505,72.3664676,private,,,,,,,,,
-SIBT-BS-D,Siddhpur,Bus Stand,Nr. APMC Marcket,Tavadiya Circle to Bus stand,25 x 10,Lower,Hoarding,NL,23.9218505,72.3664676,private,,,,,,,,,
-SIDC-PA-S,Siddhpur,Dethali Circle,At. Dethali Circle,Mehsana to Palanpur,20 x 10,Solo,Hoarding,NL,23.9169147,72.3609721,LOF,,,,,,,,,
-MOMT-BE-S1,Modhera,Modheshwari Temple,Nr. Bus Stand,Mehsana to Bechraji,20 x 10,Solo,Hoarding,NL,23.5823577,72.1445222,Private,,,,,,,,,
-MOMT-BE-L,Modhera,Modheshwari Temple,Nr. Bus Stand,Mehsana to Bechraji,20 x 10,LHS,Hoarding,NL,23.5825973,72.1441463,Private,,,,,,,,,
-MOMT-BE-R,Modhera,Modheshwari Temple,Nr. Bus Stand,Mehsana to Bechraji,20 x 10,RHS,Hoarding,NL,23.5825973,72.1441463,Private,,,,,,,,,
-MOMT-ME-S1,Modhera,Modheshwari Temple,Nr. Bus Stand,Bechraji to Mehsana,20 x 10,Solo,Hoarding,NL,23.582456,72.144315,Private,,,,,,,,,
-MOMT-ME-S2,Modhera,Modheshwari Temple,Nr. Chanashma Circle,Bechraji to Mehsana,20 x 10,Solo,Hoarding,NL,23.5848985,72.1426155,Private,,,,,,,,,
-MOST-BC-U,Modhera,Sun Temple,At. Chanashma Circle ,Mehsana to Bechraji & Chanashma,20 x 10,Upper,Hoarding,NL,23.584618,72.1385117,Private,,,,,,,,,
-MOST-BC-D,Modhera,Sun Temple,At. Chanashma Circle ,Mehsana to Bechraji & Chanashma,20 x 10,Lower,Hoarding,NL,23.584618,72.1385117,Private,,,,,,,,,
-MOST-BE-U,Modhera,Sun Temple,Opp. Sun Temple Gate,Mehsana to Bechraji,20 x 10,Upper,Hoarding,NL,23.5813403,72.1361762,Private,,,,,,,,,
-MOST-BE-M,Modhera,Sun Temple,Opp. Sun Temple Gate,Mehsana to Bechraji,20 x 10,Middle,Hoarding,NL,23.5813403,72.1361762,Private,,,,,,,,,
-MOST-BE-D,Modhera,Sun Temple,Opp. Sun Temple Gate,Mehsana to Bechraji,20 x 10,Lower,Hoarding,NL,23.5813403,72.1361762,Private,,,,,,,,,
-MOST-ME-U,Modhera,Sun Temple,Opp. Sun Temple Gate,Bechraji to Mehsana,20 x 10,Upper,Hoarding,NL,23.5813403,72.1361762,Private,,,,,,,,,
-MOST-ME-M,Modhera,Sun Temple,Opp. Sun Temple Gate,Bechraji to Mehsana,20 x 10,Middle,Hoarding,NL,23.5813403,72.1361762,Private,,,,,,,,,
-MOST-ME-D,Modhera,Sun Temple,Opp. Sun Temple Gate,Bechraji to Mehsana,20 x 10,Lower,Hoarding,NL,23.5813403,72.1361762,Private,,,,,,,,,
-BEKA-BE-L,Bechraji,Kalri,Opp. Bus Stand,Mehsana to Bechraji,20 x 10,LHS,Hoarding,NL,23.5142671,72.0798783,Private,,,,,,,,,
-BEKA-BE-R,Bechraji,Kalri,Opp. Bus Stand,Mehsana to Bechraji,20 x 10,RHS,Hoarding,NL,23.5142671,72.0798783,Private,,,,,,,,,
-BEHP-BE-U,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,Upper,Hoarding,NL,23.5002224,72.0489078,Private,,,,,,,,,
-BEHP-BE-D,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,Lower,Hoarding,NL,23.5002224,72.0489078,Private,,,,,,,,,
-BEHP-ME-U,Bechraji,Helipad,Nr. Manidhar Village,Bechraji to Mehsana,20 x 10 ,Upper,Hoarding,NL,23.5002224,72.0489078,Private,,,,,,,,,
-BEHP-ME-D,Bechraji,Helipad,Nr. Manidhar Village,Bechraji to Mehsana,20 x 10 ,Lower,Hoarding,NL,23.5002224,72.0489078,Private,,,,,,,,,
-BEHP-BE-LU,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,LHS Upper,Hoarding,NL,23.5001498,72.0487428,Private,,,,,,,,,
-BEHP-BE-LD,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,LHS Lower,Hoarding,NL,23.5001498,72.0487428,Private,,,,,,,,,
-BEHP-BE-RU,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,RHS Upper,Hoarding,NL,23.5001498,72.0487428,Private,,,,,,,,,
-BEHP-BE-RD,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,RHS Lower,Hoarding,NL,23.5001498,72.0487428,Private,,,,,,,,,
-BEHP-ME-S,Bechraji,Helipad,Nr. Manidhar Village,Bechraji to Mehsana,20 x 15,Solo,Hoarding,NL,23.5001498,72.0487428,Private,,,,,,,,,
-BEMV-BE-U,Bechraji,Manidhar Village,Nr. Bus Stand,Mehsana to Bechraji,20 x 10,Upper,Hoarding,NL,23.5001729,72.0480864,LOF,,,,,,,,,
-BEMV-BE-D,Bechraji,Manidhar Village,Nr. Bus Stand,Mehsana to Bechraji,20 x 10,Lower,Hoarding,NL,23.5001729,72.0480864,LOF,,,,,,,,,
-BEMV-ME-U,Bechraji,Manidhar Village,Nr. Bus Stand,Bechraji to Mehsana,20 x 10,Upper,Hoarding,NL,23.5001729,72.0480864,LOF,,,,,,,,,
-BEMV-ME-D,Bechraji,Manidhar Village,Nr. Bus Stand,Bechraji to Mehsana,20 x 10,Lower,Hoarding,NL,23.5001729,72.0480864,LOF,,,,,,,,,
-BEBS-EN-U,Bechraji,Bus Stand,At. Bus Depo,Bechraji Bus Depo Entry,20 x 10,Upper,Hoarding,NL,23.5017775,72.0463738,LOF,,,,,,,,,
-BEBS-EN-D,Bechraji,Bus Stand,At. Bus Depo,Bechraji Bus Depo Entry,20 x 10,Lower,Hoarding,NL,23.5017775,72.0463738,LOF,,,,,,,,,
-BEBN-VG-S,Bechraji,Bechar Nala,Nr. Bechar Gram Panchayat,Viramgam to Bechraji,20 x 10,Solo,Hoarding,NL,23.4948339,72.0423418,LOF,,,,,,,,,
-BEBN-VG-U,Bechraji,Bechar Nala,Nr. Bechar Nala,Bechraji to Viramgam,20 x 10,Upper,Hoarding,NL,23.4937279,72.0418053,LOF,,,,,,,,,
-BEBN-VG-D,Bechraji,Bechar Nala,Nr. Bechar Nala,Bechraji to Viramgam,20 x 10,Lower,Hoarding,NL,23.4937279,72.0418053,LOF,,,,,,,,,
-BEHA-VG-U,Bechraji,Hansalpur,Opp. Bansi Katthiyawadi Hotel,Bechraji to Viramgam,20 x 10,Upper,Hoarding,NL,23.4919196,72.0253946,Private,,,,,,,,,
-BEHA-VG-D,Bechraji,Hansalpur,Opp. Bansi Katthiyawadi Hotel,Bechraji to Viramgam,20 x 10,Lower,Hoarding,NL,23.4919196,72.0253946,Private,,,,,,,,,
-BEHA-BE-U,Bechraji,Hansalpur,Opp. Bansi Katthiyawadi Hotel,Viramgam to Bechraji,20 x 10,Upper,Hoarding,NL,23.4919196,72.0253946,Private,,,,,,,,,
-BEHA-BE-D,Bechraji,Hansalpur,Opp. Bansi Katthiyawadi Hotel,Viramgam to Bechraji,20 x 10,Lower,Hoarding,NL,23.4919196,72.0253946,Private,,,,,,,,,
-BEMP-BE-RU,Bechraji,Maruti Plant,Hansalpur T Junction,Viramgam to Bechraji,20 x 10,RHS Upper,Hoarding,NL,23.4885571,72.0175048,Private,,,,,,,,,
-BEMP-BE-RD,Bechraji,Maruti Plant,Hansalpur T Junction,Viramgam to Bechraji,20 x 10,RHS Lower,Hoarding,NL,23.4885571,72.0175048,Private,,,,,,,,,
-BEMP-BE-LU,Bechraji,Maruti Plant,Hansalpur T Junction,Viramgam to Bechraji,20 x 10,LHS Upper,Hoarding,NL,23.4885571,72.0175048,Private,,,,,,,,,
-BEMP-BE-LD,Bechraji,Maruti Plant,Hansalpur T Junction,Viramgam to Bechraji,20 x 10,LHS Lower,Hoarding,NL,23.4885571,72.0175048,Private,,,,,,,,,
-BEMP-BV-R3,Bechraji,Maruti Plant,Hansalpur T Junction,Maruti Plant to Bechraji & Vitthalapur,20 x 10,RHS Third,Hoarding,NL,23.4881998,72.0176876,Private,,,,,,,,,
-BEMP-BV-L3,Bechraji,Maruti Plant,Hansalpur T Junction,Maruti Plant to Bechraji & Vitthalapur,20 x 10,LHS Third,Hoarding,NL,23.4881998,72.0176876,Private,,,,,,,,,
-BEMP-MV-R,Bechraji,Maruti Plant,Hansalpur T Junction,Bechraji to Maruti Plant & Viramgam,20 x 10,RHS,Hoarding,NL,23.4882247,72.017296,Private,,,,,,,,,
-BENY-HA-S,Bechraji,Naviyaani,At. Naviyani Village,Naviyani to Hansalpur,20 x 10,Solo,Hoarding,NL,23.4777473,71.9659695,Private,,,,,,,,,
-VIJA-BE-U,Vitthalapur,Jalisana,Nr. Bus Stop,Vitthalapur to Bechraji,20 x 10,Upper,Hoarding,NL,23.3984171,72.01368,Private,,,,,,,,,
-VIJA-BE-D,Vitthalapur,Jalisana,Nr. Bus Stop,Vitthalapur to Bechraji,20 x 10,Lower,Hoarding,NL,23.3984171,72.01368,Private,,,,,,,,,
-VIHP-EX-L1,Vitthalapur,Honda Plant,Main Entrance Gate,Exit From the Honda Plant,20 x 10,LHS First,Hoarding,NL,23.3710972,72.0451517,Private,,,,,,,,,
-VIHP-EX-L2,Vitthalapur,Honda Plant,Main Entrance Gate,Exit From the Honda Plant,20 x 10,LHS Second,Hoarding,NL,23.3710972,72.0451517,Private,,,,,,,,,
-VIHP-HB-L,Vitthalapur,Honda Plant,Main Entrance Gate,Vitthalapur to Honda Plant & Bechraji,20 x 10,LHS,Hoarding,NL,23.3714847,72.0452509,Private,,,,,,,,,
-VIHP-HB-R,Vitthalapur,Honda Plant,Main Entrance Gate,Vitthalapur to Honda Plant & Bechraji,20 x 10,RHS,Hoarding,NL,23.3714847,72.0452509,Private,,,,,,,,,
-VIVC-KM-L,Vitthalapur,Vitthalapur Circle,Opp. Police Chowki,"Kadi to Mandal, Bechraji & Viramgam",15 x 10,LHS,Hoarding,NL,23.3596791,72.052976,LOF,,,,,,,,,
-VIVC-VK-L,Vitthalapur,Vitthalapur Circle,Next to Police Chowki,"Viramgam to Kadi, Mandal & Bechraji",20 x 10,LHS,Hoarding,NL,23.3599281,72.0528594,LOF,,,,,,,,,
-VIVC-KM-S,Vitthalapur,Vitthalapur Circle,Next to Police Chowki,"Kadi to Mandal, Bechraji",20 x 10,Solo,Hoarding,NL,23.360005,72.0529278,LOF,,,,,,,,,
-VIVC-KD-L1,Vitthalapur,Vitthalapur Circle,At. Vitthalapur Circle,Vitthalapur Circle to Kadi,20 x 10,LHS First,Hoarding,NL,23.3597443,72.0534548,LOF,,,,,,,,,
-VIVC-MV-S,Vitthalapur,Vitthalapur Circle,At. Vitthalapur Circle,Mandal to Viramgam & Kadi,20 x 10,Solo,Hoarding,NL,23.3596628,72.0532604,LOF,,,,,,,,,
-VIMG-KD-U,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Vitthalapur to Kadi,20 x 10,Upper,Hoarding,NL,23.3604843,72.0617777,Private,,,,,,,,,
-VIMG-KD-M,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Vitthalapur to Kadi,20 x 10,Middle,Hoarding,NL,23.3604843,72.0617777,Private,,,,,,,,,
-VIMG-KD-D,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Vitthalapur to Kadi,20 x 10,Lower,Hoarding,NL,23.3604843,72.0617777,Private,,,,,,,,,
-VIMG-VI-U,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Kadi to Vitthalapur,20 x 10,Upper,Hoarding,NL,23.3604843,72.0617777,Private,,,,,,,,,
-VIMG-VI-M,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Kadi to Vitthalapur,20 x 10,Middle,Hoarding,NL,23.3604843,72.0617777,Private,,,,,,,,,
-VIMG-VI-D,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Kadi to Vitthalapur,20 x 10,Lower,Hoarding,NL,23.3604843,72.0617777,Private,,,,,,,,,
-DTDV-KD-R,Detroj,Detroj Village,Railway Crossing,Vitthalapur to Kadi,20 x 10,RHS,Hoarding,NL,23.3371863,72.1820376,Private,,,,,,,,,
-DTDV-KD-L1,Detroj,Detroj Village,Railway Crossing,Vitthalapur to Kadi,20 x 10,LHS First,Hoarding,NL,23.337737,72.1826116,Private,,,,,,,,,
-DTDV-KD-L3,Detroj,Detroj Village,Railway Crossing,Vitthalapur to Kadi,20 x 10,LHS Third,Hoarding,NL,23.337737,72.1826116,Private,,,,,,,,,
-DTDV-VI-R1,Detroj,Detroj Village,Railway Crossing,Kadi to Vitthalapur,20 x 10,RHS First,Hoarding,NL,23.3375493,72.1814626,Private,,,,,,,,,
-DTDV-VI-R2,Detroj,Detroj Village,Railway Crossing,Kadi to Vitthalapur,20 x 10,RHS Second,Hoarding,NL,23.3375493,72.1814626,Private,,,,,,,,,
-DTDV-VI-R3,Detroj,Detroj Village,Railway Crossing,Kadi to Vitthalapur,20 x 10,RHS Third,Hoarding,NL,23.3375493,72.1814626,Private,,,,,,,,,
-DTDV-VI-R4,Detroj,Detroj Village,Railway Crossing,Kadi to Vitthalapur,20 x 10,RHS Fourth,Hoarding,NL,23.3375493,72.1814626,Private,,,,,,,,,
-DTDV-VI-L,Detroj,Detroj Village,Railway Crossing,Kadi to Vitthalapur,20 x 10,LHS,Hoarding,NL,23.3381071,72.1818119,Private,,,,,,,,,
-DTMB-VI-U,Detroj,Main Bazar,Nr. Suman Nirmal Minda School,Kadi to Vitthalapur,20 x 10,Upper,Hoarding,NL,23.3349913,72.1973282,Private,,,,,,,,,
-DTMB-VI-M,Detroj,Main Bazar,Nr. Suman Nirmal Minda School,Kadi to Vitthalapur,20 x 10,Middle,Hoarding,NL,23.3349913,72.1973282,Private,,,,,,,,,
-DTMB-VI-D,Detroj,Main Bazar,Nr. Suman Nirmal Minda School,Kadi to Vitthalapur,20 x 10,Lower,Hoarding,NL,23.3349913,72.1973282,Private,,,,,,,,,
-KASV-VI-U,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Kadi to Vitthalapur,20 x 10,Upper,Hoarding,NL,23.3123272,72.2616827,Private,,,,,,,,,
-KASV-VI-M,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Kadi to Vitthalapur,20 x 10,Middle,Hoarding,NL,23.3123272,72.2616827,Private,,,,,,,,,
-KASV-VI-D,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Kadi to Vitthalapur,20 x 10,Lower,Hoarding,NL,23.3123272,72.2616827,Private,,,,,,,,,
-KASV-KD-U,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Vitthalapur to Kadi,20 x 10,Upper,Hoarding,NL,23.3123272,72.2616827,Private,,,,,,,,,
-KASV-KD-M,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Vitthalapur to Kadi,20 x 10,Middle,Hoarding,NL,23.3123272,72.2616827,Private,,,,,,,,,
-KASV-KD-D,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Vitthalapur to Kadi,20 x 10,Lower,Hoarding,NL,23.3123272,72.2616827,Private,,,,,,,,,
-KABA-VI-U,Kadi,Balasar ,Nr. Balasar Village Gate,Kadi to Vitthalapur,20 x 10,Upper,Hoarding,NL,23.2991131,72.291403,Private,,,,,,,,,
-KABA-VI-M,Kadi,Balasar ,Nr. Balasar Village Gate,Kadi to Vitthalapur,20 x 10,Middle,Hoarding,NL,23.2991131,72.291403,Private,,,,,,,,,
-KABA-VI-D,Kadi,Balasar ,Nr. Balasar Village Gate,Kadi to Vitthalapur,20 x 10,Lower,Hoarding,NL,23.2991131,72.291403,Private,,,,,,,,,
-KABA-VI-S,Kadi,Balasar ,Narmada Canal,Kadi to Vitthalapur,20 x 10,Solo,Hoarding,NL,23.2997034,72.3007391,LOF,,,,,,,,,
-KABH-BH-U,Kadi,Bhagyoday Road,Nr. Vadvala Hanuman Temple,We World Theatre to Bhagyoday Hospital,30 x 10,Upper,Hoarding,NL,23.2920212,72.3324052,Private,,,,,,,,,
-KABH-BH-M,Kadi,Bhagyoday Road,Nr. Vadvala Hanuman Temple,We World Theatre to Bhagyoday Hospital,30 x 10,Middle,Hoarding,NL,23.2920212,72.3324052,Private,,,,,,,,,
-KABH-BH-D,Kadi,Bhagyoday Road,Nr. Vadvala Hanuman Temple,We World Theatre to Bhagyoday Hospital,30 x 10,Lower,Hoarding,NL,23.2920212,72.3324052,Private,,,,,,,,,
-KAPP-CH-U,Kadi,Petrol Pump,Nr. Vrundavan Society,Kadi to Chhatral,20 x 15,Upper,Hoarding,NL,23.2983199,72.3401333,Private,,,,,,,,,
-KAPP-CH-D,Kadi,Petrol Pump,Nr. Vrundavan Society,Kadi to Chhatral,20 x 15,Lower,Hoarding,NL,23.2983199,72.3401333,Private,,,,,,,,,
-KABU-CH-U,Kadi,Budasan Village,Nr. Kadi GIDC,Kadi to Chhatral,20 x 10,Upper,Hoarding,NL,23.2853865,72.3724808,Private,,,,,,,,,
-KABU-CH-D,Kadi,Budasan Village,Nr. Kadi GIDC,Kadi to Chhatral,20 x 10,Lower,Hoarding,NL,23.2853865,72.3724808,Private,,,,,,,,,
-KAPI-TH-U,Kadi,Pirojpur,Pirojpur Canal,Kadi to Thol,20 x 10,Upper,Hoarding,NL,23.2675161,72.3468566,Private,,,,,,,,,
-KAPI-TH-D,Kadi,Pirojpur,Pirojpur Canal,Kadi to Thol,20 x 10,Lower,Hoarding,NL,23.2675161,72.3468566,Private,,,,,,,,,
-KAPI-KD-U,Kadi,Pirojpur,Pirojpur Canal,Thol to Kadi,20 x 10,Upper,Hoarding,NL,23.2675161,72.3468566,Private,,,,,,,,,
-KAPI-KD-M,Kadi,Pirojpur,Pirojpur Canal,Thol to Kadi,20 x 10,Middle,Hoarding,NL,23.2675161,72.3468566,Private,,,,,,,,,
-KAPI-KD-D,Kadi,Pirojpur,Pirojpur Canal,Thol to Kadi,20 x 10,Lower,Hoarding,NL,23.2675161,72.3468566,Private,,,,,,,,,
-KAPI-KD-U2,Kadi,Pirojpur,Opp. Mangalam Oil ,Thol to Kadi,20 x 10,Upper,Hoarding,NL,23.2593564,72.34709,Private,,,,,,,,,
-KAPI-KD-M2,Kadi,Pirojpur,Opp. Mangalam Oil ,Thol to Kadi,20 x 10,Middle,Hoarding,NL,23.2593564,72.34709,Private,,,,,,,,,
-KAPI-KD-D2,Kadi,Pirojpur,Opp. Mangalam Oil ,Thol to Kadi,20 x 10,Lower,Hoarding,NL,23.2593564,72.34709,Private,,,,,,,,,
-KAPI-TH-U2,Kadi,Pirojpur,Opp. Mangalam Oil ,Kadi to Thol,20 x 10,Upper,Hoarding,NL,23.2593564,72.34709,Private,,,,,,,,,
-KAPI-TH-M2,Kadi,Pirojpur,Opp. Mangalam Oil ,Kadi to Thol,20 x 10,Middle,Hoarding,NL,23.2593564,72.34709,Private,,,,,,,,,
-KAPI-TH-D2,Kadi,Pirojpur,Opp. Mangalam Oil ,Kadi to Thol,20 x 10,Lower,Hoarding,NL,23.2593564,72.34709,Private,,,,,,,,,
-THMA-KD-U,Thol,Meda Aadraj,Nr. Purohit Hotel,Thol to Kadi,20 x 10,Upper,Hoarding,NL,23.2005491,72.3661404,Private,,,,,,,,,
-THMA-KD-M,Thol,Meda Aadraj,Nr. Purohit Hotel,Thol to Kadi,20 x 10,Middle,Hoarding,NL,23.2005491,72.3661404,Private,,,,,,,,,
-THMA-KD-D,Thol,Meda Aadraj,Nr. Purohit Hotel,Thol to Kadi,20 x 10,Lower,Hoarding,NL,23.2005491,72.3661404,Private,,,,,,,,,
-THMA-TH-U,Thol,Meda Aadraj,Nr. Purohit Hotel,Kadi to Thol,20 x 10,Upper,Hoarding,NL,23.2005491,72.3661404,Private,,,,,,,,,
-THMA-TH-M,Thol,Meda Aadraj,Nr. Purohit Hotel,Kadi to Thol,20 x 10,Middle,Hoarding,NL,23.2005491,72.3661404,Private,,,,,,,,,
-THMA-TH-D,Thol,Meda Aadraj,Nr. Purohit Hotel,Kadi to Thol,20 x 10,Lower,Hoarding,NL,23.2005491,72.3661404,Private,,,,,,,,,
-THSH-KD-U,Thol,Shedfa,Nr. N K Protiens,Thol to Kadi,20 x 10,Upper,Hoarding,NL,23.155945,72.377129,Private,,,,,,,,,
-THSH-KD-M,Thol,Shedfa,Nr. N K Protiens,Thol to Kadi,20 x 10,Middle,Hoarding,NL,23.155945,72.377129,Private,,,,,,,,,
-THSH-KD-D,Thol,Shedfa,Nr. N K Protiens,Thol to Kadi,20 x 10,Lower,Hoarding,NL,23.155945,72.377129,Private,,,,,,,,,
-VISC-VM-U,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,Upper,Hoarding,NL,23.0821882,72.1670279,Private,,,,,,,,,
-VISC-VM-M,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,Middle,Hoarding,NL,23.0821882,72.1670279,Private,,,,,,,,,
-VISC-VM-D,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,Lower,Hoarding,NL,23.0821882,72.1670279,Private,,,,,,,,,
-VISC-VM-LU,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,LHS Upper,Hoarding,NL,23.0821767,72.1668113,Private,,,,,,,,,
-VISC-VM-LM,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,LHS Middle,Hoarding,NL,23.0821767,72.1668113,Private,,,,,,,,,
-VISC-VM-LD,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,LHS Lower,Hoarding,NL,23.0821767,72.1668113,Private,,,,,,,,,
-VISC-SN-U,Viramgam,Sachana,Sachana Bypass ,Viramgam to Sanand,20 x 10,Upper,Hoarding,NL,23.0821767,72.1668113,Private,,,,,,,,,
-VISC-SN-M,Viramgam,Sachana,Sachana Bypass ,Viramgam to Sanand,20 x 10,Middle,Hoarding,NL,23.0821767,72.1668113,Private,,,,,,,,,
-VISC-SN-D,Viramgam,Sachana,Sachana Bypass ,Viramgam to Sanand,20 x 10,Lower,Hoarding,NL,23.0821767,72.1668113,Private,,,,,,,,,
-VIVB-VV-U,Viramgam,Viramgam Bypass,Sokali Fatak,Sanand to Viramgam & Vitthalapur,30 x 10,Upper,Hoarding,NL,23.0967205,72.1084321,Private,,,,,,,,,
-VIVB-VV-M,Viramgam,Viramgam Bypass,Sokali Fatak,Sanand to Viramgam & Vitthalapur,30 x 10,Middle,Hoarding,NL,23.0967205,72.1084321,Private,,,,,,,,,
-VIVB-VV-D,Viramgam,Viramgam Bypass,Sokali Fatak,Sanand to Viramgam & Vitthalapur,30 x 10,Lower,Hoarding,NL,23.0967205,72.1084321,Private,,,,,,,,,
-VIVB-PC-U,Viramgam,Viramgam Bypass,"Nr. Ravi Hotel, Balapir Chowkadi",Sokali Fatak to Popat Chowkadi,20 x 10,Upper,Hoarding,NL,23.1198493,72.0697331,Private,,,,,,,,,
-VIVB-PC-M,Viramgam,Viramgam Bypass,"Nr. Ravi Hotel, Balapir Chowkadi",Sokali Fatak to Popat Chowkadi,20 x 10,Middle,Hoarding,NL,23.1198493,72.0697331,Private,,,,,,,,,
-VIVB-PC-D,Viramgam,Viramgam Bypass,"Nr. Ravi Hotel, Balapir Chowkadi",Sokali Fatak to Popat Chowkadi,20 x 10,Lower,Hoarding,NL,23.1198493,72.0697331,Private,,,,,,,,,
-VIVB-PC-L,Viramgam,Viramgam Bypass,Nr. Kalika Hotel,Sokali Fatak to Popat Chowkadi,20 x 10,LHS,Hoarding,NL,23.1406837,72.0754476,Private,,,,,,,,,
-VIVB-PC-R,Viramgam,Viramgam Bypass,Nr. Kalika Hotel,Sokali Fatak to Popat Chowkadi,20 x 10,RHS,Hoarding,NL,23.1406837,72.0754476,Private,,,,,,,,,
-VIVB-VI-U,Viramgam,Viramgam Bypass,Popat Chowkadi,Viramgam to Vitthalapur,20 x 10,Upper,Hoarding,NL,23.145699,72.0503518,Private,,,,,,,,,
-VIVB-VI-M,Viramgam,Viramgam Bypass,Popat Chowkadi,Viramgam to Vitthalapur,20 x 10,Middle,Hoarding,NL,23.145699,72.0503518,Private,,,,,,,,,
-VIVB-VI-D,Viramgam,Viramgam Bypass,Popat Chowkadi,Viramgam to Vitthalapur,20 x 10,Lower,Hoarding,NL,23.145699,72.0503518,Private,,,,,,,,,
-SAVA-TE-S,Sami,Varana,Opp. Khodiyaar Mata Temple,Temple Entrance,20 x 10,Solo,Hoarding,NL,23.7263442,71.7247323,Private,,,,,,,,,
+Hoarding Code,City,(Area/Zone),Location / Landmark,Facing Direction,Size (Width x Height),Position,Hoarding Type,Illumination,Latitude,Longitude,Ownership,Sq. Ft.,Landlord
+MENG-AH-S,Mehsana,Nagalpur,Nr. Maruti Starline Showroom,Mehsana to Ahmedabad,77 x 10,Solo,Gantry,NL,23.581427,72.370017,GOV - R & B Mehsana,770,R & B Mehsana
+MEMC-BN-S,Mehsana,Modhera Circle,"Nr. Joyos Hubtown, Nr. Modhera Circle,  ST Workshop Road",Modhera Circle to Bhamariya Nala,70 x 10,Solo,Gantry,NL,23.594335,72.38093,GOV - MMC,700,MMC
+MEBN-MC-S,Mehsana,Bhamariya Nala,"BK Cinema, ST Workshop Road",Bhamariya Nala to Modhera circle,50 X 10,Solo,Gantry,NL,23.595229,72.385683,GOV - MMC,500,MMC
+MEBN-BN-S,Mehsana,Bhamariya Nala,"Apna Bazar, Nr. Bhamariya Nala",Modhera Circle to Bhamariya Nala,67 x 10,Solo,Gantry,NL,23.59573,72.387532,GOV - MMC,670,MMC
+MEGN-FV-S,Mehsana,Gopi Nala,"MG Shoping Center, Nr. Ganpati Temple, Fuvara, Rajmahel Road",Bus Stand to Fuvara,55 x 10,Solo,Gantry,NL,23.604455,72.390394,GOV - MMC,550,MMC
+METC-TC-S,Mehsana,Toranwali Chowk,"Ranjan no Dhal, Nr. Nagarpalika Office, Main Bazar",Arvind Baug to Toranwali Mata Chowk,50 x 10,Solo,Gantry,NL,23.603211,72.391711,GOV - MMC,500,MMC
+MERC-GN-S,Mehsana,Radhanpur Circle,Nr. Radhanpur Circle,Radhanpur Circle to Gopi Nala,40 x 10,Solo,Gantry,NL,23.606333,72.381942,GOV - MMC,400,MMC
+BEMP-VG-S,Bechraji,Maruti Plant,"Nr. Maruti Plant, Hansalpur Circle, On Becharaji to Viramgam Highway",Bechraji to Viramgam,70 x 10,Solo,Gantry,NL,23.487564,72.017006,GOV - R & B Viramgam,700,R & B Viramgam
+BEMP-BE-S,Bechraji,Maruti Plant,"Bechraji Entrance, Viramgam Bechraji Highway",Viramgam to Bechraji,70 x 10,Solo,Gantry,NL,23.4921185,72.0291664,GOV - R & B Viramgam,700,R & B Viramgam
+HIMO-BS-S,Himmatnagar,Motipura Circle,Motipura Circle,Motipura Circle to Bus Stand,86 x 10,Solo,Gantry,NL,23.58239962,72.95844305,GOV - R & B Himmatnagar,860,R & B Himmatnagar
+HIMO-MO-S,Himmatnagar,Motipura Circle,Motipura Circle,Bus Stand to Motipura,86 x 10,Solo,Gantry,NL,23.58239962,72.95844305,GOV - R & B Himmatnagar,860,R & B Himmatnagar
+HIMO-BS-SA,Himmatnagar,Motipura Circle,"Umashankar Joshi Bridge, Nr. Motipura Circle",Motipura Circle to Bus Stand,50 x 10,Solo,Gantry,NL,23.585027,72.95788,GOV - R & B Himmatnagar,500,R & B Himmatnagar
+HIMO-MO-SA,Himmatnagar,Motipura Circle,"Umashankar Joshi Bridge, Nr. Motipura Circle",Bus Stand to Motipura,50 x 10,Solo,Gantry,NL,23.585027,72.95788,GOV - R & B Himmatnagar,500,R & B Himmatnagar
+HIBS-CC-S,Himmatnagar,Bus Stand,At Bus Stand,Motipura Circle to Civil Circle,60 x 10,Solo,Gantry,NL,23.59281,72.958388,GOV - R & B Himmatnagar,600,R & B Himmatnagar
+HIBS-MO-S,Himmatnagar,Bus Stand,At Bus Stand,Civil Circle to Motipura Circle,60 x 10,Solo,Gantry,NL,23.59281,72.958388,GOV - R & B Himmatnagar,600,R & B Himmatnagar
+HICC-MV-S,Himmatnagar,Chhapariya Circle,Chhapariya Circle,Motipura Circle to Mahavirnagar Circle,75 x 10,Solo,Gantry,NL,23.59314,72.965271,GOV - R & B Himmatnagar,750,R & B Himmatnagar
+HICC-MO-S,Himmatnagar,Chhapariya Circle,Chhapariya Circle,Mahavirnagar Circle to Motipura Circle,75 x 10,Solo,Gantry,NL,23.59314,72.965271,GOV - R & B Himmatnagar,750,R & B Himmatnagar
+HIMV-MV-S,Himmatnagar,Mahavirnagar Circle,"Purnima Dairy, Nr. Mahavirnagar Circle",Chhapariya Circle to Mahavirnagar Circle,45 x 10,Solo,Gantry,NL,23.5958365,72.9688414,GOV - R & B Himmatnagar,450,R & B Himmatnagar
+HIMV-CP-S,Himmatnagar,Mahavirnagar Circle,"Purnima Dairy, Nr. Mahavirnagar Circle",Mahavirnagar Circle to Chhapariya Circle,45 x 10,Solo,Gantry,NL,23.5958365,72.9688414,GOV - R & B Himmatnagar,450,R & B Himmatnagar
+HIMH-HI-S,Himmatnagar,Mehtapura Circle,"Mehtapura Circle, Hathmati Bridge",Idar to Himmatnagar,75 x 10,Solo,Gantry,NL,23.609224,72.96396,GOV - R & B Himmatnagar,750,R & B Himmatnagar
+PABD-BS-S,Patan,Bagwada Darwaja,Bagwada Darwaja,Railway Station to Bus Stand & Market,60 x 10,Solo,Gantry,NL,23.852147,72.125305,GOV - Patan Nagarpalika,600,Patan Nagarpalika
+PABD-RS-S,Patan,Bagwada Darwaja,Nr. City Point Market,Market to Railway Station,64 x 10,Solo,Gantry,NL,23.852508,72.126564,GOV - Patan Nagarpalika,640,Patan Nagarpalika
+PABS-BS-S,Patan,Bus Stand,Nr. Jayveernagar Three Road,Towards Bus Stand,40 x 10,Solo,Gantry,NL,23.852508,72.12426436,GOV - Patan Nagarpalika,400,Patan Nagarpalika
+PAAS-SC-S,Patan,Anand Sarovar,Nr. Anand Sarovar ,Anand Sarovar to Shubhash Chowk,64 x 10,Solo,Gantry,NL,23.85581013,72.1271676,GOV - Patan Nagarpalika,640,Patan Nagarpalika
+MEAH-ME-U,Mehsana,Ahmedabad Mehsana Highway,"Opp. Nirma Factory, Nr. Bhagyoday Hotel",Ahmedabad to Mehsana,40 x 20,Upper,Hoarding,NL,23.4440542,72.3931908,Private,800,Purohit Hotel
+MEAH-ME-D,Mehsana,Ahmedabad Mehsana Highway,"Opp. Nirma Factory, Nr. Bhagyoday Hotel",Ahmedabad to Mehsana,40 x 20,Lower,Hoarding,NL,23.4440542,72.3931908,Private,800,Purohit Hotel
+MEAH-AH-U,Mehsana,Ahmedabad Mehsana Highway,Nr. Nirma Factory,Mehsana to Ahmedabad,40 x 20,Upper,Hoarding,NL,23.436237,72.394231,Private,800,Zam Zam Hotel
+MEAH-AH-D,Mehsana,Ahmedabad Mehsana Highway,Nr. Nirma Factory,Mehsana to Ahmedabad,40 x 20,Lower,Hoarding,NL,23.436237,72.394231,Private,800,Zam Zam Hotel
+MESW-SW-L,Mehsana,Shanku's Water Park,Opp. Water Park / Divine International School / SMC Medicity Hospital,Opp Shankus Water Park,20 x 20,LHS,Hoarding,NL,23.473661,72.393336,Private,400,Hasmukh Patel
+MESW-SW-R,Mehsana,Shanku's Water Park,Opp. Water Park / Divine International School / SMC Medicity Hospital,Opp Shankus Water Park,20 x 20,RHS,Hoarding,NL,23.473661,72.393336,Private,400,Hasmukh Patel
+MESA-SA-U,Mehsana,Saffrony Collage,Opp. Saffrony Collage / Tapovan International School,Opp Saffrony Collage,20 x 10,Upper,Hoarding,NL,23.484428,72.395673,Private,200,Piyush Patel
+MESA-SA-D,Mehsana,Saffrony Collage,Opp. Saffrony Collage / Tapovan International School,Opp Saffrony Collage,20 x 10,Lower,Hoarding,NL,23.484428,72.395673,Private,200,Piyush Patel
+MEMT-ME-U,Mehsana,Mevad Toll Plaza,Tollplaza Mehsana,Ahmedabad to Mehsana,30 x 15,Upper,Hoarding,NL,23.5279589,72.3875136,Private,450,Bhavin Chaudhary Toll Plaza
+MEMT-ME-D,Mehsana,Mevad Toll Plaza,Tollplaza Mehsana,Ahmedabad to Mehsana,30 x 15,Lower,Hoarding,NL,23.5279589,72.3875136,Private,450,Bhavin Chaudhary Toll Plaza
+MESH-AH-LU,Mehsana,Shivala Circle,Shivala Circle,Mehsana to Ahmedabad,20 x 10,LHS Upper,Hoarding,NL,23.5439075,72.3807785,GOV - MMC,200,MMC
+MESH-AH-LD,Mehsana,Shivala Circle,Shivala Circle,Mehsana to Ahmedabad,20 x 10,LHS Lower,Hoarding,NL,23.5439075,72.3807785,GOV - MMC,200,MMC
+MESH-AH-S,Mehsana,Shivala Circle,Shivala Circle,Mehsana to Ahmedabad,20 x 15,Solo,Hoarding,NL,23.5449535,72.3803614,GOV - MMC,300,MMC
+MESH-BP-S,Mehsana,Shivala Circle,Shivala Circle,Mehsana Bypass to ,20 x 15,Solo,Hoarding,NL,23.5444297,72.3805968,GOV - MMC,300,MMC
+MESH-ME-U,Mehsana,Shivala Circle,Shivala Circle,Ahmedabad to Mehsana,20 x 10,Upper,Hoarding,NL,23.5448911,72.3798411,GOV - MMC,200,MMC
+MESH-ME-D,Mehsana,Shivala Circle,Shivala Circle,Ahmedabad to Mehsana,20 x 10,Lower,Hoarding,NL,23.5448911,72.3798411,GOV - MMC,200,MMC
+MESH-ME-S,Mehsana,Shivala Circle,Shivala Circle,Ahmedabad to Mehsana,20 x 10,Solo,Hoarding,NL,23.5448911,72.3798411,GOV - MMC,200,MMC
+MESH-ME-SA,Mehsana,Shivala Circle,"Shivala Circle, Mehsana Entrance, Nr. KIA Showroom",Ahmedabad to Mehsana,30 x 20,Solo,Hoarding,NL,23.5497569,72.3779468,Private,600,Green Meedows
+MEOC-AH-U,Mehsana,ONGC Circle,At ONGC (Palavasana) Circle,Mehsana to Ahmedabad & Himmatnagar,20 x 10,Upper,Hoarding,NL,23.5673833,72.3714656,GOV - MMC,200,MMC
+MEOC-AH-D,Mehsana,ONGC Circle,At ONGC (Palavasana) Circle,Mehsana to Ahmedabad & Himmatnagar,20 x 10,Lower,Hoarding,NL,23.5673833,72.3714656,GOV - MMC,200,MMC
+MEOC-AH-S,Mehsana,ONGC Circle,At ONGC (Palavasana) Circle,Mehsana to Ahmedabad,20 x 15,Solo,Hoarding,NL,23.5671125,72.3715246,GOV - MMC,300,MMC
+MEOC-ME-1,Mehsana,ONGC Circle,At ONGC (Palavasana) Circle,Ahmedabad to Mehsana,20 x 10,First,Hoarding,NL,23.5678436,72.3707501,GOV - MMC,200,MMC
+MEOC-ME-2,Mehsana,ONGC Circle,At ONGC (Palavasana) Circle,Ahmedabad to Mehsana & Bechraji,20 x 10,Second,Hoarding,NL,23.5698881,72.3699025,GOV - MMC,200,MMC
+MEKN-ME-S,Mehsana,Khari Nadi,"Opp. Janpath, Bechraji Chowkadi",Ahmedabad to Mehsana & Bechraji,20 x 10,Solo,Hoarding,NL,23.5706761,72.3695877,GOV - MMC,200,MMC
+MEKN-ME-SA,Mehsana,Khari Nadi,Nr. RTO,Ahmedabad to Mehsana,20 x 10,Solo,Hoarding,NL,23.5711533,72.3693879,GOV - MMC,200,MMC
+MEKN-ME-U1,Mehsana,Khari Nadi,"RTO, Mehsana Entrance, Nr. Khari Nadi, First",Ahmedabad to Mehsana,20 x 10,Upper,Hoarding,NL,23.5735164,72.3685255,GOV - MMC,200,MMC
+MEKN-ME-D1,Mehsana,Khari Nadi,"RTO, Mehsana Entrance, Nr. Khari Nadi, First",Ahmedabad to Mehsana,20 x 10,Lower,Hoarding,NL,23.5735164,72.3685255,GOV - MMC,200,MMC
+MEKN-ME-U2,Mehsana,Khari Nadi,"RTO, Mehsana Entrance, Nr. Khari Nadi, Second",Ahmedabad to Mehsana,20 x 10,Upper,Hoarding,NL,23.5744488,72.3682228,GOV - MMC,200,MMC
+MEKN-ME-D2,Mehsana,Khari Nadi,"RTO, Mehsana Entrance, Nr. Khari Nadi, Second",Ahmedabad to Mehsana,20 x 10,Lower,Hoarding,NL,23.5744488,72.3682228,GOV - MMC,200,MMC
+MEKN-AH-SR,Mehsana,Khari Nadi,"Opp. RTO, Nr. Palavasana (ONGC) Circle",Mehsana to Ahmedabad,20 x 10,Solo,Hoarding,NL,23.5741581,72.3687207,GOV - MMC,200,MMC
+MEKN-AH-ST,Mehsana,Khari Nadi,Nr. Tata Cargo & Mahindra Showroom,Mehsana to Ahmedabad,30 x 30,Solo,Hoarding,NL,23.5724894,72.3693714,LOF,900,LOF
+MEKN-ME-S,Mehsana,Khari Nadi,"Nr. Wide Angel Cinema, Mehsana Entrance",Ahmedabad to Mehsana,60 x 40,Solo,Hoarding,NL,23.5778499,72.3666225,Private,2400,Babubhai Mamlatdar
+MEKN-ME-L,Mehsana,Khari Nadi,"City Entry, Nr. Himalaya Royal, Opp. Wide Angel Cinema",Ahmedabad to Mehsana,30 x 30,LHS,Hoarding,NL,23.5783157,72.3665484,Private,900,Dineshbhai Shah
+MEKN-ME-R,Mehsana,Khari Nadi,"City Entry, Nr. Himalaya Royal, Opp. Wide Angel Cinema",Ahmedabad to Mehsana,30 x 30,RHS,Hoarding,NL,23.5783157,72.3665484,Private,900,Dineshbhai Shah
+MENG-ME-L,Mehsana,Nagalpur,"Nr. Wide Angel Cinema, Nr. Nagalpur Cross Road",Ahmedabad to Mehsana,30 x 30,LHS,Hoarding,NL,23.5808468,72.3689745,Private,900,S9 Association
+MENG-ME-R,Mehsana,Nagalpur,"Nr. Wide Angel Cinema, Nr. Nagalpur Cross Road",Ahmedabad to Mehsana,30 x 30,RHS,Hoarding,NL,23.5808468,72.3689745,Private,900,S9 Association
+MENG-AH-L,Mehsana,Nagalpur,"Nr. Wide Angel Cinema, Nr. Nagalpur Cross Road",Mehsana to Ahmedabad,30 x 30,LHS,Hoarding,NL,23.5808468,72.3689745,Private,900,S9 Association
+MENG-AH-R,Mehsana,Nagalpur,"Nr. Wide Angel Cinema, Nr. Nagalpur Cross Road",Mehsana to Ahmedabad,30 x 30,RHS,Hoarding,NL,23.5808468,72.3689745,Private,900,S9 Association
+MENG-MC-L,Mehsana,Nagalpur,Nr. Nagalpur College,ONGC Circle to Modhera Circle,20 x 10,LHS,Hoarding,NL,23.5855456,72.3738356,GOV - MMC,200,MMC
+MENG-MC-M,Mehsana,Nagalpur,Nr. Nagalpur College,ONGC Circle to Modhera Circle,20 x 10,Middle,Hoarding,NL,23.5855456,72.3738356,GOV - MMC,200,MMC
+MENG-MC-R,Mehsana,Nagalpur,Nr. Nagalpur College,ONGC Circle to Modhera Circle,20 x 10,RHS,Hoarding,NL,23.5855456,72.3738356,GOV - MMC,200,MMC
+MENG-MC-S,Mehsana,Nagalpur,"Nr. Nagalpur College, Next to Pay and Use Toilet",ONGC Circle to Modhera Circle,20 x 10,Solo,Hoarding,NL,23.5856439,72.3740076,GOV - MMC,200,MMC
+MENG-CE-L,Mehsana,Nagalpur,Nagalpur Collage,Collage Entry,20 x 10,LHS,Hoarding,NL,23.5858999,72.3742457,GOV - MMC,200,MMC
+MENG-CE-M,Mehsana,Nagalpur,Nagalpur Collage,Collage Entry,20 x 10,Middle,Hoarding,NL,23.5858999,72.3742457,GOV - MMC,200,MMC
+MENG-CE-R,Mehsana,Nagalpur,Nagalpur Collage,Collage Entry,20 x 10,RHS,Hoarding,NL,23.5858999,72.3742457,GOV - MMC,200,MMC
+MENG-AH-S,Mehsana,Nagalpur,"Nr. Gaytri Temple, Highway",Palanpur to Ahmedabad ,15 x 31,Solo,Hoarding,NL,23.5889987,72.3777728,Private,450,Gayatri Mandir Trust
+MENG-NC-S,Mehsana,Nagalpur,Opp. Gaytri Temple,Dharam Cinema Road to Nagalpur College,20 x 10,Solo,Hoarding,NL,23.5891907,72.3779736,Private,200,Gayatri Mandir Trust
+MEMC-DG-S,Mehsana,Modhera Circle,Modhera Circle,Modhera Circle to Dediyasan GIDC,20 x 10,Solo,Hoarding,NL,23.5941568,72.3781956,GOV - MMC,200,MMC
+MEMC-PA-SC,Mehsana,Modhera Circle,Modhera Circle,Ahmedabad to Palanpur,20 x 20,Solo,Hoarding,NL,23.5937368,72.3784142,Private,400,Shyam Super Mall
+MEMC-CP-S,Mehsana,Modhera Circle,Modhera Circle,City to Ahmedabad & Palanpur & Modhera,61 x 20,Solo,Hoarding,NL,23.5937368,72.3784142,Private,1200,Shyam Super Mall
+MEMC-BS-S,Mehsana,Modhera Circle,Opp. Bus Terminal,Opp Bus Stand,59 x 41,Solo,Hoarding,NL,23.5936594,72.3782827,Private,2400,Shakti Tubewell
+MEMC-AH-S,Mehsana,Modhera Circle,"Opp. Rajkamal Petrol Pump,",Palanpur to Ahmedabad ,35 x 23,Solo,Hoarding,NL,23.595871,72.3795947,Private,805,Vinaybhai Patel
+MEMC-PA-SR,Mehsana,Modhera Circle,"Opp. Rajkamal Petrol Pump,",Ahmedabad to Palanpur,50 x 30,Solo,Hoarding,NL,23.5961773,72.3796859,Private,1500,Vinaybhai Patel
+MEMR-MC-S,Mehsana,Modhera Road,"At Poojan Complex, Nr. Lucky Park",Dediyasan GIDC to Modhera circle,30 x 19,Solo,Hoarding,NL,23.5943569,72.3761638,Private,600,Poojan Complax
+MEMR-MC-L,Mehsana,Modhera Road,Nr. Avsar Party plot,Dediyasan GIDC to Modhera circle,20 x 30,LHS,Hoarding,NL,23.5942558,72.3618019,Private,600,Vikram Patel
+MEMR-MC-R,Mehsana,Modhera Road,Nr. Avsar Party plot,Dediyasan GIDC to Modhera circle,20 x 30,RHS,Hoarding,NL,23.5942558,72.3618019,Private,600,Vikram Patel
+MEMR-DG-U1,Mehsana,Modhera Road,Nr. Avsar Party plot First,Modhera Circle to Dediyasan GIDC,20 x 10,Upper,Hoarding,NL,23.5942294,72.3611022,Private,200,Bharatbhai Patel
+MEMR-DG-M1,Mehsana,Modhera Road,Nr. Avsar Party plot First,Modhera Circle to Dediyasan GIDC,20 x 10,Middle,Hoarding,NL,23.5942294,72.3611022,Private,200,Bharatbhai Patel
+MEMR-DG-D1,Mehsana,Modhera Road,Nr. Avsar Party plot First,Modhera Circle to Dediyasan GIDC,20 x 10,Lower,Hoarding,NL,23.5942294,72.3611022,Private,200,Bharatbhai Patel
+MEMR-DG-U2,Mehsana,Modhera Road,Nr. Avsar Party plot Second,Modhera Circle to Dediyasan GIDC,20 x 10,Upper,Hoarding,NL,23.594171,72.3606697,Private,200,Bharatbhai Patel
+MEMR-DG-M2,Mehsana,Modhera Road,Nr. Avsar Party plot Second,Modhera Circle to Dediyasan GIDC,20 x 10,Middle,Hoarding,NL,23.594171,72.3606697,Private,200,Bharatbhai Patel
+MEMR-DG-D2,Mehsana,Modhera Road,Nr. Avsar Party plot Second,Modhera Circle to Dediyasan GIDC,20 x 10,Lower,Hoarding,NL,23.594171,72.3606697,Private,200,Bharatbhai Patel
+MEMR-MC-UA,Mehsana,Modhera Road,Opp Avsar Party Plot,Dediyasan GIDC to Modhera circle,20 x 10,Upper,Hoarding,NL,23.5938302,72.3595773,Private,200,Vikram Patel
+MEMR-MC-MA,Mehsana,Modhera Road,Opp Avsar Party Plot,Dediyasan GIDC to Modhera circle,20 x 10,Middle,Hoarding,NL,23.5938302,72.3595773,Private,200,Vikram Patel
+MEMR-MC-DA,Mehsana,Modhera Road,Opp Avsar Party Plot,Dediyasan GIDC to Modhera circle,20 x 10,Lower,Hoarding,NL,23.5938302,72.3595773,Private,200,Vikram Patel
+MEMR-DG-U,Mehsana,Modhera Road,Opp Avsar Party Plot,Modhera Circle to Dediyasan GIDC,20 x 10,Upper,Hoarding,NL,23.5938302,72.3595773,Private,200,Vikram Patel
+MEMR-DG-M,Mehsana,Modhera Road,Opp Avsar Party Plot,Modhera Circle to Dediyasan GIDC,20 x 10,Middle,Hoarding,NL,23.5938302,72.3595773,Private,200,Vikram Patel
+MEMR-DG-D,Mehsana,Modhera Road,Opp Avsar Party Plot,Modhera Circle to Dediyasan GIDC,20 x 10,Lower,Hoarding,NL,23.5938302,72.3595773,Private,200,Vikram Patel
+MEMR-IC-S,Mehsana,Modhera Road,Dediyasan GIDC Gate No. 1,Modhera Circle to Iskon Circle,20 x 10,Solo,Hoarding,NL,23.5938551,72.356462,MMC,200,MMC
+MEMR-MC-U,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Iskon Circle to Modhera Circle,20 x 10,Upper,Hoarding,NL,23.5923948,72.3494054,Private,200,Mahakali Dairy
+MEMR-MC-M,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Iskon Circle to Modhera Circle,20 x 10,Middle,Hoarding,NL,23.5923948,72.3494054,Private,200,Mahakali Dairy
+MEMR-MC-D,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Iskon Circle to Modhera Circle,20 x 10,Lower,Hoarding,NL,23.5923948,72.3494054,Private,200,Mahakali Dairy
+MEMR-IC-U,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Modhera Circle to Iskon Circle,20 x 10,Upper,Hoarding,NL,23.5923948,72.3494054,Private,200,Mahakali Dairy
+MEMR-IC-M,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Modhera Circle to Iskon Circle,20 x 10,Middle,Hoarding,NL,23.5923948,72.3494054,Private,200,Mahakali Dairy
+MEMR-IC-D,Mehsana,Modhera Road,Nr. Dediyasan GIDC,Modhera Circle to Iskon Circle,20 x 10,Lower,Hoarding,NL,23.5923948,72.3494054,Private,200,Mahakali Dairy
+MEMR-MC-DC,Mehsana,Modhera Road,At Cambridge Health Care,Dediyasan GIDC to Modhera circle,20 x 10,Lower,Hoarding,NL,23.5940505,72.3714599,Private,200,Cambridgee
+MEMR-MC-UC,Mehsana,Modhera Road,At Cambridge Health Care,Dediyasan GIDC to Modhera circle,20 x 20,Upper,Hoarding,NL,23.5940505,72.3714599,Private,400,Cambridgee
+MEMR-ME-LU1,Mehsana,Modhera Road,"Iskon Circle, First Board",Modhera to Mehsana ,20 x 10,LHS Upper,Hoarding,NL,23.5963063,72.32977,Private,200,Dahyalal Patel 
+MEMR-ME-LD1,Mehsana,Modhera Road,"Iskon Circle, First Board",Modhera to Mehsana ,20 x 10,LHS Lower,Hoarding,NL,23.5963063,72.32977,Private,200,Dahyalal Patel 
+MEMR-ME-RU,Mehsana,Modhera Road,Iskon Circle,Modhera to Mehsana ,20 x 10,RHS Upper,Hoarding,NL,23.5959545,72.32977,Private,200,Dahyalal Patel 
+MEMR-ME-RD,Mehsana,Modhera Road,Iskon Circle,Modhera to Mehsana ,20 x 10,RHS Lower,Hoarding,NL,23.5959545,72.32977,Private,200,Dahyalal Patel 
+MEMR-ME-LU,Mehsana,Modhera Road,Iskon Circle,Modhera to Mehsana ,20 x 10,LHS Upper,Hoarding,NL,23.5959545,72.32977,Private,200,Dahyalal Patel 
+MEMR-ME-LD,Mehsana,Modhera Road,Iskon Circle,Modhera to Mehsana ,20 x 10,LHS Lower,Hoarding,NL,23.5959545,72.32977,Private,200,Dahyalal Patel 
+MESG-MC-U,Mehsana,Shilpa Garage,Nr. Mehsana Urban Bank HO,Radhanpur Circle to Modhera Circle,30 x 15,Upper,Hoarding,NL,23.5989935,72.3803517,Private,450,Dhirajbhai Modi
+MESG-MC-D,Mehsana,Shilpa Garage,Nr. Mehsana Urban Bank HO,Radhanpur Circle to Modhera Circle,30 x 15,Lower,Hoarding,NL,23.5989935,72.3803517,Private,450,Dhirajbhai Modi
+MESG-RC-U,Mehsana,Shilpa Garage,Nr. Mehsana Urban Bank HO,Modhera Circle to Radhanpur Circle,30 x 15,Upper,Hoarding,NL,23.5989935,72.3803517,Private,450,Dhirajbhai Modi
+MESG-RC-D,Mehsana,Shilpa Garage,Nr. Mehsana Urban Bank HO,Modhera Circle to Radhanpur Circle,30 x 15,Lower,Hoarding,NL,23.5989935,72.3803517,Private,450,Dhirajbhai Modi
+MEMC-MC-S,Mehsana,Modhera Circle,Opp. Rajkamal Petrol Pump,Radhanpur Circle to Modhera Circle & Malgodown Road,20 x 20,Solo,Hoarding,NL,23.596565,72.3797489,Private,400,PRIVATE
+MERC-RR-S,Mehsana,Radhanpur Circle,Opp. Police Chowki,Radhanpur Circle to Radhanpur road,20 x 10,Solo,Unipoll,NL,23.6058142,72.3811296,GOV - R & B Mehsana,200,R & B Mehsana
+MERC-ME-U,Mehsana,Radhanpur Circle,"Opp. Dudh Sagar Dairy,",Palanpur to Mehsana,30 x 15,Upper,Hoarding,NL,23.6090606,72.3824254,Private,450,Mukesh Chaudhary
+MERC-ME-D,Mehsana,Radhanpur Circle,"Opp. Dudh Sagar Dairy,",Palanpur to Mehsana,30 x 15,Lower,Hoarding,NL,23.6090606,72.3824254,Private,450,Mukesh Chaudhary
+MERR-RC-U,Mehsana,Radhanpur Road,"Opp. DMart Mall, City Entry,",Panchot to Radhanpur Circle,60 x 20,Upper,Hoarding,NL,23.6202163,72.3435307,Private,1200,Mukesh Chaudhary
+MERR-RC-D,Mehsana,Radhanpur Road,"Opp. DMart Mall, City Entry,",Panchot to Radhanpur Circle,60 x 20,Lower,Hoarding,NL,23.6202163,72.3435307,Private,1200,Mukesh Chaudhary
+MERR-AR-S,Mehsana,Radhanpur Road,DMart Circle ,Bypass & Panchot to Ahmedabad & Radhanpur Circle,20 x 10,Solo,Hoarding,NL,23.6190533,72.34635,GOV - MMC,200,MMC
+MERR-EX-S,Mehsana,Radhanpur Road,Dmart Mall,Exit from Dmart,20 x 15,Solo,Hoarding,NL,23.6201321,72.3449117,Private,300,Shivalik Heritage
+MERR-DC-U1,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Radhanpur Circle to Dmart Circle,30 x 20,Upper,Hoarding,NL,23.618112,72.348466,Private,600,Shaktisinh
+MERR-DC-D1,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Radhanpur Circle to Dmart Circle,30 x 20,Lower,Hoarding,NL,23.618112,72.348466,Private,600,Shaktisinh
+MERR-RC-S1,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Dmart Circle to Radhanpur Circle,30 x 15,Solo,Hoarding,NL,23.618112,72.348466,Private,450,Shaktisinh
+MERR-RC-U2,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Dmart Circle to Radhanpur Circle,30 x 20,Upper,Hoarding,NL,23.6178841,72.3490356,Private,600,Shaktisinh
+MERR-RC-D2,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Dmart Circle to Radhanpur Circle,30 x 20,Lower,Hoarding,NL,23.6178841,72.3490356,Private,600,Shaktisinh
+MERR-DC-S2,Mehsana,Radhanpur Road,"Nr. Dmart Circle, Opp. Goodluck Party plot",Radhanpur Circle to Dmart Circle,15 x 30,Solo,Hoarding,NL,23.6178841,72.3490356,Private,450,Shaktisinh
+MERR-DC-S3,Mehsana,Radhanpur Road,"Nr. Aelinor Hotel, Opp. Tanishq Showroom",Radhanpur Circle to Dmart Circle,40 x 30,Solo,Hoarding,NL,23.6176294,72.3494725,Private,1200,Rajubhai Patel
+MERR-DC-L,Mehsana,Radhanpur Road,"Nr. Domino's Pizza, Nr, 52 Street",Radhanpur Circle to Dmart Circle,30 x 30,LHS,Hoarding,NL,23.6162047,72.3517973,Private,900,Square One Complax
+MERR-DC-R,Mehsana,Radhanpur Road,"Nr. Domino's Pizza, Nr, 52 Street",Radhanpur Circle to Dmart Circle,30 x 30,RHS,Hoarding,NL,23.6162047,72.3517973,Private,900,Square One Complax
+MERR-RC-S2,Mehsana,Radhanpur road,Nr. Kashi Vishwanath Temple,Dmart Circle to Radhanpur Circle,40 x 20,Solo,Hoarding,NL,23.6133434,72.3580106,Private,800,H M Patel
+MERR-DC-S4,Mehsana,Radhanpur road,Nr. Kashi Vishwanath Temple,Radhanpur Circle to Dmart Circle,20 x 20,Solo,Hoarding,NL,23.6133434,72.3580106,Private,400,H M Patel
+MERR-DC-U2,Mehsana,Radhanpur road,Opp. Kashi Vishwanath Temple,Radhanpur Circle to Dmart Circle,15 x 15,Upper,Hoarding,NL,23.613227,72.3573763,Private,225,Ramesh Rangoli Radhe Kiratan
+MERR-DC-D2,Mehsana,Radhanpur road,Opp. Kashi Vishwanath Temple,Radhanpur Circle to Dmart Circle,15 x 15,Lower,Hoarding,NL,23.613227,72.3573763,Private,225,Ramesh Rangoli Radhe Kiratan
+MERR-RC-U3,Mehsana,Radhanpur road,Opp. Kashi Vishwanath Temple,Dmart Circle to Radhanpur Circle,15 x 15,Upper,Hoarding,NL,23.613227,72.3573763,Private,225,Ramesh Rangoli Radhe Kiratan
+MERR-RC-D3,Mehsana,Radhanpur road,Opp. Kashi Vishwanath Temple,Dmart Circle to Radhanpur Circle,15 x 15,Lower,Hoarding,NL,23.613227,72.3573763,Private,225,Ramesh Rangoli Radhe Kiratan
+MERR-RC-U4,Mehsana,Radhanpur road,Nr. Arush Icon Flat,Dmart Circle to Radhanpur Circle,30 x 15,Upper,Hoarding,NL,23.611576,72.3614589,Private,450,Mukesh Chaudhary
+MERR-RC-D4,Mehsana,Radhanpur road,Nr. Arush Icon Flat,Dmart Circle to Radhanpur Circle,30 x 15,Lower,Hoarding,NL,23.611576,72.3614589,Private,450,Mukesh Chaudhary
+MERR-DC-U3,Mehsana,Radhanpur road,Nr. Arush Icon Flat,Radhanpur Circle to Dmart Circle,30 x 20,Upper,Hoarding,NL,23.611576,72.3614589,Private,600,Mukesh Chaudhary
+MERR-DC-D3,Mehsana,Radhanpur road,Nr. Arush Icon Flat,Radhanpur Circle to Dmart Circle,30 x 20,Lower,Hoarding,NL,23.611576,72.3614589,Private,600,Mukesh Chaudhary
+MERR-DC-S5,Mehsana,Radhanpur road,Nr. Kalapinagar Society,Radhanpur Circle to Dmart Circle,25 x 25,Solo,Hoarding,NL,23.6112691,72.3640402,Private,625,Shivganga School
+MERR-RC-S3,Mehsana,Radhanpur road,Nr. Kalapinagar Society,Dmart Circle to Radhanpur Circle,25 x 25,Solo,Hoarding,NL,23.6112691,72.3640402,Private,625,Shivganga School
+MERR-DC-S6,Mehsana,Radhanpur road,Nr. Bata Showroom,Radhanpur Circle to Dmart Circle,25 x 20,Solo,Hoarding,NL,23.6103051,72.3658162,Private,500,Pinky Motors
+MERR-RC-S4,Mehsana,Radhanpur road,Nr. Bata Showroom,Dmart Circle to Radhanpur Circle,10 x 20,Solo,Hoarding,NL,23.6103051,72.3658162,Private,200,Pinky Motors
+MERR-DC-S7,Mehsana,Radhanpur road,Nr. Kalapinagar Society,Radhanpur Circle to Dmart Circle,30 x 15,Solo,Hoarding,NL,23.6107672,72.3654225,Private,450,Kalapinagar Society
+MERR-RC-S5,Mehsana,Radhanpur road,Nr. Kalapinagar Society,Dmart Circle to Radhanpur Circle,30 x 15,Solo,Hoarding,NL,23.6107672,72.3654225,Private,450,Kalapinagar Society
+MERR-DC-U4,Mehsana,Radhanpur road,Nr. Rajdhani Township,Radhanpur Circle to Dmart Circle,40 x 20,Upper,Hoarding,NL,23.6104338,72.3667288,Private,800,Kalapinagar Society
+MERR-DC-D4,Mehsana,Radhanpur road,Nr. Rajdhani Township,Radhanpur Circle to Dmart Circle,40 x 15,Lower,Hoarding,NL,23.6104338,72.3667288,Private,600,Kalapinagar Society
+MERR-RC-U5,Mehsana,Radhanpur road,"Nr. Kamalpath, Opp. Rajdhani Township",Dmart Circle to Radhanpur Circle,25 x 15,Upper,Hoarding,NL,23.6098222,72.3673098,Private,375,Ramesh Rangoli TVS
+MERR-RC-D5,Mehsana,Radhanpur road,"Nr. Kamalpath, Opp. Rajdhani Township",Dmart Circle to Radhanpur Circle,25 x 15,Lower,Hoarding,NL,23.6098222,72.3673098,Private,375,Ramesh Rangoli TVS
+MERR-DC-U5,Mehsana,Radhanpur road,"Nr. Kamalpath, Opp. Rajdhani Township",Radhanpur Circle to Dmart Circle,30 x 15,Upper,Hoarding,NL,23.609718,72.3676632,Private,450,Ramesh Rangoli Kamalpath
+MERR-DC-D5,Mehsana,Radhanpur road,"Nr. Kamalpath, Opp. Rajdhani Township",Radhanpur Circle to Dmart Circle,30 x 15,Lower,Hoarding,NL,23.609718,72.3676632,Private,450,Ramesh Rangoli Kamalpath
+MERR-RC-S8,Mehsana,Radhanpur road,Nr. Kamalpath,Dmart Circle to Radhanpur Circle,20 x 10,Solo,Hoarding,NL,23.6099918,72.3679817,GOV - MMC,200,MMC
+MERR-DC-S8,Mehsana,Radhanpur road,Nr. Kamalpath,Radhanpur Circle to Dmart Circle,20 x 10,Solo,Hoarding,NL,23.6099918,72.3679817,GOV - MMC,200,MMC
+MERR-RC-S9,Mehsana,Radhanpur road,Nr. Kamalpath,Dmart Circle to Radhanpur Circle,20 x 10,Solo,Hoarding,NL,23.6098885,72.3683358,GOV - MMC,200,MMC
+MERR-DC-S9,Mehsana,Radhanpur road,Nr. Kamalpath,Radhanpur Circle to Dmart Circle,20 x 10,Solo,Hoarding,NL,23.6098885,72.3683358,GOV - MMC,200,MMC
+MEFC-PM-U,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Palanpur to Mehsana & Bypass,20 x 10,Upper,Hoarding,NL,23.6423426,72.3859907,GOV - MMC,200,MMC
+MEFC-PM-M,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Palanpur to Mehsana & Bypass,20 x 10,Middle,Hoarding,NL,23.6423426,72.3859907,GOV - MMC,200,MMC
+MEFC-PM-D,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Palanpur to Mehsana & Bypass,20 x 10,Lower,Hoarding,NL,23.6423426,72.3859907,GOV - MMC,200,MMC
+MEFC-BM-S,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Bypass to Mehsana & Palanpur,20 x 10,Solo,Hoarding,NL,23.6429489,72.385977,GOV - MMC,200,MMC
+MEFC-PM-S1,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Palanpur to Mehsana & Bypass,20 x 21,Solo,Hoarding,NL,23.643175,72.3859257,GOV - MMC,400,MMC
+MEFC-PM-S2,Mehsana,Fatehpura Circle,At Fatehpura Bypass Circle,Palanpur to Mehsana & Bypass,39 x 21,Solo,Hoarding,NL,23.6435546,72.3858744,GOV - MMC,800,MMC
+MEFC-BP-S,Mehsana,Fatehpura Circle,"At Fatehpura Bypass Circle, Nr. Malgudi Hotel",Bypass & Mehsana to Palanpur,20 x 21,Solo,Hoarding,NL,23.643686,72.3854533,GOV - MMC,400,MMC
+MEFC-PM-S3,Mehsana,Fatehpura Circle,"At Fatehpura Bypass Circle, Nr. Malgudi Hotel",Palanpur to Mehsana,20 x 21,Solo,Hoarding,NL,23.643686,72.3854533,GOV - MMC,400,MMC
+MEFC-PM-LU,Mehsana,Fatehpura Circle,"Nr. Fatepura Bypass Circle, Nr. Ashok Layland Showroom",Palanpur to Mehsana,40 x 20,LHS Upper,Hoarding,NL,23.6284069,72.3888057,Private,800,Zarin Gas Ashok Layland
+MEFC-PM-LD,Mehsana,Fatehpura Circle,"Nr. Fatepura Bypass Circle, Nr. Ashok Layland Showroom",Palanpur to Mehsana,40 x 20,LHS Lower,Hoarding,NL,23.6284069,72.3888057,Private,800,Zarin Gas Ashok Layland
+MEFC-PM-RU,Mehsana,Fatehpura Circle,"Nr. Fatepura Bypass Circle, Nr. Ashok Layland Showroom",Palanpur to Mehsana,40 x 20,RHS Upper,Hoarding,NL,23.6284069,72.3888057,Private,800,Zarin Gas Ashok Layland
+MEFC-PM-RD,Mehsana,Fatehpura Circle,"Nr. Fatepura Bypass Circle, Nr. Ashok Layland Showroom",Palanpur to Mehsana,40 x 20,RHS Lower,Hoarding,NL,23.6284069,72.3888057,Private,800,Zarin Gas Ashok Layland
+MERB-PM-U,Mehsana,Ramosana Bridge,Ramosana Bridge,Palanpur to Mehsana,30 x 15,Upper,Hoarding,NL,23.618167,72.3863341,Private,450,Keshaji Pathuji
+MERB-PM-D,Mehsana,Ramosana Bridge,Ramosana Bridge,Palanpur to Mehsana,30 x 15,Lower,Hoarding,NL,23.618167,72.3863341,Private,450,Keshaji Pathuji
+MERB-PA-U,Mehsana,Ramosana Bridge,Ramosana Bridge,Mehsana to Palanpur,30 x 15,Upper,Hoarding,NL,23.618167,72.3863341,Private,450,Keshaji Pathuji
+MERB-PA-D,Mehsana,Ramosana Bridge,Ramosana Bridge,Mehsana to Palanpur,30 x 15,Lower,Hoarding,NL,23.618167,72.3863341,Private,450,Keshaji Pathuji
+MERB-FB-S,Mehsana,Ramosana Bridge,Ramosana Circle,Rahdanpur Circle to Fatepura Bypass & Manav Ashram Circle,20 x 10,Solo,Hoarding,NL,23.6173966,72.3852105,GOV - MMC,200,MMC
+MEJH-BN-U,Mehsana,Joyos Hub town,"Opp. Joyos Hub Town, Nr. BK Cenema ",Modhera Circle to Bhamariya Nala,20 x 10,Upper,Hoarding,NL,23.5947578,72.3834131,Private,200,Sharda Society
+MEJH-BN-D,Mehsana,Joyos Hub town,"Opp. Joyos Hub Town, Nr. BK Cenema ",Modhera Circle to Bhamariya Nala,20 x 10,Lower,Hoarding,NL,23.5947578,72.3834131,Private,200,Sharda Society
+MEJH-BK-L,Mehsana,Joyos Hub town,"Opp. Joyos Hub Town, Nr. BK Cenema ",Aashray Hotel to BK Road,20 x 21,LHS,Hoarding,NL,23.5947578,72.3834131,Private,400,Sharda Society
+MEJH-BK-C,Mehsana,Joyos Hub town,"Opp. Joyos Hub Town, Nr. BK Cenema ",Aashray Hotel to BK Road,20 x 21,Centre,Hoarding,NL,23.5947578,72.3834131,Private,400,Sharda Society
+MEJH-BK-R,Mehsana,Joyos Hub town,"Opp. Joyos Hub Town, Nr. BK Cenema ",Aashray Hotel to BK Road,20 x 21,RHS,Hoarding,NL,23.5947578,72.3834131,Private,400,Sharda Society
+MEBN-MC-U,Mehsana,Bhamariya Nala,"Opp. Apna Bazar, Nr. Bhamariya Nala",Bhamariya Nala to Modhera circle,20 x 10,Upper,Hoarding,NL,23.5955806,72.3875575,Private,200,R B Shah
+MEBN-MC-D,Mehsana,Bhamariya Nala,"Opp. Apna Bazar, Nr. Bhamariya Nala",Bhamariya Nala to Modhera circle,20 x 10,Lower,Hoarding,NL,23.5955806,72.3875575,Private,200,R B Shah
+MEBN-MC-S,Mehsana,Bhamariya Nala,Nr. Bhamariya Nala,Bhamariya Nala to Modhera circle,20 x 10,Solo,Hoarding,NL,23.5960627,72.3885298,Gov - MMC,200,MMC
+MEMG-RP-S,Mehsana,Malgodown,At Malgodown,Bhamariya Nala to Rajkamal Petrol pump,20 x 10,Solo,Hoarding,NL,23.5971347,72.3884386,GOV - MMC,200,MMC
+MEBN-MB-U1,Mehsana,Bhamariya Nala,"Nr. Bhamariya Nala, Opp APMC Gate",Bhamariya Nala to Main Bazar,20 x 10,Upper,Hoarding,NL,23.596868,72.3894079,Private,200,Pravinbhai Opp APMC
+MEBN-MB-D1,Mehsana,Bhamariya Nala,"Nr. Bhamariya Nala, Opp APMC Gate",Bhamariya Nala to Main Bazar,20 x 10,Lower,Hoarding,NL,23.596868,72.3894079,Private,200,Pravinbhai Opp APMC
+MEBN-MB-U2,Mehsana,Bhamariya Nala,"Opp. Dutt Temple, Krishna Dhal",Bhamariya Nala to Main Bazar,20 x 10,Upper,Hoarding,NL,23.59759,72.3898001,Private,200,Kalpesh Medical
+MEBN-MB-D2,Mehsana,Bhamariya Nala,"Opp. Dutt Temple, Krishna Dhal",Bhamariya Nala to Main Bazar,20 x 10,Lower,Hoarding,NL,23.59759,72.3898001,Private,200,Kalpesh Medical
+MEKD-MB-S1,Mehsana,Krushna No Dhal,"Krushna No Dhal, Nr. Krishna Shopping Centre",Bhamariya Nala to Main Bazar,15 x 20,Solo,Hoarding,NL,23.5987317,72.3903855,Private,300,Krishna Shopping
+MEKD-MB-LU1,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,LHS Upper,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,150,Mehsana Railway
+MEKD-MB-LD1,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,LHS Lower,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,150,Mehsana Railway
+MEKD-MB-LU2,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,LHS Second Upper,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,150,Mehsana Railway
+MEKD-MB-LD2,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,LHS SEcond Lower,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,150,Mehsana Railway
+MEKD-MB-RU1,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,RHS Upper,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,150,Mehsana Railway
+MEKD-MB-RD1,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,RHS Lower,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,150,Mehsana Railway
+MEKD-MB-RU2,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,RHS Second Upper,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,150,Mehsana Railway
+MEKD-MB-RD2,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,15 x 10,RHS Second Lower,Hoarding,NL,23.5992998,72.3906675,GOV - Railway,150,Mehsana Railway
+MEKD-MB-R2,Mehsana,Krushna No Dhal,Krushna No Dhal,Bhamariya Nala to Main Bazar,20 x 10,RHS,Hoarding,NL,23.5992998,72.3906675,GOV - MMC,200,MMC
+MEKD-BN-L,Mehsana,Krushna No Dhal,Krushna No Dhal,Main Bazar to Bhamariya Nala,20 x 10,LHS,Hoarding,NL,23.5992076,72.3907999,GOV - MMC,200,MMC
+MEKD-BN-R,Mehsana,Krushna No Dhal,Krushna No Dhal,Main Bazar to Bhamariya Nala,20 x 10,RHS,Hoarding,NL,23.5992076,72.3907999,GOV - MMC,200,MMC
+MEKD-MB-R3,Mehsana,Krushna No Dhal,Nr. Krishna Shopping Centre,Bhamariya Nala to Main Bazar,15 x 10,RHS,Hoarding,NL,23.5993763,72.3902766,GOV - Railway,150,Mehsana Railway
+MEKD-MB-L3,Mehsana,Krushna No Dhal,Nr. Krishna Shopping Centre,Bhamariya Nala to Main Bazar,15 x 10,LHS,Hoarding,NL,23.5993763,72.3902766,GOV - Railway,150,Mehsana Railway
+MEKD-BN-S2,Mehsana,Krushna No Dhal,Nr. Krishna Shopping Centre,Main Bazar to Bhamariya Nala,30 x 20,Solo,Hoarding,NL,23.5991962,72.3903359,Private,600,Krishna Shopping
+METC-MB-S,Mehsana,Toranwali Chowk,Opp. BJP Office,Krishna No dhal to Main Bazar,20 x 10,Solo,Hoarding,NL,23.6008903,72.3903728,GOV - MMC,200,MMC
+METC-MB-RU,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,RHS Upper,Hoarding,NL,23.6020934,72.390238,GOV - Railway,200,Mehsana Railway
+METC-MB-RM,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,RHS Middle,Hoarding,NL,23.6020934,72.390238,GOV - Railway,200,Mehsana Railway
+METC-MB-RD,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,RHS Lower,Hoarding,NL,23.6020934,72.390238,GOV - Railway,200,Mehsana Railway
+METC-MB-LU,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,LHS Upper,Hoarding,NL,23.6020934,72.390238,GOV - Railway,200,Mehsana Railway
+METC-MB-LM,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,LHS Middle,Hoarding,NL,23.6020934,72.390238,GOV - Railway,200,Mehsana Railway
+METC-MB-LD,Mehsana,Toranwali Chowk,Toranvali mata Chowk,Main Bazar,20 x 10,LHS Lower,Hoarding,NL,23.6020934,72.390238,GOV - Railway,200,Mehsana Railway
+METC-SC-R1,Mehsana,Toranwali Chowk,"Opp. Town Hall, Nr. Mangalam Coldrink",Gopinala to Samarpan Chowk,20 x 10,RHS First,Hoarding,NL,23.603813,72.3910098,GOV - MMC,200,MMC
+METC-SC-R2,Mehsana,Toranwali Chowk,"Opp. Town Hall, Nr. Mangalam Coldrink",Gopinala to Samarpan Chowk,20 x 10,RHS Second,Hoarding,NL,23.603813,72.3910098,GOV - MMC,200,MMC
+METC-BS-S,Mehsana,Toranwali Chowk,Opp. Sarvajanik School,Nagrik Bank to Bus Stand,20 x 10,Solo,Hoarding,NL,23.6050754,72.3919757,Private,200,Jigar Barot
+MESC-SC-U,Mehsana,Samarpan Chowk,At Haidari Chowk,Biladi Baug to Samarpan Chowk & Fuvara,20 x 10,Upper,Hoarding,NL,23.6054984,72.3963072,Private,200,Niranjan Chavda
+MESC-SC-D,Mehsana,Samarpan Chowk,At Haidari Chowk,Biladi Baug to Samarpan Chowk & Fuvara,20 x 10,Lower,Hoarding,NL,23.6054984,72.3963072,Private,200,Niranjan Chavda
+MESC-FV-U,Mehsana,Samarpan Chowk,At Samarpan Chowk,Samarpan Chowk to Fuvara,20 x 10,Upper,Hoarding,NL,23.6057488,72.3978558,Private,200,Niranjan Chavda
+MESC-FV-D,Mehsana,Samarpan Chowk,At Samarpan Chowk,Samarpan Chowk to Fuvara,20 x 10,Lower,Hoarding,NL,23.6057488,72.3978558,Private,200,Niranjan Chavda
+MESC-PT-RU,Mehsana,Samarpan Chowk,Para Tower,Siddhpuri Bazar to Para Tower,20 x 10,RHS Upper,Hoarding,NL,23.6026563,72.3982555,Private,200,Jignrsh Patel Para Tower
+MESC-PT-RD,Mehsana,Samarpan Chowk,Para Tower,Siddhpuri Bazar to Para Tower,20 x 10,RHS Lower,Hoarding,NL,23.6026563,72.3982555,Private,200,Jignrsh Patel Para Tower
+MESC-PT-LU,Mehsana,Samarpan Chowk,Para Tower,Siddhpuri Bazar to Para Tower,20 x 10,LHS Upper,Hoarding,NL,23.6026563,72.3982555,Private,200,Jignrsh Patel Para Tower
+MESC-PT-LD,Mehsana,Samarpan Chowk,Para Tower,Siddhpuri Bazar to Para Tower,20 x 10,LHS Lower,Hoarding,NL,23.6026563,72.3982555,Private,200,Jignrsh Patel Para Tower
+MEBB-BB-L,Mehsana,Biladi Baug,Jhulelal Chowk,Haidri Chowk to Biladi Baug,20 x 10,LHS,Hoarding,NL,23.609444,72.396388,GOV - MMC,200,MMC
+MEBB-BB-L2,Mehsana,Biladi Baug,Biladi Baug ,Manav Ashram To Biladi Bagh ,20 x 10 ,LHS Second ,Hoarding,NL,23.6112,72.3966964,GOV - MMC,200,MMC
+MEBB-BB-L3,Mehsana,Biladi Baug,Biladi Baug ,Manav Ashram To Biladi Bagh ,20 x 10 ,LHS Third,Hoarding,NL,23.6112,72.3966964,GOV - MMC,200,MMC
+MEBB-BB-L4,Mehsana,Biladi Baug,Biladi Baug ,Manav Ashram To Biladi Bagh ,20 x 10 ,LHS Fourth,Hoarding,NL,23.6112,72.3966964,GOV - MMC,200,MMC
+MEBB-BB-U,Mehsana,Biladi Baug,"Nr. Passport Office Circle, Opp. GEB",Manav Ashram To Biladi Bagh ,20 x 10 ,Upper,Hoarding,NL,23.6114132,72.3999325,Private,200,Ashish Patel GEB
+MEBB-BB-D,Mehsana,Biladi Baug,"Nr. Passport Office Circle, Opp. GEB",Manav Ashram To Biladi Bagh ,20 x 10 ,Lower,Hoarding,NL,23.6114132,72.3999325,Private,200,Ashish Patel GEB
+MEBB-MA-U,Mehsana,Biladi Baug,"Nr. Passport Office Circle, Opp. GEB",Biladi Baug to Manav Ashram,20 x 10 ,Upper,Hoarding,NL,23.6114132,72.3999325,Private,200,Ashish Patel GEB
+MEBB-MA-D,Mehsana,Biladi Baug,"Nr. Passport Office Circle, Opp. GEB",Biladi Baug to Manav Ashram,20 x 10 ,Lower,Hoarding,NL,23.6114132,72.3999325,Private,200,Ashish Patel GEB
+MEMA-BB-U,Mehsana,Manav Ashram,"Opp. Anup Aarcade, Nr. Manav Ashram Circle",Manav Ashram To Biladi Bagh ,20 x 10,Upper,Hoarding,NL,23.6121997,72.4019237,Private,200,Mazhar Saiyad
+MEMA-MA-S1,Mehsana,Manav Ashram,"Opp. Decent Hotel, Nr. Dhanlaxmi Market",Biladi Baug to Manav Ashram,20 x 30,Solo,Hoarding,NL,23.6134291,72.4040722,Private,600,Vakil Manav Ashram
+MEMA-BB-U2,Mehsana,Manav Ashram,"Opp. Decent Hotel, Nr. Dhanlaxmi Market",Manav Ashram To Biladi Bagh ,30 x 20,Upper,Hoarding,NL,23.6134291,72.4040722,Private,600,Vakil Manav Ashram
+MEMA-BB-D2,Mehsana,Manav Ashram,"Opp. Decent Hotel, Nr. Dhanlaxmi Market",Manav Ashram To Biladi Bagh ,30 x 10,Lower,Hoarding,NL,23.6134291,72.4040722,Private,300,Vakil Manav Ashram
+MEMA-MA-S2,Mehsana,Manav Ashram,"Opp. Astha Mall, Nr. Manav Ashram Circle",Biladi Baug to Manav Ashram,20 x 10,Solo,Hoarding,NL,23.614571,72.4066806,Private,200,Shyambhai Desai
+MEMA-MA-S3,Mehsana,Manav Ashram,At Manav Ashram Circle,Ramosana to Manav Ashram Circle,20 x 10,Solo,Hoarding,NL,23.6152207,72.407728,GOV - MMC,200,MMC
+MEMA-MA-S4,Mehsana,Manav Ashram,"Nr. Manav Ashram Circle, Ramosana Road",Ramosana to Manav Ashram Circle,20 x 10,Solo,Hoarding,NL,23.61529,72.4066,Private,200,Narsinhbhai Chaudhary
+MEMA-MA-S5,Mehsana,Manav Ashram,"Nr. Manav Ashram Circle, Ramosana Road",Ramosana to Manav Ashram Circle,20 x 10,Solo,Hoarding,NL,23.6151974,72.4059826,Private,200,Narsinhbhai Chaudhary
+MEMA-RA-S,Mehsana,Manav Ashram,"Nr. Manav Ashram Circle, Ramosana Road",Manav Ashram Circle to Ramosana,20 x 10,Solo,Hoarding,NL,23.6151974,72.4059826,Private,200,Narsinhbhai Chaudhary
+MEMA-VR-U,Mehsana,Manav Ashram,At Manav Ashram Circle,Biladi Baug to Visnagar & Ramosana & Rampura ,20 x 10,Upper,Hoarding,NL,23.6152554,72.4081957,Private,200,Manav Ashram
+MEMA-VR-D,Mehsana,Manav Ashram,At Manav Ashram Circle,Biladi Baug to Visnagar & Ramosana & Rampura ,20 x 10,Lower,Hoarding,NL,23.6152554,72.4081957,Private,200,Manav Ashram
+MEVR-ME-U,Mehsana,Visnagar Road,"Nr. Ratna Vihar Party Plot, Mehsana Entry",Visnagar to Mehsana,30 x 10,Upper,Hoarding,NL,23.6167241,72.4117118,Private,300,Rutvik Chaudhary
+MEVR-ME-M,Mehsana,Visnagar Road,"Nr. Ratna Vihar Party Plot, Mehsana Entry",Visnagar to Mehsana,30 x 10,Middle,Hoarding,NL,23.6167241,72.4117118,Private,300,Rutvik Chaudhary
+MEVR-ME-D,Mehsana,Visnagar Road,"Nr. Ratna Vihar Party Plot, Mehsana Entry",Visnagar to Mehsana,30 x 10,Lower,Hoarding,NL,23.6167241,72.4117118,Private,300,Rutvik Chaudhary
+MEVR-VS-U,Mehsana,Visnagar Road,Opp. One Ten Hotel,Mehsana to Visnagar,30 x 10,Upper,Hoarding,NL,23.6180392,72.4148258,Private,300,Lalbhai Darbar
+MEVR-VS-M,Mehsana,Visnagar Road,Opp. One Ten Hotel,Mehsana to Visnagar,30 x 10,Middle,Hoarding,NL,23.6180392,72.4148258,Private,300,Lalbhai Darbar
+MEVR-VS-D,Mehsana,Visnagar Road,Opp. One Ten Hotel,Mehsana to Visnagar,30 x 10,Lower,Hoarding,NL,23.6180392,72.4148258,Private,300,Lalbhai Darbar
+MEVR-ME-U2,Mehsana,Visnagar Road,Opp. One Ten Hotel,Visnagar to Mehsana,30 x 10,Upper,Hoarding,NL,23.6180392,72.4148258,Private,300,Lalbhai Darbar
+MEVR-ME-M2,Mehsana,Visnagar Road,Opp. One Ten Hotel,Visnagar to Mehsana,30 x 10,Middle,Hoarding,NL,23.6180392,72.4148258,Private,300,Lalbhai Darbar
+MEVR-ME-D2,Mehsana,Visnagar Road,Opp. One Ten Hotel,Visnagar to Mehsana,30 x 10,Lower,Hoarding,NL,23.6180392,72.4148258,Private,300,Lalbhai Darbar
+MESB-MP-U,Mehsana,Sai Baba Temple,Nr. Sai Baba Temple,Rampura Circle to Manav Ashram & Pata Tower,20 x 10,Upper,Hoarding,NL,23.5990712,72.408589,GOV - MMC,200,MMC
+MESB-MP-D,Mehsana,Sai Baba Temple,Nr. Sai Baba Temple,Rampura Circle to Manav Ashram & Pata Tower,20 x 10,Lower,Hoarding,NL,23.5990712,72.408589,GOV - MMC,200,MMC
+MERP-OC-S,Mehsana,Rampura Circle,At. Rampura Circle,Vijapur to ONGC Circle & Gozariya,20 x 10,Solo,Hoarding,NL,23.564619,72.4250289,GOV - MMC,200,MMC
+MEGN-FV-U,Mehsana,Gopi Nala,"Bus Stand, Raj Mahel Road",Biladi Baug to Fuvara,20 x 10,Upper,Hoarding,NL,23.6072093,72.3914007,GOV - MMC,200,MMC
+MEGN-FV-D,Mehsana,Gopi Nala,"Bus Stand, Raj Mahel Road",Biladi Baug to Fuvara,20 x 10,Lower,Hoarding,NL,23.6072093,72.3914007,GOV - MMC,200,MMC
+MEGN-RC-U,Mehsana,Gopi Nala,Nr. New Railway Station,Gopinala to Radhanpur Circle,20 x 10,Upper,Hoarding,NL,23.603985,72.3881311,GOV - Railway,200,Mehsana Railway
+MEGN-RC-D,Mehsana,Gopi Nala,Nr. New Railway Station,Gopinala to Radhanpur Circle,20 x 10,Lower,Hoarding,NL,23.603985,72.3881311,GOV - Railway,200,Mehsana Railway
+MEGU-EX-T,Mehsana,Ganpat University,"Opp. Ganpat Collage, Kherva",Exit from Ganpat Collage,20 x 10,Teress,Hoarding,NL,23.5307067,72.4581368,Private,200,Krunal Construction
+MEGU-EX-G,Mehsana,Ganpat University,"Opp. Ganpat Collage, Kherva",Exit from Ganpat Collage,20 x 10,Ground,Hoarding,NL,23.5303953,72.4584526,Private,200,Krunal Construction
+MEGU-EX-L,Mehsana,Ganpat University,"Opp. Ganpat Collage, Kherva",Exit from Ganpat Collage,20 x 10,LHS,Hoarding,NL,23.5305494,72.4584348,Private,200,Krunal Construction
+MEGU-EX-R,Mehsana,Ganpat University,"Opp. Ganpat Collage, Kherva",Exit from Ganpat Collage,20 x 10,RHS,Hoarding,NL,23.5305494,72.4584348,Private,200,Krunal Construction
+NAAH-ME-U,Nandasan,Ahmedabad Mehsana Highway,"Nr. Shiv Shakti Hotel, Ganeshpura",Ahmedabad to Mehsana,30 x 15,Upper,Hoarding,NL,23.4005435,72.39843348,Private,450,Manoj Patel
+NAAH-ME-D,Nandasan,Ahmedabad Mehsana Highway,"Nr. Shiv Shakti Hotel, Ganeshpura",Ahmedabad to Mehsana,30 x 15,Lower,Hoarding,NL,23.4005435,72.39843348,Private,450,Manoj Patel
+NAAH-AH-U,Nandasan,Ahmedabad Mehsana Highway,"Nr. Shiv Shakti Hotel, Ganeshpura",Mehsana to Ahmedabad,30 x 15,Upper,Hoarding,NL,23.4005435,72.39843348,Private,450,Manoj Patel
+NAAH-AH-D,Nandasan,Ahmedabad Mehsana Highway,"Nr. Shiv Shakti Hotel, Ganeshpura",Mehsana to Ahmedabad,30 x 15,Lower,Hoarding,NL,23.4005435,72.39843348,Private,450,Manoj Patel
+NANB-AH-S,Nandasan,Nandasan Bridge,Opp. Meldi mata Temple,Mehsana to Ahmedabad,30 x 40,Solo,Hoarding,NL,23.373483,72.4077847,Private,1200,Rajubhai Patel Umanagar
+NANB-NA-R,Nandasan,Nandasan Bridge,Nandasan Bridge,Mehsana to Nandasan & Ahmedabad,20 x 10,RHS,Hoarding,NL,23.3794697,72.4060406,GOV - GRICL,200,GRICL
+NANB-AM-L,Nandasan,Nandasan Bridge,Nandasan Bridge,Nandasan to Ahmedabad & Mehsana,20 x 10,LHS,Hoarding,NL,23.3798618,72.4056627,GOV - GRICL,200,GRICL
+CHCB-ME-S,Chhatral,Chhatral Bridge,Chhartal GIDC,Ahmedabad to Mehsana,30 x 30,Solo,Hoarding,NL,23.2840231,72.440343,Private,900,Pravinbhai Patel Kukarvada
+CHCB-AH-U,Chhatral,Chhatral Bridge,Nr. Chhatral Bridge,Mehsana to Ahmedabad,20 x 10,Upper,Hoarding,NL,23.2840231,72.440343,Private,200,Pravinbhai Patel Kukarvada
+CHCB-AH-M,Chhatral,Chhatral Bridge,Nr. Chhatral Bridge,Mehsana to Ahmedabad,20 x 10,Middle,Hoarding,NL,23.2840231,72.440343,Private,200,Pravinbhai Patel Kukarvada
+CHCB-AH-D,Chhatral,Chhatral Bridge,Nr. Chhatral Bridge,Mehsana to Ahmedabad,20 x 10,Lower,Hoarding,NL,23.2840231,72.440343,Private,200,Pravinbhai Patel Kukarvada
+CHCB-AH-S1,Chhatral,Chhatral Bridge,"Opp. V Trans, Chhatral Bridge",Mehsana to Ahmedabad,20 x 10,Solo,Hoarding,NL,23.2760699,72.4445128,Private,200,Gitaben
+CHCB-ME-S2,Chhatral,Chhatral Bridge,"Opp. V Trans, Chhatral Bridge",Ahmedabad to Mehsana,20 x 15,Solo,Hoarding,NL,23.2759402,72.4447167,Private,300,Shaileshbhai Chhatral
+CHCB-AH-S2,Chhatral,Chhatral Bridge,Nr. Mansarovar Township,Mehsana to Ahmedabad,20 x 10,Solo,Hoarding,NL,23.274018,72.4513709,GOV - GRICL,200,GRICL
+CHCB-KD-S,Chhatral,Chhatral Bridge,"Opp. Chhatral Police Chowki, Main Circle",Ahmedabad & Mehsana to Kadi,20 x 15,Solo,Hoarding,NL,23.277759,72.441231,GOV - GRICL,300,GRICL
+CHCB-KD-S2,Chhatral,Chhatral Bridge,Main Circle,Ahmedabad to Kadi & Mehsana,20 x 10,Solo,Hoarding,NL,23.278095,72.441584,GOV - GRICL,200,GRICL
+KAAH-AH-U1,Kalol,Amrit Hotel,"Opp. Oswal, Idustries",Mehsana to Ahmedabad,40 x 20,Upper,Hoarding,NL,23.260456,72.474186,Private,800,Maheshbhai Kushan Farm
+KAAH-AH-U2,Kalol,Amrit Hotel,"Opp. Oswal, Idustries",Mehsana to Ahmedabad,40 x 20,Upper,Hoarding,NL,23.260456,72.474186,Private,800,Maheshbhai Kushan Farm
+KADM-EX-L1,Kalol,Dmart,Opp. Dmart Mall,From Dmart Exit,20 x 10,LHS First,Hoarding,NL,23.250076,72.48529,GOV - GRICL,200,GRICL
+KADM-EX-L2,Kalol,Dmart,Opp. Dmart Mall,From Dmart Exit,20 x 10,LHS Second,Hoarding,NL,23.250076,72.48529,GOV - GRICL,200,GRICL
+KADM-EX-L3,Kalol,Dmart,Opp. Dmart Mall,From Dmart Exit,20 x 10,LHS Third,Hoarding,NL,23.250076,72.48529,GOV - GRICL,200,GRICL
+KADM-EX-L4,Kalol,Dmart,Opp. Dmart Mall,From Dmart Exit,20 x 10,LHS Fourth,Hoarding,NL,23.250076,72.48529,GOV - GRICL,200,GRICL
+KABC-KC-L,Kalol,Borisana Chowkadi,At Borisana Circle,Khatraj GIDC to Kalol & Chhatral,20 x 10,LHS,Hoarding,NL,23.241116,72.48803,GOV - GRICL,200,GRICL
+KABC-KC-S,Kalol,Borisana Chowkadi,At Borisana Circle,Shriji Parlour to Khatraj GIDC & Chhatral,20 x 10,Solo,Hoarding,NL,23.241069,72.488171,GOV - GRICL,200,GRICL
+KADC-KG-R,Kalol,Damru Circle,At Damru Circle,Kalol City to Khatraj GIDC,20 x 10,RHS,Hoarding,NL,23.241148,72.488535,GOV - GRICL,200,GRICL
+KADC-KG-S,Kalol,Damru Circle,At Damru Circle,Kalol City to Khatraj GIDC,20 x 10,Solo,Hoarding,NL,23.241264,72.48837,GOV - GRICL,200,GRICL
+KACC-HW-R1,Kalol,Cobra Circle,At Cobra Circle,City to Highway,20 x 10,RHS First,Hoarding,NL,23.238457,72.492535,GOV - GRICL,200,GRICL
+KASP-HW-R1,Kalol,Shriji Parlour,At Shriji Parlour,Hanuman Temple to Highway,15 x 10,RHS First,Hoarding,NL,23.237177,72.49402,GOV - GRICL,150,GRICL
+KASP-HW-L1,Kalol,Shriji Parlour,At Shriji Parlour,Hanuman Temple to Highway,20 x 10,LHS First,Hoarding,NL,23.237433,72.493668,GOV - GRICL,200,GRICL
+KASP-AH-L,Kalol,Shriji Parlour,"Opp. Domino's Pizza, Highway",Mehsana to Ahmedabad,20 x 15,LHS,Hoarding,NL,23.2366467,72.4957098,GOV - GRICL,300,GRICL
+KAMA-AH-S,Kalol,Majur Adalat,"Nr. ITI, Opp. Police Station",Mehsana to Ahmedabad,20 x 15,Solo,Hoarding,NL,23.2357046,72.4978985,GOV - GRICL,300,GRICL
+KAMA-ME-S2,Kalol,Majur Adalat,"Nr. Majur Adalat, Tiranga Bridge",Ahmedabad to Mehsana,30 x 30,Solo,Hoarding,NL,23.2346242,72.5007497,Private,900,Kiranbhai Desai
+KASB-ME-S,Kalol,Saij Bridge,Nr. Jogani mata Temple,Ahmedabad to Mehsana,20 x 20,Solo,Hoarding,NL,23.2155117,72.5201156,Private,400,Dashrathbhai 
+GAGC-GF-S,Gandhinagar,GIFT City,"Shahpur Circle, GIFT City Entrance",Shahpur Circle to GIFT city,30 x 41,Solo,Hoarding,NL,23.1815461,72.6745448,Private,1200,Ketanbhai Patel
+GAGC-SH-S,Gandhinagar,GIFT City,"Shahpur Circle, GIFT City Exit",GIFT city to Shahpur Circle,81 x 40,Solo,Hoarding,NL,23.1817224,72.673898,Private,3200,Ketanbhai Patel
+GAGC-DC-S2,Gandhinagar,GIFT City,Opp. Lilavati Hospital,East Gate to D Circle ,60 x 40,Solo,Hoarding,NL,23.165176,72.6887937,Private,2400,Ketanbhai Patel GIFT
+GACH-AH-S,Gandhinagar/Ahmedabad,Chiloda,Chiloda Circle,"Gandhinagar to Ahmedabad, Dehgam & Himmatnagar",20 x 21,Solo,Hoarding,NL,23.2267342,72.7313691,Private,400,Rahubhai Shah
+GAAD-GA-LU,Gandhinagar/Ahmedabad,Adalaj,Nr. Trimandir,North Gujarat to Gandhinagar,40 x 20,LHS Upper,Hoarding,NL,23.1755686,72.5802742,Private,800,Dudhaji Thakor
+GAAD-GA-LD,Gandhinagar/Ahmedabad,Adalaj,Nr. Trimandir,North Gujarat to Gandhinagar,40 x 20,LHS Lower,Hoarding,NL,23.1755686,72.5802742,Private,800,Dudhaji Thakor
+GAAD-GA-RU,Gandhinagar/Ahmedabad,Adalaj,Nr. Trimandir,North Gujarat to Gandhinagar,40 x 20,RHS Upper,Hoarding,NL,23.1755686,72.5802742,Private,800,Dudhaji Thakor
+GAAD-GA-RD,Gandhinagar/Ahmedabad,Adalaj,Nr. Trimandir,North Gujarat to Gandhinagar,40 x 20,RHS Lower,Hoarding,NL,23.1755686,72.5802742,Private,800,Dudhaji Thakor
+GAAD-GA-S2,Gandhinagar/Ahmedabad,Adalaj,"On SG Highway, Opp. Shreya Farm, Butter Fly Circle",Ahmedabad to Gandhinagar,90 x 60,Solo,Hoarding,NL,23.1753264,72.5813826,Private,5400,Jay Somnath
+GAKH-AH-S,Gandhinagar/Ahmedabad,Khoraj,"On SG Highway, Khoraj",Gandhinagar to Ahmedabad,60 x 40,Solo,Hoarding,NL,23.1568287,72.5544687,Private,2400,Jay Somnath
+GAVD-GS-U,Gandhinagar/Ahmedabad,Vaishno Devi Circle,"On Vaishnodevi Circle, SG Highway",Ahmedabad to Gandhinagar & SP Ring Road,100 x 25,Upper,Hoarding,NL,23.1364861,72.541814,Private,2500,Shri Harihar Mahraj
+GAKB-AH-S,Gandhinagar/Ahmedabad,S G Highway,"Khoraj Bridge, Nr. Adani Shantigram",Gandhinagar to Ahmedabad,90 x 30,Solo,Hoarding,NL,23.1596777,72.555676,Private,2700,Ashit
+GAKB-GA-S,Gandhinagar/Ahmedabad,S G Highway,"Khoraj Bridge, After Narmda Canal, On SG Highway", Ahmedabad to Gandhinagar & Adalaj,60 x 30,Solo,Hoarding,NL,23.1596777,72.555676,Private,1800,Ashit
+AHCD-AK-S,Ahmedabad,Chandalodiya,Nr. Silvar Star Circle,Gota to Akhbarnagar,20 x 20,Solo,Hoarding,FL,23.0809322,72.5488726,Private,400,Rahulbhai
+AHCD-AK-U,Ahmedabad,Chandalodiya,At. Chandalodiya Bridg,Gota to Akhbarnagar,30 x 15,Upper,Hoarding,BL,23.0798854,72.5522337,Private,450,Ambika Anandayi
+AHCD-AK-D,Ahmedabad,Chandalodiya,At. Chandalodiya Bridg,Gota to Akhbarnagar,30 x 15,Lower,Hoarding,BL,23.0798854,72.5522337,Private,450,Ambika Anandayi
+AHMM-PC-S,Ahmedabad,Memnagar,"Naranpura AEC, Valinath Chowk",Memnagar to Pallav Cross Road,40 x 20,Solo,Hoarding,BL,23.0480632,72.5439175,Private,800,Hargovan Desai
+AHLD-BI-S,Ahmedabad,Lad Darwaja,"At. Lal Darvaja P & T Building Wall, Opp Panchayat Bhavan",Can Be View at the Bank of india,20 x 10,Solo,Hoarding,BL,23.0249931,72.5807275,GOV - AMC,200,AMC
+AHNF-KP-S,Ahmedabad,Naroda Fruit Market,"Opp Naroda Fruit Market, Nr B R T S Bus Stop",Memco Cross Road to Kalupur,20 x 15,Solo,Hoarding,BL,23.0507491,72.6258037,GOV - AMC,300,AMC
+AHGH-KP-S,Ahmedabad,GCS Hospital,"GCS Medical Hospital, Nr. Amdupura Police Chowky, Chamunda Bridge",Memco to Kalupur,20 x 10,Solo,Hoarding,BL,23.0406377,72.6112276,GOV - AMC,200,AMC
+AHST-MC-S,Ahmedabad,Saijpur Tower,"Saijpur Tower Cross Road, Naroda Road",Naroda Patiya to Memco Cross Road,20 x 10,Solo,Hoarding,BL,23.0608249,72.6392422,GOV - AMC,200,AMC
+AHVG-VG-S,Ahmedabad,Vijalighar,Vijalighar,,20 x 10,Solo,Hoarding,BL,23.026468,72.5806068,GOV - AMC,200,AMC
+AHGD-BP-L,Ahmedabad,Godhavi,"Nr. Bus Stop, Godhavi",Sanand to Bopal,40 x 40,LHS,Hoarding,NL,23.0239199,72.4107355,Private,1600,Mayursinh
+AHGD-BP-R,Ahmedabad,Godhavi,"Nr. Bus Stop, Godhavi",Sanand to Bopal,40 x 40,RHS,Hoarding,NL,23.0239199,72.4107355,Private,1600,Mayursinh
+AHBK-KS-S,Ahmedabad,Bakrol,"Opp. Jain Derasar, Visalpur",Bakrol Circle to Kashindra,30 x 30,Solo,Hoarding,NL,22.9334401,72.4965018,Private,900,Deep Patel
+AHBK-KS-U1,Ahmedabad,Bakrol,"Opp. Meladimata Temple, Vishalpur",Bakrol Circle to Kashindra,50 x 25,Upper,Hoarding,NL,22.9179705,72.4858692,Private,1250,Chirag Chauhan
+AHBK-KS-D1,Ahmedabad,Bakrol,"Opp. Meladimata Temple, Vishalpur",Bakrol Circle to Kashindra,50 x 25,Lower,Hoarding,NL,22.9179705,72.4858692,Private,1250,Chirag Chauhan
+AHBK-KS-U2,Ahmedabad,Bakrol,Nr. Meladimata Temple,Bakrol Circle to Kashindra,25 x 15,Upper,Hoarding,NL,22.9177491,72.4861199,Private,375,Chirag Chauhan
+AHBK-KS-D2,Ahmedabad,Bakrol,Nr. Meladimata Temple,Bakrol Circle to Kashindra,25 x 15,Lower,Hoarding,NL,22.9177491,72.4861199,Private,375,Chirag Chauhan
+AHBK-KS-R,Ahmedabad,Bakrol,Kashindra,Bakrol Circle to Kashindra,40 x 40,RHS,Hoarding,NL,22.8893173,72.4812189,Private,1600,Ganibhai Patel
+AHBK-BC-L,Ahmedabad,Bakrol,Kashindra,Kashindra to Bakrol Circle,40 x 40,LHS,Hoarding,NL,22.8893173,72.4812189,Private,1600,Ganibhai Patel
+AHMR-AH-S,Ahmedabad,Moraiya,Changodar GIDC,Bavla to Ahmedabad,25 x 30,Solo,Hoarding,NL,22.9069193,72.4267449,Private,750,Gambhirsinh
+AHMR-BA-S,Ahmedabad,Moraiya,Changodar GIDC,Ahmedabad to Bavla,25 x 30,Solo,Hoarding,NL,22.9069193,72.4267449,Private,750,Gambhirsinh
+SADM-AH-S,Sanand,Dmart,Shantipura Circle ,Sanand to Ahmedabad,20 x 30,Solo,Hoarding,NL,22.9860054,72.3962834,Private,600,Shivrajsinh
+HIMV-CR-S,Himmatnagar,Mahavirnagar,At. Mahavirnagar Circle,Main Bazar to Chhapariya & Reliance Mall,20 x 10,Solo,Hoarding,NL,23.5972348,72.9695828,GOV - R & B Himmatnagar,200,R & B Himmatnagar
+HIMO-HC-1,Himmatnagar,Motipura Circle ,At. Motipura Circle,Ahmedabad to Himmatnagar City & Udaipur,20 x 10,First,Hoarding,NL,23.581241,72.9592552,GOV - R & B Himmatnagar,200,R & B Himmatnagar
+HIMO-HC-2,Himmatnagar,Motipura Circle ,At. Motipura Circle,Ahmedabad to Himmatnagar City & Udaipur,20 x 10,Second,Hoarding,NL,23.5813286,72.9596147,GOV - R & B Himmatnagar,200,R & B Himmatnagar
+HIMO-HW-S,Himmatnagar,Motipura Circle ,Nr. Motipura Circle,City to Highway,20 x 10,Solo,Hoarding,NL,23.5814598,72.9596183,GOV - R & B Himmatnagar,200,R & B Himmatnagar
+HIMO-MO-S,Himmatnagar,Motipura Circle ,Nr. Motipura Circle,Bus Depo to Motipura Circle,12 x 20,Solo,Hoarding,NL,23.5817969,72.9585019,GOV - R & B Himmatnagar,240,R & B Himmatnagar
+HIMO-CM-S,Himmatnagar,Motipura Circle ,Nr. Motipura Circle,Bus Depo to Chhapariya & Motipura Circle,20 x 10,Solo,Hoarding,NL,23.5835677,72.9583084,GOV - R & B Himmatnagar,200,R & B Himmatnagar
+HIBS-CC-S1,Himmatnagar,Bus Stand,"Nr. Civil Circle, Bus Stand First",Bus Depo to Civil Circle,20 x 10,Solo,Hoarding,NL,23.5936803,72.9588573,GOV - R & B Himmatnagar,200,R & B Himmatnagar
+HIBS-BS-S,Himmatnagar,Bus Stand,"Bus Stand, Nr. Umashankar Joshi Bridge",Motipura to Bus Stand,20 x 10,Solo,Hoarding,NL,23.5916908,72.9578759,GOV - R & B Himmatnagar,200,R & B Himmatnagar
+HIBS-MO-S,Himmatnagar,Bus Stand,"Bus Stand, Depo Entry",Civil Circle to Motipura Circle,20 x 10,Solo,Hoarding,NL,23.5929156,72.9585394,GOV - R & B Himmatnagar,200,R & B Himmatnagar
+HIMH-NM-R2,Himmatnagar,Mehtapura Circle,"Mehtapura Circle, City Entry",RTO Circle to Nyay Mandir,18 x 10,RHS Second,Hoarding,NL,23.6123011,72.9649539,GOV - R & B Himmatnagar,180,R & B Himmatnagar
+HISJ-MO-U,Himmatnagar,Sahkari Jin,Nr. Sahkari Jin,Himmatnagar to Modasa,20 x 10,Upper,Hoarding,NL,23.5806043,72.9745308,GOV - R & B Himmatnagar,200,R & B Himmatnagar
+HISJ-MO-D,Himmatnagar,Sahkari Jin,Nr. Sahkari Jin,Himmatnagar to Modasa,20 x 10,Lower,Hoarding,NL,23.5806043,72.9745308,GOV - R & B Himmatnagar,200,R & B Himmatnagar
+VITB-HW-U,Vijapur,T B Road,Nr. T B Circle,City to Highway,20 x 10,Upper,Hoarding,NL,23.5658621,72.7450074,Private,200,Maheshbhai Kamdhenu
+VITB-HW-D,Vijapur,T B Road,Nr. T B Circle,City to Highway,20 x 10,Lower,Hoarding,NL,23.5658621,72.7450074,Private,200,Maheshbhai Kamdhenu
+VITB-CT-S1,Vijapur,T B Road,Nr. Reliance Trends,Highway to City,20 x 25,Solo,Hoarding,NL,23.5548644,72.7407954,Private,500,Jagabhai Master
+VITB-HW-S2,Vijapur,T B Road,Nr. Reliance Trends,City  to Highway,20 x 25,Solo,Hoarding,NL,23.5548644,72.7407954,Private,500,Jagabhai Master
+VITB-CT-L,Vijapur,T B Road,Nr. Reliance Trends,Highway to City,20 x 20,LHS,Hoarding,NL,23.5556696,72.7416738,Private,400,Prakashbhai Suryaketu
+VITB-CT-R,Vijapur,T B Road,Nr. Reliance Trends,Highway to City,20 x 20,RHS,Hoarding,NL,23.5556696,72.7416738,Private,400,Prakashbhai Suryaketu
+VIPC-MA-U,Vijapur,Pilvai Circle,Nr. Pilvai Circle,Mansa to Mahudi & Vijapur,20 x 10,Upper,Hoarding,NL,23.5319889,72.717957,Private,200,Kirtan Parlour
+VIPC-MA-D,Vijapur,Pilvai Circle,Nr. Pilvai Circle,Mansa to Mahudi & Vijapur,20 x 10,Lower,Hoarding,NL,23.5319889,72.717957,Private,200,Kirtan Parlour
+VIPC-MM-C,Vijapur,Pilvai Circle,Nr. Pilvai Circle,Mahudi to Mansa & Vijapur,20 x 10,Centre,Hoarding,NL,23.5320491,72.7176184,LOF,200,LOF
+VIPC-MV-L,Vijapur,Pilvai Circle,On Circle,Mehsana to Vijapur & Mansa,20 x 20,LHS ,Hoarding,NL,23.5304166,72.7169284,Private,400,Rajendrasinh Vihol
+VIPC-MV-R,Vijapur,Pilvai Circle,On Circle,Mehsana to Vijapur & Mansa,20 x 20,RHS,Hoarding,NL,23.5304166,72.7169284,Private,400,Rajendrasinh Vihol
+VIPC-VM-S,Vijapur,Pilvai Circle,Nr. Pilvai Circle,Vijapur to Mansa & Mehsana,20 x 10,Solo,Hoarding,NL,23.5353333,72.7201303,LOF,200,LOF
+VIMA-MT-U,Vijapur,Mahudi,Mahudi Pratij Circle,Way to Mahudi Temple,20 x 10,Upper,Hoarding,NL,23.4945535,72.7802014,Private,200,Udaysinh
+VIMA-MT-D,Vijapur,Mahudi,Mahudi Pratij Circle,Way to Mahudi Temple,20 x 10,Lower,Hoarding,NL,23.4945535,72.7802014,Private,200,Udaysinh
+MAIC-VJ-S,Mansa,Itadara Circle,Bus Stand Circle,Gandhinagar to Vijapur,40 x 30,Solo,Hoarding,NL,23.4272219,72.6513249,Private,1200,Narsinhbhai Patel
+MAGC-GA-U,Mansa,GEB Circle,"Mansa Entry, Opp GEB",Vijapur & Visnagar to Gandhinagar,25 x 15,Upper,Hoarding,NL,23.4347281,72.6565468,Private,375,Chetan Patel
+MAGC-GA-D,Mansa,GEB Circle,"Mansa Entry, Opp GEB",Vijapur & Visnagar to Gandhinagar,25 x 15,Lower,Hoarding,NL,23.4347281,72.6565468,Private,375,Chetan Patel
+MANC-GA-U,Mansa,Narsary Circle,Nr. Narsary Circle ,Mansa to Gandhinagar,40 x 20,Upper,Hoarding,NL,23.4144799,72.6491795,Private,800,Mehulbhai Narsary
+MANC-GA-D,Mansa,Narsary Circle,Nr. Narsary Circle ,Mansa to Gandhinagar,40 x 20,Lower,Hoarding,NL,23.4144799,72.6491795,Private,800,Mehulbhai Narsary
+MABC-GA-U,Mansa,Balva Circle,"Pratap Pura, Nr. Balva Circle",Mansa to Gandhinagar,40 x 20,Upper,Hoarding,NL,23.3666197,72.6460366,Private,800,Dada Pratap pura
+MABC-GA-D,Mansa,Balva Circle,"Pratap Pura, Nr. Balva Circle",Mansa to Gandhinagar,40 x 20,Lower,Hoarding,NL,23.3666197,72.6460366,Private,800,Dada Pratap pura
+MABC-GA-S,Mansa,Balva Circle,At. Balva Circle,Gozariya to Gandhinagar,20 x 15,Solo,Hoarding,NL,23.3519665,72.6431438,Private,300,Vinaybhai Chaudhary
+GOMC-GZ-U,Gozariya,Main Circle,Nr. Main Circle,Mehsana to Gozariya,20 x 10,Upper,Hoarding,NL,23.4805706,72.565974,Private,200,Dipakbhai Patel
+GOMC-GZ-D,Gozariya,Main Circle,Nr. Main Circle,Mehsana to Gozariya,20 x 10,Lower,Hoarding,NL,23.4805706,72.565974,Private,200,Dipakbhai Patel
+GOMC-MV-U,Gozariya,Main Circle,Nr. Main Circle,Gozariya to Mehsana & Visnagar,30 x 10,Upper,Hoarding,NL,23.4805706,72.565974,Private,300,Dipakbhai Patel
+GOMC-MV-D,Gozariya,Main Circle,Nr. Main Circle,Gozariya to Mehsana & Visnagar,30 x 10,Lower,Hoarding,NL,23.4805706,72.565974,Private,300,Dipakbhai Patel
+GOMU-GZ-L,Gozariya,Meu Circle,At. Meu Circle,Mehsana to Gozariya,20 x 20,LHS,Hoarding,NL,23.4824295,72.5660555,Private,400,Hero Bike
+GOMU-GZ-R,Gozariya,Meu Circle,At. Meu Circle,Mehsana to Gozariya,20 x 20,RHS,Hoarding,NL,23.4824295,72.5660555,Private,400,Hero Bike
+VSMC-MC-L,Visnagar,Mehsana Circle,S K Collage road,Lavaris Stand to Mehsana Circle,20 x 10,LHS,Hoarding,NL,23.6895089,72.5405453,LOF,200,LOF
+VSMC-VS-U,Visnagar,Mehsana Circle,Visnagar Entrance,Mehsana to Visnagar,20 x 10,Upper,Hoarding,NL,23.689865,72.5403656,Private,200,P K Patel
+VSMC-VS-D,Visnagar,Mehsana Circle,Visnagar Entrance,Mehsana to Visnagar,20 x 10,Lower,Hoarding,NL,23.689865,72.5403656,Private,200,P K Patel
+VSKC-GZ-S,Visnagar,Kada Circle,Nr. S K Collage,Mehsana Circle to Gozariya,20 x 15,Solo,Hoarding,NL,23.6862169,72.5532124,LOF,300,LOF
+VSIC-MC-S,Visnagar,ITI Circle,Opp. ITI Collage,Kansa Circle to Mehsana Circle,15 x 15,Solo,Hoarding,NL,23.7020217,72.5346844,Private,225,Creata Ice Cream
+VSIC-KN-S,Visnagar,ITI Circle,Nr. ITI Collage,Mehsana Circle to Kansa Circle,31 x 15,Solo,Hoarding,NL,23.7025543,72.5351846,Private,450,Creata Ice Cream
+VSIC-LS-U,Visnagar,ITI Circle,M N Collage Road,ITI Circle to Lavaris Stand,20 x 10,Upper,Hoarding,NL,23.7016032,72.535146,Private,200,Ramjibhai Chaudhary
+VSIC-LS-D,Visnagar,ITI Circle,M N Collage Road,ITI Circle to Lavaris Stand,20 x 10,Lower,Hoarding,NL,23.7016032,72.535146,Private,200,Ramjibhai Chaudhary
+VSPC-KN-U,Visnagar,Paldi Circle,Opp. Matel Hotel,Paladi Circle to Kansa Circle,20 x 10,Upper,Hoarding,NL,23.7134589,72.5492508,Private,200,Jashubhai Paldi Circle
+VSPC-KN-D,Visnagar,Paldi Circle,Opp. Matel Hotel,Paladi Circle to Kansa Circle,20 x 10,Lower,Hoarding,NL,23.7134589,72.5492508,Private,200,Jashubhai Paldi Circle
+VSPC-KV-U,Visnagar,Paldi Circle,At. Paladi Circle,Visnagar to Kheralu & Vadnagar,20 x 10,Upper,Hoarding,NL,23.7149584,72.5506197,LOF,200,LOF
+VSPC-KV-D,Visnagar,Paldi Circle,At. Paladi Circle,Visnagar to Kheralu & Vadnagar,20 x 10,Lower,Hoarding,NL,23.7149584,72.5506197,LOF,200,LOF
+VSPC-VS-S,Visnagar,Paldi Circle,At. Paladi Circle,Kheralu to Visnagar,20 x 10,Solo,Hoarding,NL,23.7149339,72.5507518,LOF,200,LOF
+VATC-VN-U,Vadnagar,Toranvaad Circle,"At. Toranvaad Circle, Vadnagar Entry",Visnagar to Vadnagar,20 x 10,Upper,Hoarding,NL,23.7944675,72.6258831,Private,200,Arvindbhai Patel Gas Agency
+VATC-VN-D,Vadnagar,Toranvaad Circle,"At. Toranvaad Circle, Vadnagar Entry",Visnagar to Vadnagar,20 x 10,Lower,Hoarding,NL,23.7944675,72.6258831,Private,200,Arvindbhai Patel Gas Agency
+KHDD-KH-U,Kheralu,Dudh Sagar Dairy,Opp. Dudh Sagar Dairy,Vadnagar to Kheralu,20 x 10,Upper,Hoarding,NL,23.8816617,72.6100075,LOF,200,LOF
+KHDD-KH-D,Kheralu,Dudh Sagar Dairy,Opp. Dudh Sagar Dairy,Vadnagar to Kheralu,20 x 10,Lower,Hoarding,NL,23.8816617,72.6100075,LOF,200,LOF
+KHDD-VV-S,Kheralu,Dudh Sagar Dairy,Opp. Dudh Sagar Dairy,Kheralu to Vadnagar & Visnagar,20 x 15,Solo,Hoarding,NL,23.8816617,72.6100075,LOF,300,LOF
+UNBH-UN-S,Unjha,Bhandu,Nr. LCIT Collage,Mehsana to Unjha,25 x 31,Solo,Hoarding,NL,23.6863204,72.3849903,Private,750,Zarin Gas Satimata Hotel
+UNBH-ME-S,Unjha,Bhandu,Nr. LCIT Collage,Unjha to Mehsana,25 x 31,Solo,Hoarding,NL,23.6863204,72.3849903,Private,750,Zarin Gas Satimata Hotel
+UNUV-UN-S,Unjha,Unava,Nr. Comfy Hotel,Mehsana to Unjha,20 x 20,Solo,Hoarding,NL,23.7406335,72.3683391,Private,400,Ravibhai
+UNUV-UN-S1,Unjha,Unava,"Nr. APMC Market, Opp. Essar Petrol Pump",Mehsana to Unjha,20 x 20,First,Hoarding,NL,23.7735623,72.3703816,LOF,400,LOF
+UNUV-UN-S3,Unjha,Unava,"Nr. APMC Market, Opp. Essar Petrol Pump",Mehsana to Unjha,20 x 20,Third,Hoarding,NL,23.773967,72.3706337,LOF,400,LOF
+UNUC-UN-S,Unjha,Umiya Circle,Opp. Tannu Motors,Mehsana to Unjha,20 x 20,Solo,Hoarding,NL,23.7880701,72.3812043,GOV - Unjha Nagarpalika,400,Unjha Nagarpalika
+UNUC-ME-S1,Unjha,Umiya Circle,Opp. Tannu Motors,Unjha to Mehsana,20 x 20,Solo,Hoarding,NL,23.7880701,72.3812043,GOV - Unjha Nagarpalika,400,Unjha Nagarpalika
+UNUC-ME-S2,Unjha,Umiya Circle,Nr. Reliance Petrol Pump,Unjha to Mehsana ,20 x 15,Solo,Hoarding,NL,23.7943497,72.3812962,GOV - Unjha Nagarpalika,300,Unjha Nagarpalika
+UNAC-PU-U,Unjha,APMC Circle,Nr. Bus Stand,Patan to Unjha & Mehsana,20 x 10,Upper,Hoarding,NL,23.8048855,72.3796832,GOV - Unjha Nagarpalika,200,Unjha Nagarpalika
+UNAC-PU-D,Unjha,APMC Circle,Nr. Bus Stand,Patan to Unjha & Mehsana,20 x 10,Lower,Hoarding,NL,23.8048855,72.3796832,GOV - Unjha Nagarpalika,200,Unjha Nagarpalika
+UNAC-CM-S,Unjha,APMC Circle,"Nr. Bus Stand, City Emtry",Highway to City & Mehsana,20 x 10,Solo,Hoarding,NL,23.8042698,72.3798934,GOV - Unjha Nagarpalika,200,Unjha Nagarpalika
+UNSC-UT-S1,Unjha,Sardar Chowk,Nr. APMC Marcket,APMC Circle to Umiya mata temple,20 x 21,Solo,Hoarding,NL,23.8041474,72.3844297,Private,400,Baloj Mata Temple
+UNSC-UT-S2,Unjha,Sardar Chowk,Above Chhanaji Gota,Highway to APMC & Umiyamata Temple,20 x 10,Solo,Hoarding,NL,23.8038367,72.384192,GOV - Unjha Nagarpalika,200,Unjha Nagarpalika
+UNGC-UT-S,Unjha,Gandhi Chowak,"On Canal, Opp Nagarpalika",Sardar Chowk to Umiyamata Temple,20 x 10,Solo,Hoarding,NL,23.8035861,72.3903245,GOV - Unjha Nagarpalika,200,Unjha Nagarpalika
+UNUT-UT-S1,Unjha,Umiyamata Temple,Desh Ni Vaadi,Agni Circle to Umiyamata Temple,20 x 10,Solo,Hoarding,NL,23.8005694,72.396157,GOV - Unjha Nagarpalika,200,Unjha Nagarpalika
+UNUT-EX-R,Unjha,Umiyamata Temple,Umiyamata Temple Chowk,Umiyamata Temple Exit,20 x 21,RHS,Hoarding,NL,23.8008927,72.3962884,GOV - Unjha Nagarpalika,400,Unjha Nagarpalika
+UNUT-CA-S,Unjha,Umiyamata Temple,Umiyamata Temple Chowk,Umiyamata Temple to City & Agni Circle,20 x 21,Solo,Hoarding,NL,23.8009348,72.3960363,GOV - Unjha Nagarpalika,400,Unjha Nagarpalika
+UNUT-EX-S2,Unjha,Umiyamata Temple,Umiyamata Temple Chowk,Umiyamata Temple Exit,41 x 10,Solo,Hoarding,NL,23.8014514,72.3959471,GOV - Unjha Nagarpalika,400,Unjha Nagarpalika
+UNUT-EX-S3,Unjha,Umiyamata Temple,Umiyamata Temple Chowk,Umiyamata Temple Exit,12 x 20,Solo,Hoarding,NL,23.8017501,72.3958328,GOV - Unjha Nagarpalika,240,Unjha Nagarpalika
+UNUT-EX-S4,Unjha,Umiyamata Temple,Umiyamata Temple Chowk,Umiyamata Temple Exit,18 x 21,Solo,Hoarding,NL,23.8019041,72.3957107,Private,360,Vivek Uma Pan
+UNVC-UT-S,Unjha,Vaadipara Chowk,Nr. Falku Canal,Old Bazar to Umiyamata Temple,20 x 10,Solo,Hoarding,NL,23.8073656,72.3921125,GOV - Unjha Nagarpalika,200,Unjha Nagarpalika
+UNAC-UT-L,Unjha,Agni Circle,At. Agni Circle ,Aithore to Umiyamata Temple,20 x 25,LHS,Hoarding,NL,23.7978012,72.3953815,GOV - Unjha Nagarpalika,500,Unjha Nagarpalika
+UNAC-HW-U,Unjha,Agni Circle,"Behind APMC Marcket, Umiyamata Temple road",City to Highway,20 x 10,Upper,Hoarding,NL,23.7984917,72.3889646,Private,200,Hemant Patel
+UNAC-HW-D,Unjha,Agni Circle,"Behind APMC Marcket, Umiyamata Temple road",City to Highway,20 x 10,Lower,Hoarding,NL,23.7984917,72.3889646,Private,200,Hemant Patel
+UNAC-CT-S,Unjha,Agni Circle,"Behind APMC Marcket, Umiyamata Temple road",Highway to City,20 x 15,Solo,Hoarding,NL,23.7984917,72.3889646,Private,300,Hemant Patel
+PADH-UN-S,Patan,Dharpur,Medical Collage,Patan to Unjha,25 x 25,Solo,Hoarding,NL,23.8442163,72.1905586,Private,625,Shambhuji Thakor
+PAHA-US-L,Patan,Hansapur,At. Hansapur Circle ,Patan to Unjha & Siddhpur,20 x 20,LHS,Hoarding,NL,23.8526326,72.1445919,Private,400,Vipul Parmar
+PAHA-US-R,Patan,Hansapur,At. Hansapur Circle ,Patan to Unjha & Siddhpur,20 x 20,RHS,Hoarding,NL,23.8526326,72.1445919,Private,400,Vipul Parmar
+PANC-DC-S,Patan,Navjivan Circle,Nr. Navjivan Hotel,Deesa to Chanashma ,30 x 30,Solo,Hoarding,NL,23.8511463,72.1378898,Private,900,Arvind Patel
+PANC-JH-R,Patan,Navjivan Circle,Opp. Tirupati Marcket,Navjivan Circle to Janta Hospital,20 x 20,RHS,Hoarding,NL,23.8509249,72.1365651,Private,400,Vinaybhai Patel Exide Battrry
+PANC-JH-L,Patan,Navjivan Circle,Opp. Tirupati Marcket,Navjivan Circle to Janta Hospital,20 x 20,LHS,Hoarding,NL,23.8509249,72.1365651,Private,400,Vinaybhai Patel Exide Battrry
+PAJH-NC-L,Patan,Navjivan Circle,Opp. Tirupati Marcket,Janta Hospital to Navjivan Circle,20 x 20,LHS,Hoarding,NL,23.8509249,72.1365651,Private,400,Vinaybhai Patel Exide Battrry
+PAJH-NC-R,Patan,Navjivan Circle,Opp. Tirupati Marcket,Janta Hospital to Navjivan Circle,20 x 20,RHS,Hoarding,NL,23.8509249,72.1365651,Private,400,Vinaybhai Patel Exide Battrry
+PAJH-JH-U,Patan,Janta Hospital,B M Highschool,Subhas Chowk to Janta Hospital,20 x 10,Upper,Hoarding,NL,23.8492454,72.1303507,Private,200,Ravibhai Nayak
+PAJH-JH-D,Patan,Janta Hospital,B M Highschool,Subhas Chowk to Janta Hospital,20 x 10,Lower,Hoarding,NL,23.8492454,72.1303507,Private,200,Ravibhai Nayak
+PAJH-SC-U,Patan,Janta Hospital,B M Highschool,Janta Hospital to Subhas Chowk,20 x 10,Upper,Hoarding,NL,23.8492454,72.1303507,Private,200,Ravibhai Nayak
+PAJH-SC-D,Patan,Janta Hospital,B M Highschool,Janta Hospital to Subhas Chowk,20 x 10,Lower,Hoarding,NL,23.8492454,72.1303507,Private,200,Ravibhai Nayak
+PANC-PC-L,Patan,Navjivan Circle,Railway Overbridge,Navjivan Circle to Padmanaabh Circle,25 x 31,LHS,Hoarding,NL,23.8441617,72.1366556,Private,750,Sureshbhai Kence Avenue
+PANC-PC-R,Patan,Navjivan Circle,Railway Overbridge,Navjivan Circle to Padmanaabh Circle,20 x 20,RHS,Hoarding,NL,23.844054,72.1365258,Private,400,Sureshbhai Kence Avenue
+PAPC-NC-S,Patan,Navjivan Circle,Railway Overbridge,Padmanaabh Circle to Navjivan Circle,30 x 20,Solo,Hoarding,NL,23.8439878,72.1364937,Private,600,Sureshbhai Kence Avenue
+PAPC-CT-S,Patan,Padmanaabh Circle,Opp. Police Chowki,Chanashma to City,20 x 10,Solo,Hoarding,NL,23.8375938,72.1270057,LOF,200,LOF
+PAPC-CN-L,Patan,Padmanaabh Circle,Opp. Police Chowki,Chanashma to City & Navjivan Circle,20 x 10,LHS,Hoarding,NL,23.837783,72.1267794,LOF,200,LOF
+PAAS-SC-L,Patan,Anand Sarovar,At. Panchal Samaj Vaadi,Janta Hospital to Subhas Chowk,12 x 15,LHS,Hoarding,NL,23.8485588,72.127811,Private,180,Bharat Panchal Samaj Vaadi
+PAAS-AS-R,Patan,Anand Sarovar,At. Panchal Samaj Vaadi,Bagvada Darwaja to Anand Sarovar,20 x 20 ,RHS,Hoarding,NL,23.8485481,72.1274868,Private,400,Bharat Panchal Samaj Vaadi
+PAAS-AS-L,Patan,Anand Sarovar,At. Panchal Samaj Vaadi,Bagvada Darwaja to Anand Sarovar,20 x 20 ,LHS,Hoarding,NL,23.8485481,72.1274868,Private,400,Bharat Panchal Samaj Vaadi
+PLGC-HW-L,Palanpur,Gurunanak Chowk,At. Gurunanak Chowk,City to Highway,20 x 20,LHS,Hoarding,NL,24.1711175,72.4315491,Private,400,Banas Guest House
+DEMV-PA-S,Deesa,Mota Village,Nr. Bus Stop,Deesa to Palanpur,20 x 21,Solo,Hoarding,NL,24.231044,72.2720525,Private,400,Sendhaji Thakor
+DERM-DE-LU,Deesa,Raajmandir,Nr. Somnath Hotel,Palanpur to Deesa,30 x 20,LHS Upper,Hoarding,NL,24.2496583,72.1978643,Private,600,Dhirenbhai Mali
+DERM-DE-LD,Deesa,Raajmandir,Nr. Somnath Hotel,Palanpur to Deesa,30 x 20,LHS Lower,Hoarding,NL,24.2496583,72.1978643,Private,600,Dhirenbhai Mali
+DEFC-FV-LU,Deesa,Fuvara Circle,At. Fuvara Circle,Gayatri Temple to Fuvara Circle,30 x 15,LHS Upper,Hoarding,NL,24.2566827,72.1779395,Private,450,Kariyana Merchent
+DEFC-FV-LD,Deesa,Fuvara Circle,At. Fuvara Circle,Gayatri Temple to Fuvara Circle,30 x 15,LHS Lower,Hoarding,NL,24.2566827,72.1779395,Private,450,Kariyana Merchent
+DEGN-GT-U,Deesa,Gulbani nagar,Nr. Dr. Jayesh shah Hospital,Fuvara Circle to Gayatri Temple,20 x 10,Upper,Hoarding,NL,24.2645245,72.1813492,Private,200,Prashantbhai
+DEGN-GT-D,Deesa,Gulbani nagar,Nr. Dr. Jayesh shah Hospital,Fuvara Circle to Gayatri Temple,20 x 10,Lower,Hoarding,NL,24.2645245,72.1813492,private,200,Prashantbhai
+SIBS-BD-U,Siddhpur,Bindu Sarovar Road,Nr. Genaral Hospital,Highway to Bindu Sarovar,20 x 10,Upper,Hoarding,NL,23.912971,72.3698894,private,200,Kanubhai Choise Corner
+SIBS-BD-D,Siddhpur,Bindu Sarovar Road,Nr. Genaral Hospital,Highway to Bindu Sarovar,20 x 10,Lower,Hoarding,NL,23.912971,72.3698894,private,200,Kanubhai Choise Corner
+SIBS-HW-U,Siddhpur,Bindu Sarovar Road,Nr. Genaral Hospital,Bindu Sarovar to Highway,15 x 10,Upper,Hoarding,NL,23.912971,72.3698894,private,150,Kanubhai Choise Corner
+SIBS-HW-D,Siddhpur,Bindu Sarovar Road,Nr. Genaral Hospital,Bindu Sarovar to Highway,15 x 10,Lower,Hoarding,NL,23.912971,72.3698894,private,150,Kanubhai Choise Corner
+SIBT-BS-U,Siddhpur,Bus Stand,Nr. APMC Marcket,Tavadiya Circle to Bus stand,25 x 15,Upper,Hoarding,NL,23.9218505,72.3664676,private,375,Abdul Hamid Qureshi
+SIBT-BS-D,Siddhpur,Bus Stand,Nr. APMC Marcket,Tavadiya Circle to Bus stand,25 x 10,Lower,Hoarding,NL,23.9218505,72.3664676,private,250,Abdul Hamid Qureshi
+SIDC-PA-S,Siddhpur,Dethali Circle,At. Dethali Circle,Mehsana to Palanpur,20 x 10,Solo,Hoarding,NL,23.9169147,72.3609721,LOF,200,LOF
+MOMT-BE-S1,Modhera,Modheshwari Temple,Nr. Bus Stand,Mehsana to Bechraji,20 x 10,Solo,Hoarding,NL,23.5823577,72.1445222,Private,200,Boby Sarpanch
+MOMT-BE-L,Modhera,Modheshwari Temple,Nr. Bus Stand,Mehsana to Bechraji,20 x 10,LHS,Hoarding,NL,23.5825973,72.1441463,Private,200,Boby Sarpanch
+MOMT-BE-R,Modhera,Modheshwari Temple,Nr. Bus Stand,Mehsana to Bechraji,20 x 10,RHS,Hoarding,NL,23.5825973,72.1441463,Private,200,Boby Sarpanch
+MOMT-ME-S1,Modhera,Modheshwari Temple,Nr. Bus Stand,Bechraji to Mehsana,20 x 10,Solo,Hoarding,NL,23.582456,72.144315,Private,200,Boby Sarpanch
+MOMT-ME-S2,Modhera,Modheshwari Temple,Nr. Chanashma Circle,Bechraji to Mehsana,20 x 10,Solo,Hoarding,NL,23.5848985,72.1426155,Private,200,Vijay Modhera
+MOST-BC-U,Modhera,Sun Temple,At. Chanashma Circle ,Mehsana to Bechraji & Chanashma,20 x 10,Upper,Hoarding,NL,23.584618,72.1385117,Private,200,Najimbhai
+MOST-BC-D,Modhera,Sun Temple,At. Chanashma Circle ,Mehsana to Bechraji & Chanashma,20 x 10,Lower,Hoarding,NL,23.584618,72.1385117,Private,200,Najimbhai
+MOST-BE-U,Modhera,Sun Temple,Opp. Sun Temple Gate,Mehsana to Bechraji,20 x 10,Upper,Hoarding,NL,23.5813403,72.1361762,Private,200,Rajesh Devipujak
+MOST-BE-M,Modhera,Sun Temple,Opp. Sun Temple Gate,Mehsana to Bechraji,20 x 10,Middle,Hoarding,NL,23.5813403,72.1361762,Private,200,Rajesh Devipujak
+MOST-BE-D,Modhera,Sun Temple,Opp. Sun Temple Gate,Mehsana to Bechraji,20 x 10,Lower,Hoarding,NL,23.5813403,72.1361762,Private,200,Rajesh Devipujak
+MOST-ME-U,Modhera,Sun Temple,Opp. Sun Temple Gate,Bechraji to Mehsana,20 x 10,Upper,Hoarding,NL,23.5813403,72.1361762,Private,200,Rajesh Devipujak
+MOST-ME-M,Modhera,Sun Temple,Opp. Sun Temple Gate,Bechraji to Mehsana,20 x 10,Middle,Hoarding,NL,23.5813403,72.1361762,Private,200,Rajesh Devipujak
+MOST-ME-D,Modhera,Sun Temple,Opp. Sun Temple Gate,Bechraji to Mehsana,20 x 10,Lower,Hoarding,NL,23.5813403,72.1361762,Private,200,Rajesh Devipujak
+BEKA-BE-L,Bechraji,Kalri,Opp. Bus Stand,Mehsana to Bechraji,20 x 10,LHS Lower,Hoarding,NL,23.5142671,72.0798783,Private,200,Nikul
+BEKA-BE-R,Bechraji,Kalri,Opp. Bus Stand,Mehsana to Bechraji,20 x 10,RHS Lower,Hoarding,NL,23.5142671,72.0798783,Private,200,Nikul
+BEHP-BE-U,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,Upper,Hoarding,NL,23.5002224,72.0489078,Private,200,Harsh Divy Bhaskar
+BEHP-BE-D,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,Lower,Hoarding,NL,23.5002224,72.0489078,Private,200,Harsh Divy Bhaskar
+BEHP-ME-U,Bechraji,Helipad,Nr. Manidhar Village,Bechraji to Mehsana,20 x 10 ,Upper,Hoarding,NL,23.5002224,72.0489078,Private,200,Harsh Divy Bhaskar
+BEHP-ME-D,Bechraji,Helipad,Nr. Manidhar Village,Bechraji to Mehsana,20 x 10 ,Lower,Hoarding,NL,23.5002224,72.0489078,Private,200,Harsh Divy Bhaskar
+BEHP-BE-LU,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,LHS Upper,Hoarding,NL,23.5001498,72.0487428,Private,200,Harsh Divy Bhaskar
+BEHP-BE-LD,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,LHS Lower,Hoarding,NL,23.5001498,72.0487428,Private,200,Harsh Divy Bhaskar
+BEHP-BE-RU,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,RHS Upper,Hoarding,NL,23.5001498,72.0487428,Private,200,Harsh Divy Bhaskar
+BEHP-BE-RD,Bechraji,Helipad,Nr. Manidhar Village,Mehsana to Bechraji,20 x 10 ,RHS Lower,Hoarding,NL,23.5001498,72.0487428,Private,200,Harsh Divy Bhaskar
+BEHP-ME-S,Bechraji,Helipad,Nr. Manidhar Village,Bechraji to Mehsana,20 x 15,Solo,Hoarding,NL,23.5001498,72.0487428,Private,300,Harsh Divy Bhaskar
+BEMV-BE-U,Bechraji,Manidhar Village,Nr. Bus Stand,Mehsana to Bechraji,20 x 10,Upper,Hoarding,NL,23.5001729,72.0480864,LOF,200,LOF
+BEMV-BE-D,Bechraji,Manidhar Village,Nr. Bus Stand,Mehsana to Bechraji,20 x 10,Lower,Hoarding,NL,23.5001729,72.0480864,LOF,200,LOF
+BEMV-ME-U,Bechraji,Manidhar Village,Nr. Bus Stand,Bechraji to Mehsana,20 x 10,Upper,Hoarding,NL,23.5001729,72.0480864,LOF,200,LOF
+BEMV-ME-D,Bechraji,Manidhar Village,Nr. Bus Stand,Bechraji to Mehsana,20 x 10,Lower,Hoarding,NL,23.5001729,72.0480864,LOF,200,LOF
+BEBS-EN-U,Bechraji,Bus Stand,At. Bus Depo,Bechraji Bus Depo Entry,20 x 10,Upper,Hoarding,NL,23.5017775,72.0463738,LOF,200,LOF
+BEBS-EN-D,Bechraji,Bus Stand,At. Bus Depo,Bechraji Bus Depo Entry,20 x 10,Lower,Hoarding,NL,23.5017775,72.0463738,LOF,200,LOF
+BEBN-VG-S,Bechraji,Bechar Nala,Nr. Bechar Gram Panchayat,Viramgam to Bechraji,20 x 10,Solo,Hoarding,NL,23.4948339,72.0423418,LOF,200,LOF
+BEBN-VG-U,Bechraji,Bechar Nala,Nr. Bechar Nala,Bechraji to Viramgam,20 x 10,Upper,Hoarding,NL,23.4937279,72.0418053,LOF,200,LOF
+BEBN-VG-D,Bechraji,Bechar Nala,Nr. Bechar Nala,Bechraji to Viramgam,20 x 10,Lower,Hoarding,NL,23.4937279,72.0418053,LOF,200,LOF
+BEHA-VG-U,Bechraji,Hansalpur,Opp. Bansi Katthiyawadi Hotel,Bechraji to Viramgam,20 x 10,Upper,Hoarding,NL,23.4919196,72.0253946,Private,200,Vipul Panchal
+BEHA-VG-D,Bechraji,Hansalpur,Opp. Bansi Katthiyawadi Hotel,Bechraji to Viramgam,20 x 10,Lower,Hoarding,NL,23.4919196,72.0253946,Private,200,Vipul Panchal
+BEHA-BE-U,Bechraji,Hansalpur,Opp. Bansi Katthiyawadi Hotel,Viramgam to Bechraji,20 x 10,Upper,Hoarding,NL,23.4919196,72.0253946,Private,200,Vipul Panchal
+BEHA-BE-D,Bechraji,Hansalpur,Opp. Bansi Katthiyawadi Hotel,Viramgam to Bechraji,20 x 10,Lower,Hoarding,NL,23.4919196,72.0253946,Private,200,Vipul Panchal
+BEMP-BE-RU,Bechraji,Maruti Plant,Hansalpur T Junction,Viramgam to Bechraji,20 x 10,RHS Upper,Hoarding,NL,23.4885571,72.0175048,Private,200,Zalabhai
+BEMP-BE-RD,Bechraji,Maruti Plant,Hansalpur T Junction,Viramgam to Bechraji,20 x 10,RHS Lower,Hoarding,NL,23.4885571,72.0175048,Private,200,Zalabhai
+BEMP-BE-LU,Bechraji,Maruti Plant,Hansalpur T Junction,Viramgam to Bechraji,20 x 10,LHS Upper,Hoarding,NL,23.4885571,72.0175048,Private,200,Zalabhai
+BEMP-BE-LD,Bechraji,Maruti Plant,Hansalpur T Junction,Viramgam to Bechraji,20 x 10,LHS Lower,Hoarding,NL,23.4885571,72.0175048,Private,200,Zalabhai
+BEMP-BV-R3,Bechraji,Maruti Plant,Hansalpur T Junction,Maruti Plant to Bechraji & Vitthalapur,20 x 10,RHS Third,Hoarding,NL,23.4881998,72.0176876,Private,200,Hasanbai
+BEMP-BV-L3,Bechraji,Maruti Plant,Hansalpur T Junction,Maruti Plant to Bechraji & Vitthalapur,20 x 10,LHS Third,Hoarding,NL,23.4881998,72.0176876,Private,200,Raysang bhai
+BEMP-MV-R,Bechraji,Maruti Plant,Hansalpur T Junction,Bechraji to Maruti Plant & Viramgam,20 x 10,RHS,Hoarding,NL,23.4882247,72.017296,LOF,200,LOF
+BENY-HA-S,Bechraji,Naviyaani,At. Naviyani Village,Naviyani to Hansalpur,20 x 10,Solo,Hoarding,NL,23.4777473,71.9659695,Private,200,Kamleeshbhai
+VIJA-BE-U,Vitthalapur,Jalisana,Nr. Bus Stop,Vitthalapur to Bechraji,20 x 10,Upper,Hoarding,NL,23.3984171,72.01368,Private,200,Rameshbhai Devipujak
+VIJA-BE-D,Vitthalapur,Jalisana,Nr. Bus Stop,Vitthalapur to Bechraji,20 x 10,Lower,Hoarding,NL,23.3984171,72.01368,Private,200,Rameshbhai Devipujak
+VIHP-EX-L1,Vitthalapur,Honda Plant,Main Entrance Gate,Exit From the Honda Plant,20 x 10,LHS First,Hoarding,NL,23.3710972,72.0451517,Private,200,Chakubhai 
+VIHP-EX-L2,Vitthalapur,Honda Plant,Main Entrance Gate,Exit From the Honda Plant,20 x 10,LHS Second,Hoarding,NL,23.3710972,72.0451517,Private,200,Chakubhai 
+VIHP-HB-L,Vitthalapur,Honda Plant,Main Entrance Gate,Vitthalapur to Honda Plant & Bechraji,20 x 10,LHS,Hoarding,NL,23.3714847,72.0452509,Private,200,Chakubhai 
+VIHP-HB-R,Vitthalapur,Honda Plant,Main Entrance Gate,Vitthalapur to Honda Plant & Bechraji,20 x 10,RHS Lower,Hoarding,NL,23.3714847,72.0452509,Private,200,Chakubhai 
+VIVC-KM-L,Vitthalapur,Vitthalapur Circle,Opp. Police Chowki,"Kadi to Mandal, Bechraji & Viramgam",15 x 10,LHS,Hoarding,NL,23.3596791,72.052976,LOF,150,LOF
+VIVC-VK-L,Vitthalapur,Vitthalapur Circle,Next to Police Chowki,"Viramgam to Kadi, Mandal & Bechraji",20 x 10,LHS,Hoarding,NL,23.3599281,72.0528594,LOF,200,LOF
+VIVC-KM-S,Vitthalapur,Vitthalapur Circle,Next to Police Chowki,"Kadi to Mandal, Bechraji",20 x 10,Solo,Hoarding,NL,23.360005,72.0529278,LOF,200,LOF
+VIVC-KD-L1,Vitthalapur,Vitthalapur Circle,At. Vitthalapur Circle,Vitthalapur Circle to Kadi,20 x 10,LHS First,Hoarding,NL,23.3597443,72.0534548,LOF,200,LOF
+VIVC-MV-S,Vitthalapur,Vitthalapur Circle,At. Vitthalapur Circle,Mandal to Viramgam & Kadi,20 x 10,Solo,Hoarding,NL,23.3596628,72.0532604,LOF,200,LOF
+VIMG-KD-U,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Vitthalapur to Kadi,20 x 10,Upper,Hoarding,NL,23.3604843,72.0617777,Private,200,Hamirsinh Solanki
+VIMG-KD-M,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Vitthalapur to Kadi,20 x 10,Middle,Hoarding,NL,23.3604843,72.0617777,Private,200,Hamirsinh Solanki
+VIMG-KD-D,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Vitthalapur to Kadi,20 x 10,Lower,Hoarding,NL,23.3604843,72.0617777,Private,200,Hamirsinh Solanki
+VIMG-VI-U,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Kadi to Vitthalapur,20 x 10,Upper,Hoarding,NL,23.3604843,72.0617777,Private,200,Hamirsinh Solanki
+VIMG-VI-M,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Kadi to Vitthalapur,20 x 10,Middle,Hoarding,NL,23.3604843,72.0617777,Private,200,Hamirsinh Solanki
+VIMG-VI-D,Vitthalapur,Nr. Vitthalapur Circle,Opp. Mandal GIDC,Kadi to Vitthalapur,20 x 10,Lower,Hoarding,NL,23.3604843,72.0617777,Private,200,Hamirsinh Solanki
+DTDV-KD-R,Detroj,Detroj Village,Railway Crossing,Vitthalapur to Kadi,20 x 10,RHS,Hoarding,NL,23.3371863,72.1820376,Private,200,Manu Devipujak
+DTDV-KD-L1,Detroj,Detroj Village,Railway Crossing,Vitthalapur to Kadi,20 x 10,LHS First,Hoarding,NL,23.337737,72.1826116,Private,200,Manu Devipujak
+DTDV-KD-L3,Detroj,Detroj Village,Railway Crossing,Vitthalapur to Kadi,20 x 10,LHS Third,Hoarding,NL,23.337737,72.1826116,Private,200,Manu Devipujak
+DTDV-VI-R1,Detroj,Detroj Village,Railway Crossing,Kadi to Vitthalapur,20 x 10,RHS First,Hoarding,NL,23.3375493,72.1814626,Private,200,Manu Devipujak
+DTDV-VI-R2,Detroj,Detroj Village,Railway Crossing,Kadi to Vitthalapur,20 x 10,RHS Second,Hoarding,NL,23.3375493,72.1814626,Private,200,Manu Devipujak
+DTDV-VI-R3,Detroj,Detroj Village,Railway Crossing,Kadi to Vitthalapur,20 x 10,RHS Third,Hoarding,NL,23.3375493,72.1814626,Private,200,Manu Devipujak
+DTDV-VI-R4,Detroj,Detroj Village,Railway Crossing,Kadi to Vitthalapur,20 x 10,RHS Fourth,Hoarding,NL,23.3375493,72.1814626,Private,200,Manu Devipujak
+DTDV-VI-L,Detroj,Detroj Village,Railway Crossing,Kadi to Vitthalapur,20 x 10,LHS,Hoarding,NL,23.3381071,72.1818119,Private,200,Manu Devipujak
+DTMB-VI-U,Detroj,Main Bazar,Nr. Suman Nirmal Minda School,Kadi to Vitthalapur,20 x 10,Upper,Hoarding,NL,23.3349913,72.1973282,Private,200,Rahul Patel Detroj
+DTMB-VI-M,Detroj,Main Bazar,Nr. Suman Nirmal Minda School,Kadi to Vitthalapur,20 x 10,Middle,Hoarding,NL,23.3349913,72.1973282,Private,200,Rahul Patel Detroj
+DTMB-VI-D,Detroj,Main Bazar,Nr. Suman Nirmal Minda School,Kadi to Vitthalapur,20 x 10,Lower,Hoarding,NL,23.3349913,72.1973282,Private,200,Rahul Patel Detroj
+KASV-VI-U,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Kadi to Vitthalapur,20 x 10,Upper,Hoarding,NL,23.3123272,72.2616827,Private,200,Kapilbhai Desai
+KASV-VI-M,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Kadi to Vitthalapur,20 x 10,Middle,Hoarding,NL,23.3123272,72.2616827,Private,200,Kapilbhai Desai
+KASV-VI-D,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Kadi to Vitthalapur,20 x 10,Lower,Hoarding,NL,23.3123272,72.2616827,Private,200,Kapilbhai Desai
+KASV-KD-U,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Vitthalapur to Kadi,20 x 10,Upper,Hoarding,NL,23.3123272,72.2616827,Private,200,Kapilbhai Desai
+KASV-KD-M,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Vitthalapur to Kadi,20 x 10,Middle,Hoarding,NL,23.3123272,72.2616827,Private,200,Kapilbhai Desai
+KASV-KD-D,Kadi,Sadra Village,Opp. Mascot Indusrial Park,Vitthalapur to Kadi,20 x 10,Lower,Hoarding,NL,23.3123272,72.2616827,Private,200,Kapilbhai Desai
+KABA-VI-U,Kadi,Balasar ,Nr. Balasar Village Gate,Kadi to Vitthalapur,20 x 10,Upper,Hoarding,NL,23.2991131,72.291403,Private,200,Valubhai Desai
+KABA-VI-M,Kadi,Balasar ,Nr. Balasar Village Gate,Kadi to Vitthalapur,20 x 10,Middle,Hoarding,NL,23.2991131,72.291403,Private,200,Valubhai Desai
+KABA-VI-D,Kadi,Balasar ,Nr. Balasar Village Gate,Kadi to Vitthalapur,20 x 10,Lower,Hoarding,NL,23.2991131,72.291403,Private,200,Valubhai Desai
+KABA-VI-S,Kadi,Balasar ,Narmada Canal,Kadi to Vitthalapur,20 x 10,Solo,Hoarding,NL,23.2997034,72.3007391,LOF,200,LOF
+KABH-BH-U,Kadi,Bhagyoday Road,Nr. Vadvala Hanuman Temple,We World Theatre to Bhagyoday Hospital,30 x 10,Upper,Hoarding,NL,23.2920212,72.3324052,Private,300,Bhojak Samaj Vaadi
+KABH-BH-M,Kadi,Bhagyoday Road,Nr. Vadvala Hanuman Temple,We World Theatre to Bhagyoday Hospital,30 x 10,Middle,Hoarding,NL,23.2920212,72.3324052,Private,300,Bhojak Samaj Vaadi
+KABH-BH-D,Kadi,Bhagyoday Road,Nr. Vadvala Hanuman Temple,We World Theatre to Bhagyoday Hospital,30 x 10,Lower,Hoarding,NL,23.2920212,72.3324052,Private,300,Bhojak Samaj Vaadi
+KAPP-CH-U,Kadi,Petrol Pump,Nr. Vrundavan Society,Kadi to Chhatral,20 x 15,Upper,Hoarding,NL,23.2983199,72.3401333,Private,300,Jaimin Bhojak 
+KAPP-CH-D,Kadi,Petrol Pump,Nr. Vrundavan Society,Kadi to Chhatral,20 x 15,Lower,Hoarding,NL,23.2983199,72.3401333,Private,300,Jaimin Bhojak 
+KABU-CH-U,Kadi,Budasan Village,Nr. Kadi GIDC,Kadi to Chhatral,20 x 10,Upper,Hoarding,NL,23.2853865,72.3724808,Private,200,Bhavesh Desai
+KABU-CH-D,Kadi,Budasan Village,Nr. Kadi GIDC,Kadi to Chhatral,20 x 10,Lower,Hoarding,NL,23.2853865,72.3724808,Private,200,Bhavesh Desai
+KAPI-TH-U,Kadi,Pirojpur,Pirojpur Canal,Kadi to Thol,20 x 10,Upper,Hoarding,NL,23.2675161,72.3468566,Private,200,Jitubhai Thakor
+KAPI-TH-D,Kadi,Pirojpur,Pirojpur Canal,Kadi to Thol,20 x 10,Lower,Hoarding,NL,23.2675161,72.3468566,Private,200,Jitubhai Thakor
+KAPI-KD-U,Kadi,Pirojpur,Pirojpur Canal,Thol to Kadi,20 x 10,Upper,Hoarding,NL,23.2675161,72.3468566,Private,200,Jitubhai Thakor
+KAPI-KD-M,Kadi,Pirojpur,Pirojpur Canal,Thol to Kadi,20 x 10,Middle,Hoarding,NL,23.2675161,72.3468566,Private,200,Jitubhai Thakor
+KAPI-KD-D,Kadi,Pirojpur,Pirojpur Canal,Thol to Kadi,20 x 10,Lower,Hoarding,NL,23.2675161,72.3468566,Private,200,Jitubhai Thakor
+KAPI-KD-U2,Kadi,Pirojpur,Opp. Mangalam Oil ,Thol to Kadi,20 x 10,Upper,Hoarding,NL,23.2593564,72.34709,Private,200,Jigneshbhai Manglam Oil
+KAPI-KD-M2,Kadi,Pirojpur,Opp. Mangalam Oil ,Thol to Kadi,20 x 10,Middle,Hoarding,NL,23.2593564,72.34709,Private,200,Jigneshbhai Manglam Oil
+KAPI-KD-D2,Kadi,Pirojpur,Opp. Mangalam Oil ,Thol to Kadi,20 x 10,Lower,Hoarding,NL,23.2593564,72.34709,Private,200,Jigneshbhai Manglam Oil
+KAPI-TH-U2,Kadi,Pirojpur,Opp. Mangalam Oil ,Kadi to Thol,20 x 10,Upper,Hoarding,NL,23.2593564,72.34709,Private,200,Jigneshbhai Manglam Oil
+KAPI-TH-M2,Kadi,Pirojpur,Opp. Mangalam Oil ,Kadi to Thol,20 x 10,Middle,Hoarding,NL,23.2593564,72.34709,Private,200,Jigneshbhai Manglam Oil
+KAPI-TH-D2,Kadi,Pirojpur,Opp. Mangalam Oil ,Kadi to Thol,20 x 10,Lower,Hoarding,NL,23.2593564,72.34709,Private,200,Jigneshbhai Manglam Oil
+THMA-KD-U,Thol,Meda Aadraj,Nr. Purohit Hotel,Thol to Kadi,20 x 10,Upper,Hoarding,NL,23.2005491,72.3661404,Private,200,Sanjay Patel Meda Aadraj
+THMA-KD-M,Thol,Meda Aadraj,Nr. Purohit Hotel,Thol to Kadi,20 x 10,Middle,Hoarding,NL,23.2005491,72.3661404,Private,200,Sanjay Patel Meda Aadraj
+THMA-KD-D,Thol,Meda Aadraj,Nr. Purohit Hotel,Thol to Kadi,20 x 10,Lower,Hoarding,NL,23.2005491,72.3661404,Private,200,Sanjay Patel Meda Aadraj
+THMA-TH-U,Thol,Meda Aadraj,Nr. Purohit Hotel,Kadi to Thol,20 x 10,Upper,Hoarding,NL,23.2005491,72.3661404,Private,200,Sanjay Patel Meda Aadraj
+THMA-TH-M,Thol,Meda Aadraj,Nr. Purohit Hotel,Kadi to Thol,20 x 10,Middle,Hoarding,NL,23.2005491,72.3661404,Private,200,Sanjay Patel Meda Aadraj
+THMA-TH-D,Thol,Meda Aadraj,Nr. Purohit Hotel,Kadi to Thol,20 x 10,Lower,Hoarding,NL,23.2005491,72.3661404,Private,200,Sanjay Patel Meda Aadraj
+THSH-KD-U,Thol,Shedfa,Nr. N K Protiens,Thol to Kadi,20 x 10,Upper,Hoarding,NL,23.155945,72.377129,Private,200,Maulik/Amrutbhai Desai
+THSH-KD-M,Thol,Shedfa,Nr. N K Protiens,Thol to Kadi,20 x 10,Middle,Hoarding,NL,23.155945,72.377129,Private,200,Maulik/Amrutbhai Desai
+THSH-KD-D,Thol,Shedfa,Nr. N K Protiens,Thol to Kadi,20 x 10,Lower,Hoarding,NL,23.155945,72.377129,Private,200,Maulik/Amrutbhai Desai
+VISC-VM-U,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,Upper,Hoarding,NL,23.0821882,72.1670279,Private,200,Gautam Bharwad
+VISC-VM-M,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,Middle,Hoarding,NL,23.0821882,72.1670279,Private,200,Gautam Bharwad
+VISC-VM-D,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,Lower,Hoarding,NL,23.0821882,72.1670279,Private,200,Gautam Bharwad
+VISC-VM-LU,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,LHS Upper,Hoarding,NL,23.0821767,72.1668113,Private,200,Gautam Bharwad
+VISC-VM-LM,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,LHS Middle,Hoarding,NL,23.0821767,72.1668113,Private,200,Gautam Bharwad
+VISC-VM-LD,Viramgam,Sachana,Sachana Bypass ,Sanand to Viramgam,20 x 10,LHS Lower,Hoarding,NL,23.0821767,72.1668113,Private,200,Gautam Bharwad
+VISC-SN-U,Viramgam,Sachana,Sachana Bypass ,Viramgam to Sanand,20 x 10,Upper,Hoarding,NL,23.0821767,72.1668113,Private,200,Gautam Bharwad
+VISC-SN-M,Viramgam,Sachana,Sachana Bypass ,Viramgam to Sanand,20 x 10,Middle,Hoarding,NL,23.0821767,72.1668113,Private,200,Gautam Bharwad
+VISC-SN-D,Viramgam,Sachana,Sachana Bypass ,Viramgam to Sanand,20 x 10,Lower,Hoarding,NL,23.0821767,72.1668113,Private,200,Gautam Bharwad
+VIVB-VV-U,Viramgam,Viramgam Bypass,Sokali Fatak,Sanand to Viramgam & Vitthalapur,30 x 10,Upper,Hoarding,NL,23.0967205,72.1084321,Private,300,Ajitbhai Bharwad
+VIVB-VV-M,Viramgam,Viramgam Bypass,Sokali Fatak,Sanand to Viramgam & Vitthalapur,30 x 10,Middle,Hoarding,NL,23.0967205,72.1084321,Private,300,Ajitbhai Bharwad
+VIVB-VV-D,Viramgam,Viramgam Bypass,Sokali Fatak,Sanand to Viramgam & Vitthalapur,30 x 10,Lower,Hoarding,NL,23.0967205,72.1084321,Private,300,Ajitbhai Bharwad
+VIVB-PC-U,Viramgam,Viramgam Bypass,"Nr. Ravi Hotel, Balapir Chowkadi",Sokali Fatak to Popat Chowkadi,20 x 10,Upper,Hoarding,NL,23.1198493,72.0697331,Private,200,Bhavanbhai Ramdevpir Temple
+VIVB-PC-M,Viramgam,Viramgam Bypass,"Nr. Ravi Hotel, Balapir Chowkadi",Sokali Fatak to Popat Chowkadi,20 x 10,Middle,Hoarding,NL,23.1198493,72.0697331,Private,200,Bhavanbhai Ramdevpir Temple
+VIVB-PC-D,Viramgam,Viramgam Bypass,"Nr. Ravi Hotel, Balapir Chowkadi",Sokali Fatak to Popat Chowkadi,20 x 10,Lower,Hoarding,NL,23.1198493,72.0697331,Private,200,Bhavanbhai Ramdevpir Temple
+VIVB-PC-L,Viramgam,Viramgam Bypass,Nr. Kalika Hotel,Sokali Fatak to Popat Chowkadi,20 x 10,LHS,Hoarding,NL,23.1406837,72.0754476,Private,200,Sachin Thakor
+VIVB-PC-R,Viramgam,Viramgam Bypass,Nr. Kalika Hotel,Sokali Fatak to Popat Chowkadi,20 x 10,RHS,Hoarding,NL,23.1406837,72.0754476,Private,200,Sachin Thakor
+VIVB-VI-U,Viramgam,Viramgam Bypass,Popat Chowkadi,Viramgam to Vitthalapur,20 x 10,Upper,Hoarding,NL,23.145699,72.0503518,Private,200,Sureshbhai Dalwadi
+VIVB-VI-M,Viramgam,Viramgam Bypass,Popat Chowkadi,Viramgam to Vitthalapur,20 x 10,Middle,Hoarding,NL,23.145699,72.0503518,Private,200,Sureshbhai Dalwadi
+VIVB-VI-D,Viramgam,Viramgam Bypass,Popat Chowkadi,Viramgam to Vitthalapur,20 x 10,Lower,Hoarding,NL,23.145699,72.0503518,Private,200,Sureshbhai Dalwadi
+SAVA-TE-S,Sami,Varana,Opp. Khodiyaar Mata Temple,Temple Entrance,20 x 10,Solo,Hoarding,NL,23.7263442,71.7247323,Private,200,Babaji Thakor

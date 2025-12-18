@@ -80,7 +80,7 @@ export const authAPI = {
 
 // Hoardings API
 export const hoardingsAPI = {
-  getAll: async (params?: { page?: number; limit?: number; city?: string; area?: string; status?: string }) => {
+  getAll: async (params?: { page?: number; limit?: number; city?: string; area?: string; status?: string; ownership?: string }) => {
     const response = await api.get('/hoardings', { params });
     return response.data;
   },

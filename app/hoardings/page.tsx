@@ -26,7 +26,17 @@ export default function Hoardings() {
   const userFromContext = useUser();
   const [user, setUser] = useState<any>(null);
   const [filters, setFilters] = useState({ city: "", area: "", status: "" });
+  const [landlordSearch, setLandlordSearch] = useState("");
+  const [landlordFilters, setLandlordFilters] = useState<
+    Map<string, { city: string; area: string; status: string }>
+  >(new Map());
+  const [expandedLandlords, setExpandedLandlords] = useState<Set<string>>(
+    new Set()
+  );
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
+  const [rentingLandlords, setRentingLandlords] = useState<Set<string>>(
+    new Set()
+  );
 
   const limit = 20;
 
@@ -65,10 +75,12 @@ export default function Hoardings() {
       setLoading(true);
 
       try {
+        // For landlord grouping, fetch a large page size to ensure all hoardings are loaded
+        // This ensures landlord groups show all hoardings correctly
         const response = await hoardingsAPI.getAll({
           ...filters,
           page: 1,
-          limit: limit,
+          limit: 1000, // Large limit to get all hoardings for proper landlord grouping
         });
 
         if (response.success && response.data) {
@@ -76,7 +88,7 @@ export default function Hoardings() {
           const totalCount = response.data.total || 0;
           setHoardings(newHoardings);
           setTotal(totalCount);
-          setHasMore(newHoardings.length < totalCount);
+          setHasMore(false); // Disable pagination when fetching all for landlord grouping
         }
       } catch (error) {
         console.error("Failed to fetch hoardings:", error);
@@ -154,28 +166,20 @@ export default function Hoardings() {
         setLoadingMore(true);
       }
 
+      // Fetch with large limit for landlord grouping
       const response = await hoardingsAPI.getAll({
         ...filters,
-        page: pageNum,
-        limit: limit,
+        page: 1,
+        limit: 1000, // Large limit to get all hoardings for proper ownership grouping
       });
 
       if (response.success && response.data) {
         const newHoardings = response.data.hoardings || [];
         const totalCount = response.data.total || 0;
 
-        if (reset) {
-          setHoardings(newHoardings);
-          setHasMore(newHoardings.length < totalCount);
-        } else {
-          setHoardings((prev) => {
-            const updated = [...prev, ...newHoardings];
-            setHasMore(updated.length < totalCount);
-            return updated;
-          });
-        }
-
+        setHoardings(newHoardings);
         setTotal(totalCount);
+        setHasMore(false); // Disable pagination when fetching all
       }
     } catch (error) {
       console.error("Failed to fetch hoardings:", error);
@@ -346,60 +350,15 @@ export default function Hoardings() {
         })()}
 
         <div className="card">
-          <h3>Filters</h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "10px",
-            }}
-          >
-            <div className="form-group">
-              <label>City</label>
-              <input
-                type="text"
-                value={filters.city}
-                onChange={(e) =>
-                  setFilters({ ...filters, city: e.target.value })
-                }
-                placeholder="Filter by city"
-              />
-            </div>
-            <div className="form-group">
-              <label>Area</label>
-              <input
-                type="text"
-                value={filters.area}
-                onChange={(e) =>
-                  setFilters({ ...filters, area: e.target.value })
-                }
-                placeholder="Filter by area"
-              />
-            </div>
-            <div className="form-group">
-              <label>Status</label>
-              <CustomSelect
-                value={filters.status}
-                onChange={(val) => setFilters({ ...filters, status: val })}
-                options={(() => {
-                  if (isSalesRole) {
-                    return [
-                      { value: "", label: "All" },
-                      { value: "available", label: "Available" },
-                      { value: "booked", label: "Booked" },
-                      { value: "tokenized", label: "Book (Tokenized)" },
-                    ];
-                  }
-                  return [
-                    { value: "", label: "All" },
-                    { value: "available", label: "Available" },
-                    { value: "on_rent", label: "On Rent" },
-                    { value: "occupied", label: "Occupied" },
-                    { value: "booked", label: "Booked" },
-                  ];
-                })()}
-              />
-            </div>
+          <h3>Search by Landlord Name</h3>
+          <div className="form-group">
+            <input
+              type="text"
+              value={landlordSearch}
+              onChange={(e) => setLandlordSearch(e.target.value)}
+              placeholder="Type landlord name to search..."
+              style={{ width: "100%" }}
+            />
           </div>
         </div>
 
@@ -414,72 +373,6 @@ export default function Hoardings() {
             </div>
           ) : (
             (() => {
-              // Group hoardings by propertyGroupId when available.
-              // Fallback to code prefix (first two segments) + landmark/location.
-              const groupsMap: Record<string, any> = {};
-              for (const h of hoardings) {
-                // Prefer explicit backend grouping id to ensure all faces/directions
-                // of the same property are counted as one.
-                const groupId: string | null = h.propertyGroupId
-                  ? String(h.propertyGroupId)
-                  : null;
-
-                // IMPORTANT: Split properties by facing direction/roadName even if
-                // they share the same propertyGroupId. This ensures Solo vs LHS/RHS
-                // on opposite directions are treated as separate properties.
-                const directionKey = (h.roadName || "")
-                  .toString()
-                  .trim()
-                  .toLowerCase();
-
-                let key = groupId || "";
-                let linkKey = groupId || ""; // keep rent link pointing to group id
-
-                if (!key) {
-                  const code = h.code || "";
-                  const parts = code.split("-");
-                  let prefix = code;
-                  if (parts.length >= 2) {
-                    prefix = parts.slice(0, 2).join("-");
-                  }
-
-                  // Use landmark/title to distinguish structures within the same prefix group
-                  const locationKey = h.landmark || h.title || h.location || "";
-                  key = `${prefix}|${locationKey}`;
-                  linkKey = prefix;
-                }
-
-                // If we have a propertyGroupId, refine unique grouping by direction/road
-                // so opposite facing properties are not merged.
-                if (groupId) {
-                  key = `${groupId}|${directionKey || ""}`;
-                }
-
-                if (!groupsMap[key]) {
-                  groupsMap[key] = {
-                    uniqueKey: key,
-                    linkKey: linkKey,
-                    // keep original propertyGroupId for display if present
-                    propertyGroupId: h.propertyGroupId || null,
-                    // Display: City as title; Area and Location/Landmark below
-                    title: h.city || "",
-                    subtitle: [h.area, h.location || h.landmark || ""]
-                      .filter(Boolean)
-                      .join(", "),
-                    hoardings: [],
-                  };
-                }
-                groupsMap[key].hoardings.push(h);
-              }
-              const groups = Object.values(groupsMap);
-              if (!groups.length) {
-                return (
-                  <div style={{ textAlign: "center", padding: "40px" }}>
-                    No hoardings found
-                  </div>
-                );
-              }
-
               // Sales view: always list individual hoardings with status filter
               if (isSalesRole) {
                 const toFt = (w?: number, h?: number) => {
@@ -547,6 +440,7 @@ export default function Hoardings() {
                               ? "Hoarding On Rent"
                               : h.status || "—"}
                           </td>
+                          <td>{h.ownership || "—"}</td>
                           <td>
                             <div
                               style={{
@@ -611,200 +505,631 @@ export default function Hoardings() {
                   h / 30.48
                 )}ft`;
               };
-              return (
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Property / Location</th>
-                      <th>Hoardings</th>
-                      <th>Total Faces</th>
-                      <th>Sizes</th>
-                      <th>Status Summary</th>
-                      <th>Ownership</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {groups.map((g) => {
-                      const sizes = Array.from(
-                        new Set(
-                          g.hoardings.map((h: any) =>
-                            toFt(h.widthCm, h.heightCm)
-                          )
-                        ).values()
-                      ).filter((s) => s !== "—");
-                      const statusCounts: Record<string, number> = {};
-                      const ownerships = new Set<string>();
-                      g.hoardings.forEach((h: any) => {
-                        statusCounts[h.status] =
-                          (statusCounts[h.status] || 0) + 1;
-                        if (h.ownership) ownerships.add(h.ownership);
-                      });
-                      // Consider a property "on rent" only if ALL its faces/entries
-                      // in this grouped direction are on rent. This prevents rent state
-                      // from leaking to other faces when the backend attaches group rent.
-                      const isGroupOnRent =
-                        g.hoardings.length > 0 &&
-                        g.hoardings.every(
-                          (h: any) =>
-                            (h.status || "").toLowerCase() === "on_rent"
-                        );
-                      const statusSummary = isGroupOnRent
-                        ? "Property On Rent"
-                        : statusCounts["available"]
-                        ? "Property Available"
-                        : "—";
-                      const ownershipDisplay = ownerships.size
-                        ? Array.from(ownerships).join(", ")
-                        : "—";
-                      // landlord column removed per request
 
-                      return (
-                        <tr key={g.uniqueKey}>
-                          <td>
-                            <strong>{g.title}</strong>
-                            {g.subtitle && (
-                              <div
-                                style={{
-                                  fontSize: "12px",
-                                  color: "var(--text-secondary)",
-                                }}
-                              >
-                                {g.subtitle}
-                              </div>
-                            )}
-                          </td>
-                          {/* Landlord column removed */}
-                          <td>
-                            {g.hoardings.map((h: any) => (
-                              <div key={h.id} style={{ fontSize: "12px" }}>
-                                {h.code} {h.side && `(${h.side})`}
-                              </div>
-                            ))}
-                          </td>
-                          <td>{g.hoardings.length}</td>
-                          <td>{sizes.length ? sizes.join(" | ") : "—"}</td>
-                          <td style={{ fontSize: "12px" }}>
-                            {statusSummary || "—"}
-                          </td>
-                          <td>{ownershipDisplay}</td>
-                          <td>
-                            <div
+              // Group hoardings directly by landlord ONLY - no property grouping
+              const landlordGroups = new Map<string, any[]>();
+
+              // Helper to extract landlord from hoarding
+              const getLandlord = (h: any): string => {
+                // Try to get landlord from rateHistory JSON field
+                if (h.rateHistory && typeof h.rateHistory === "object") {
+                  const landlord = (h.rateHistory as any)?.landlord;
+                  if (
+                    landlord &&
+                    typeof landlord === "string" &&
+                    landlord.trim()
+                  ) {
+                    return landlord.trim();
+                  }
+                }
+                // Fallback: try to derive from ownership if available
+                if (h.ownership) {
+                  const ownership = h.ownership.toString();
+                  // Extract landlord from patterns like "GOV - R & B Mehsana" => "R & B Mehsana"
+                  const match = ownership.match(
+                    /^(gov|govt|government)\s*-\s*(.+)$/i
+                  );
+                  if (match && match[2]) {
+                    return match[2].trim();
+                  }
+                }
+                return "Unknown";
+              };
+
+              // Process each hoarding individually - pure landlord grouping
+              for (const h of hoardings) {
+                const landlord = getLandlord(h);
+                if (!landlordGroups.has(landlord)) {
+                  landlordGroups.set(landlord, []);
+                }
+
+                // Store hoarding directly - no property grouping logic
+                landlordGroups.get(landlord)!.push(h);
+              }
+
+              // Filter landlords by search term
+              const filteredLandlordGroups = Array.from(
+                landlordGroups.entries()
+              )
+                .filter(([landlord]) => {
+                  if (!landlordSearch.trim()) return true;
+                  return landlord
+                    .toLowerCase()
+                    .includes(landlordSearch.toLowerCase().trim());
+                })
+                .sort(([a], [b]) => a.localeCompare(b));
+
+              const toggleLandlord = (landlord: string) => {
+                setExpandedLandlords((prev) => {
+                  const newSet = new Set(prev);
+                  if (newSet.has(landlord)) {
+                    newSet.delete(landlord);
+                  } else {
+                    newSet.add(landlord);
+                  }
+                  return newSet;
+                });
+              };
+
+              const updateLandlordFilter = (
+                landlord: string,
+                field: "city" | "area" | "status",
+                value: string
+              ) => {
+                setLandlordFilters((prev) => {
+                  const newMap = new Map(prev);
+                  const current = newMap.get(landlord) || {
+                    city: "",
+                    area: "",
+                    status: "",
+                  };
+                  newMap.set(landlord, { ...current, [field]: value });
+                  return newMap;
+                });
+              };
+
+              const getLandlordFilter = (landlord: string) => {
+                return (
+                  landlordFilters.get(landlord) || {
+                    city: "",
+                    area: "",
+                    status: "",
+                  }
+                );
+              };
+
+              const filterHoardingsForLandlord = (
+                hoardings: any[],
+                filters: { city: string; area: string; status: string }
+              ) => {
+                return hoardings.filter((h) => {
+                  if (
+                    filters.city &&
+                    !(h.city || "")
+                      .toLowerCase()
+                      .includes(filters.city.toLowerCase())
+                  ) {
+                    return false;
+                  }
+                  if (
+                    filters.area &&
+                    !(h.area || "")
+                      .toLowerCase()
+                      .includes(filters.area.toLowerCase())
+                  ) {
+                    return false;
+                  }
+                  if (filters.status) {
+                    const status = (h.status || "").toLowerCase();
+                    const filterStatus = filters.status.toLowerCase();
+                    if (status !== filterStatus) {
+                      return false;
+                    }
+                  }
+                  return true;
+                });
+              };
+
+              const handleLandlordRent = async (
+                landlord: string,
+                hoardings: any[]
+              ) => {
+                if (!canViewRent(userRole)) {
+                  showError(
+                    "You don't have permission to set hoardings on rent."
+                  );
+                  return;
+                }
+
+                const confirmRent = window.confirm(
+                  `Are you sure you want to mark all ${hoardings.length} hoarding(s) under "${landlord}" as on rent? This will make them available for bookings.`
+                );
+                if (!confirmRent) return;
+
+                try {
+                  setRentingLandlords((prev) => new Set(prev).add(landlord));
+
+                  // Update all hoardings for this landlord to "on_rent"
+                  const updatePromises = hoardings.map((h) =>
+                    hoardingsAPI.update(h.id, { status: "on_rent" })
+                  );
+
+                  await Promise.all(updatePromises);
+
+                  // Refresh the hoardings list
+                  await fetchHoardings(1, true);
+
+                  showSuccess(
+                    `All hoardings under "${landlord}" have been marked as on rent.`
+                  );
+                } catch (error) {
+                  console.error("Failed to set hoardings on rent:", error);
+                  showError(
+                    "Failed to set hoardings on rent. Please try again."
+                  );
+                } finally {
+                  setRentingLandlords((prev) => {
+                    const newSet = new Set(prev);
+                    newSet.delete(landlord);
+                    return newSet;
+                  });
+                }
+              };
+
+              const isAllOnRent = (hoardings: any[]): boolean => {
+                return hoardings.every(
+                  (h) => (h.status || "").toLowerCase() === "on_rent"
+                );
+              };
+
+              if (filteredLandlordGroups.length === 0) {
+                return (
+                  <div style={{ textAlign: "center", padding: "40px" }}>
+                    {landlordSearch.trim()
+                      ? "No landlords found matching your search"
+                      : "No hoardings found"}
+                  </div>
+                );
+              }
+
+              return (
+                <div>
+                  {filteredLandlordGroups.map(([landlord, hoardingGroups]) => {
+                    const isExpanded = expandedLandlords.has(landlord);
+                    const landlordFilter = getLandlordFilter(landlord);
+                    const filteredHoardings = filterHoardingsForLandlord(
+                      hoardingGroups,
+                      landlordFilter
+                    );
+                    const totalHoardings = hoardingGroups.length;
+                    const filteredCount = filteredHoardings.length;
+                    const allOnRent = isAllOnRent(hoardingGroups);
+                    const isRenting = rentingLandlords.has(landlord);
+
+                    return (
+                      <div
+                        key={landlord}
+                        style={{
+                          marginBottom: "12px",
+                          border: "1px solid var(--border-color, #e2e8f0)",
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {/* Landlord Header Row */}
+                        <div
+                          style={{
+                            padding: "16px 20px",
+                            backgroundColor: isExpanded
+                              ? "var(--primary-light, rgba(0, 187, 241, 0.1))"
+                              : "var(--bg-secondary, #ffffff)",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            transition: "background-color 0.2s ease",
+                          }}
+                        >
+                          <div
+                            onClick={() => toggleLandlord(landlord)}
+                            style={{
+                              flex: 1,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px",
+                              cursor: "pointer",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isExpanded) {
+                                e.currentTarget.parentElement!.style.backgroundColor =
+                                  "rgba(0, 187, 241, 0.05)";
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isExpanded) {
+                                e.currentTarget.parentElement!.style.backgroundColor =
+                                  "var(--bg-secondary, #ffffff)";
+                              }
+                            }}
+                          >
+                            <span
                               style={{
-                                display: "flex",
-                                gap: "8px",
-                                flexWrap: "nowrap",
-                                alignItems: "center",
-                                justifyContent: "flex-start",
+                                fontSize: "18px",
+                                fontWeight: "600",
+                                color: "var(--text-primary)",
                               }}
                             >
-                              {canViewRent(userRole) && (
-                                <Link
-                                  href={`/property-rents/${encodeURIComponent(
-                                    g.linkKey
-                                  )}`}
-                                  className="btn btn-primary"
-                                  style={{
-                                    padding: "5px 10px",
-                                    fontSize: "12px",
-                                  }}
+                              {landlord}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: "14px",
+                                color: "var(--text-secondary)",
+                                padding: "2px 8px",
+                                backgroundColor:
+                                  "var(--primary-light, rgba(0, 187, 241, 0.15))",
+                                borderRadius: "12px",
+                              }}
+                            >
+                              {isExpanded && filteredCount !== totalHoardings
+                                ? `${filteredCount} / ${totalHoardings}`
+                                : totalHoardings}{" "}
+                              {totalHoardings === 1 ? "hoarding" : "hoardings"}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px",
+                            }}
+                          >
+                            {canViewRent(userRole) && (
+                              <button
+                                className={
+                                  allOnRent
+                                    ? "btn btn-success"
+                                    : "btn btn-primary"
+                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleLandlordRent(landlord, hoardingGroups);
+                                }}
+                                disabled={isRenting || allOnRent}
+                                style={{
+                                  padding: "6px 16px",
+                                  fontSize: "13px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {isRenting
+                                  ? "Processing..."
+                                  : allOnRent
+                                  ? "On Rent"
+                                  : "Rent"}
+                              </button>
+                            )}
+                            <span
+                              onClick={() => toggleLandlord(landlord)}
+                              style={{
+                                fontSize: "20px",
+                                color: "var(--text-secondary)",
+                                transition: "transform 0.2s ease",
+                                transform: isExpanded
+                                  ? "rotate(180deg)"
+                                  : "rotate(0deg)",
+                                cursor: "pointer",
+                              }}
+                            >
+                              ▼
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Expanded Content */}
+                        {isExpanded && (
+                          <div
+                            style={{
+                              padding: "20px",
+                              backgroundColor: "var(--bg-secondary, #ffffff)",
+                              borderTop:
+                                "1px solid var(--border-color, #e2e8f0)",
+                            }}
+                          >
+                            {/* Filters for this landlord */}
+                            <div
+                              style={{
+                                marginBottom: "20px",
+                                padding: "16px",
+                                backgroundColor: "var(--bg-primary, #f8f9fa)",
+                                borderRadius: "8px",
+                              }}
+                            >
+                              <h4
+                                style={{
+                                  marginBottom: "12px",
+                                  fontSize: "14px",
+                                  fontWeight: "600",
+                                  color: "var(--text-primary)",
+                                }}
+                              >
+                                Filters
+                              </h4>
+                              <div
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "repeat(3, 1fr)",
+                                  gap: "12px",
+                                }}
+                              >
+                                <div
+                                  className="form-group"
+                                  style={{ margin: 0 }}
                                 >
-                                  Rent
-                                </Link>
-                              )}
-                              {canEditHoarding && (
-                                <Link
-                                  href={`/hoardings/${g.hoardings[0].id}/edit`}
-                                  className="btn btn-warning"
-                                  style={{
-                                    padding: "5px 10px",
-                                    fontSize: "12px",
-                                  }}
+                                  <label
+                                    style={{
+                                      fontSize: "12px",
+                                      marginBottom: "4px",
+                                    }}
+                                  >
+                                    City
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={landlordFilter.city}
+                                    onChange={(e) =>
+                                      updateLandlordFilter(
+                                        landlord,
+                                        "city",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="Filter by city"
+                                    style={{ fontSize: "13px" }}
+                                  />
+                                </div>
+                                <div
+                                  className="form-group"
+                                  style={{ margin: 0 }}
                                 >
-                                  Edit
-                                </Link>
-                              )}
-                              {canDeleteHoarding && (
-                                <button
-                                  className="btn btn-danger"
-                                  style={{
-                                    padding: "7.5px 10px",
-                                    fontSize: "12px",
-                                    opacity:
-                                      deletingKey === g.uniqueKey ? 0.7 : 1,
-                                  }}
-                                  onClick={() => deleteGroup(g)}
-                                  disabled={deletingKey === g.uniqueKey}
+                                  <label
+                                    style={{
+                                      fontSize: "12px",
+                                      marginBottom: "4px",
+                                    }}
+                                  >
+                                    Area
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={landlordFilter.area}
+                                    onChange={(e) =>
+                                      updateLandlordFilter(
+                                        landlord,
+                                        "area",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="Filter by area"
+                                    style={{ fontSize: "13px" }}
+                                  />
+                                </div>
+                                <div
+                                  className="form-group"
+                                  style={{ margin: 0 }}
                                 >
-                                  {deletingKey === g.uniqueKey
-                                    ? "Deleting..."
-                                    : "Delete"}
-                                </button>
-                              )}
-                              {isSalesRole && (
+                                  <label
+                                    style={{
+                                      fontSize: "12px",
+                                      marginBottom: "4px",
+                                    }}
+                                  >
+                                    Status
+                                  </label>
+                                  <CustomSelect
+                                    value={landlordFilter.status}
+                                    onChange={(val) =>
+                                      updateLandlordFilter(
+                                        landlord,
+                                        "status",
+                                        val
+                                      )
+                                    }
+                                    options={[
+                                      { value: "", label: "All" },
+                                      {
+                                        value: "available",
+                                        label: "Available",
+                                      },
+                                      { value: "on_rent", label: "On Rent" },
+                                      { value: "occupied", label: "Occupied" },
+                                      { value: "booked", label: "Booked" },
+                                    ]}
+                                  />
+                                </div>
+                              </div>
+                              {filteredCount !== totalHoardings && (
                                 <div
                                   style={{
-                                    display: "flex",
-                                    gap: "6px",
-                                    alignItems: "center",
+                                    marginTop: "8px",
+                                    fontSize: "12px",
+                                    color: "var(--text-secondary)",
                                   }}
                                 >
-                                  <input
-                                    type="date"
-                                    value={
-                                      bookingDatesById[g.hoardings[0].id]
-                                        ?.from || ""
-                                    }
-                                    onChange={(e) =>
-                                      setBookingDatesById((prev) => ({
-                                        ...prev,
-                                        [g.hoardings[0].id]: {
-                                          from: e.target.value,
-                                          to: prev[g.hoardings[0].id]?.to || "",
-                                        },
-                                      }))
-                                    }
-                                    style={{ fontSize: "12px" }}
-                                  />
-                                  <input
-                                    type="date"
-                                    value={
-                                      bookingDatesById[g.hoardings[0].id]?.to ||
-                                      ""
-                                    }
-                                    onChange={(e) =>
-                                      setBookingDatesById((prev) => ({
-                                        ...prev,
-                                        [g.hoardings[0].id]: {
-                                          from:
-                                            prev[g.hoardings[0].id]?.from || "",
-                                          to: e.target.value,
-                                        },
-                                      }))
-                                    }
-                                    style={{ fontSize: "12px" }}
-                                  />
-                                  <button
-                                    className="btn btn-secondary"
-                                    style={{
-                                      padding: "5px 10px",
-                                      fontSize: "12px",
-                                    }}
-                                    onClick={() =>
-                                      createToken(g.hoardings[0].id)
-                                    }
-                                  >
-                                    Book (Token)
-                                  </button>
+                                  Showing {filteredCount} of {totalHoardings}{" "}
+                                  hoardings
                                 </div>
                               )}
                             </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+
+                            {filteredHoardings.length === 0 ? (
+                              <div
+                                style={{
+                                  textAlign: "center",
+                                  padding: "20px",
+                                  color: "var(--text-secondary)",
+                                }}
+                              >
+                                No hoardings match the filters
+                              </div>
+                            ) : (
+                              <table className="table" style={{ margin: 0 }}>
+                                <thead>
+                                  <tr>
+                                    <th>Property / Location</th>
+                                    <th>Hoarding Code</th>
+                                    <th>Size</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {filteredHoardings.map(
+                                    (h: any, idx: number) => {
+                                      // Get propertyGroupId or code prefix for rent link
+                                      const rentLinkKey =
+                                        h.propertyGroupId ||
+                                        (() => {
+                                          const code = h.code || "";
+                                          const parts = code.split("-");
+                                          return parts.length >= 2
+                                            ? parts.slice(0, 2).join("-")
+                                            : code;
+                                        })();
+
+                                      return (
+                                        <tr key={`${h.id}-${idx}`}>
+                                          <td>
+                                            <strong>{h.city || "—"}</strong>
+                                            <div
+                                              style={{
+                                                fontSize: "12px",
+                                                color: "var(--text-secondary)",
+                                                marginTop: "4px",
+                                              }}
+                                            >
+                                              {[
+                                                h.area,
+                                                h.landmark || h.location || "",
+                                              ]
+                                                .filter(Boolean)
+                                                .join(", ")}
+                                            </div>
+                                          </td>
+                                          <td>
+                                            {h.code}{" "}
+                                            {h.side ? `(${h.side})` : ""}
+                                          </td>
+                                          <td>{toFt(h.widthCm, h.heightCm)}</td>
+                                          <td>
+                                            {(h.status || "").toLowerCase() ===
+                                            "available"
+                                              ? "Available"
+                                              : (
+                                                  h.status || ""
+                                                ).toLowerCase() === "on_rent"
+                                              ? "On Rent"
+                                              : (
+                                                  h.status || ""
+                                                ).toLowerCase() === "occupied"
+                                              ? "Occupied"
+                                              : (
+                                                  h.status || ""
+                                                ).toLowerCase() === "booked"
+                                              ? "Booked"
+                                              : h.status || "—"}
+                                          </td>
+                                          <td>
+                                            <div
+                                              style={{
+                                                display: "flex",
+                                                gap: "8px",
+                                                flexWrap: "nowrap",
+                                                alignItems: "center",
+                                              }}
+                                            >
+                                              {canViewRent(userRole) && (
+                                                <Link
+                                                  href={`/property-rents/${encodeURIComponent(
+                                                    rentLinkKey
+                                                  )}`}
+                                                  className="btn btn-primary"
+                                                  style={{
+                                                    padding: "5px 10px",
+                                                    fontSize: "12px",
+                                                  }}
+                                                >
+                                                  Rent
+                                                </Link>
+                                              )}
+                                              {canEditHoarding && (
+                                                <Link
+                                                  href={`/hoardings/${h.id}/edit`}
+                                                  className="btn btn-warning"
+                                                  style={{
+                                                    padding: "5px 10px",
+                                                    fontSize: "12px",
+                                                  }}
+                                                >
+                                                  Edit
+                                                </Link>
+                                              )}
+                                              {canDeleteHoarding && (
+                                                <button
+                                                  className="btn btn-danger"
+                                                  style={{
+                                                    padding: "5px 10px",
+                                                    fontSize: "12px",
+                                                  }}
+                                                  onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    if (!canDeleteHoarding)
+                                                      return;
+                                                    const confirmDelete =
+                                                      window.confirm(
+                                                        "Are you sure you want to delete this hoarding?"
+                                                      );
+                                                    if (!confirmDelete) return;
+
+                                                    try {
+                                                      await hoardingsAPI.delete(
+                                                        h.id
+                                                      );
+                                                      await fetchHoardings(
+                                                        1,
+                                                        true
+                                                      );
+                                                      showSuccess(
+                                                        "Hoarding deleted successfully."
+                                                      );
+                                                    } catch (error) {
+                                                      console.error(
+                                                        "Failed to delete hoarding:",
+                                                        error
+                                                      );
+                                                      showError(
+                                                        "Failed to delete hoarding. Please try again."
+                                                      );
+                                                    }
+                                                  }}
+                                                >
+                                                  Delete
+                                                </button>
+                                              )}
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      );
+                                    }
+                                  )}
+                                </tbody>
+                              </table>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               );
             })()
           )}
