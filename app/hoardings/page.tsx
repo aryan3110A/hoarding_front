@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
 import CustomSelect from "@/components/CustomSelect";
-import { hoardingsAPI } from "@/lib/api";
-import { bookingTokensAPI } from "@/lib/api";
+import { bookingTokensAPI, hoardingsAPI } from "@/lib/api";
 import { showSuccess, showError } from "@/lib/toast";
 import {
   canCreate,
@@ -17,6 +17,7 @@ import {
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function Hoardings() {
+  const router = useRouter();
   const [hoardings, setHoardings] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -34,11 +35,9 @@ export default function Hoardings() {
     new Set()
   );
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
-  const [rentingLandlords, setRentingLandlords] = useState<Set<string>>(
-    new Set()
-  );
+  const [tokenizingIds, setTokenizingIds] = useState<Set<string>>(new Set());
 
-  const limit = 20;
+  const PAGE_SIZE = 50;
 
   // Safely extract role from user object (declare early for effects below)
   const userRole = getRoleFromUser(user);
@@ -75,21 +74,7 @@ export default function Hoardings() {
       setLoading(true);
 
       try {
-        // For landlord grouping, fetch a large page size to ensure all hoardings are loaded
-        // This ensures landlord groups show all hoardings correctly
-        const response = await hoardingsAPI.getAll({
-          ...filters,
-          page: 1,
-          limit: 1000, // Large limit to get all hoardings for proper landlord grouping
-        });
-
-        if (response.success && response.data) {
-          const newHoardings = response.data.hoardings || [];
-          const totalCount = response.data.total || 0;
-          setHoardings(newHoardings);
-          setTotal(totalCount);
-          setHasMore(false); // Disable pagination when fetching all for landlord grouping
-        }
+        await fetchHoardings(1, true);
       } catch (error) {
         console.error("Failed to fetch hoardings:", error);
       } finally {
@@ -166,20 +151,24 @@ export default function Hoardings() {
         setLoadingMore(true);
       }
 
-      // Fetch with large limit for landlord grouping
       const response = await hoardingsAPI.getAll({
         ...filters,
-        page: 1,
-        limit: 1000, // Large limit to get all hoardings for proper ownership grouping
+        page: pageNum,
+        limit: PAGE_SIZE,
       });
 
       if (response.success && response.data) {
         const newHoardings = response.data.hoardings || [];
         const totalCount = response.data.total || 0;
 
-        setHoardings(newHoardings);
         setTotal(totalCount);
-        setHasMore(false); // Disable pagination when fetching all
+        setHoardings((prev) => {
+          const merged = reset
+            ? newHoardings
+            : [...(prev || []), ...newHoardings];
+          setHasMore(totalCount > merged.length);
+          return merged;
+        });
       }
     } catch (error) {
       console.error("Failed to fetch hoardings:", error);
@@ -227,60 +216,55 @@ export default function Hoardings() {
     }
   };
 
-  // Per-hoarding selected date range for Sales tokenization
-  const [bookingDatesById, setBookingDatesById] = useState<
-    Record<string, { from: string; to: string }>
-  >({});
-  // Track hoardings tokenized by the current user (UI-only isolation)
-  const [myTokenizedById, setMyTokenizedById] = useState<
-    Record<string, boolean>
-  >({});
-  const createToken = async (hoardingId: string) => {
+  const tokenizeInline = async (hoardingId: string) => {
+    const id = String(hoardingId);
+    if (!id) return;
+    if (tokenizingIds.has(id)) return;
+
+    setTokenizingIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+
     try {
-      const current = bookingDatesById[hoardingId] || { from: "", to: "" };
-      if (!current.from || !current.to) {
-        showError("Select date range first");
-        return;
-      }
+      const today = new Date().toISOString().slice(0, 10);
       const resp = await bookingTokensAPI.create({
-        hoardingId,
-        dateFrom: current.from,
-        dateTo: current.to,
+        hoardingId: id,
+        dateFrom: today,
+        dateTo: today,
       });
-      if (resp.success) {
-        const pos = resp.data.queuePosition || 1;
-        showSuccess(`Token created. You are #${pos} in queue.`);
-        // Persist the selected dates in UI for this hoarding row
-        setBookingDatesById((prev) => ({
-          ...prev,
-          [hoardingId]: { ...current },
-        }));
-        // Mark button as tokenized for this user only
-        setMyTokenizedById((prev) => ({ ...prev, [hoardingId]: true }));
-        // Immediately reflect tokenized status in the table
+
+      if (resp?.success) {
         setHoardings((prev) =>
           (prev || []).map((h: any) =>
-            String(h.id) === String(hoardingId)
+            String(h.id) === id
               ? {
                   ...h,
+                  status: "tokenized",
                   hasActiveToken: true,
-                  status:
-                    (h.status || "").toLowerCase() === "available"
-                      ? "tokenized"
-                      : h.status,
+                  myActiveToken: true,
                 }
               : h
           )
         );
-        // Soft refresh current list shortly after to sync from server
-        setTimeout(() => {
-          fetchHoardings(page, true);
-        }, 300);
+        showSuccess("Tokenized");
       } else {
-        showError(resp.message || "Failed to create token");
+        showError(resp?.message || "Failed to tokenize");
       }
-    } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to create token");
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to tokenize";
+      showError(msg);
+    } finally {
+      setTokenizingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -349,18 +333,78 @@ export default function Hoardings() {
           );
         })()}
 
-        <div className="card">
-          <h3>Search by Landlord Name</h3>
-          <div className="form-group">
-            <input
-              type="text"
-              value={landlordSearch}
-              onChange={(e) => setLandlordSearch(e.target.value)}
-              placeholder="Type landlord name to search..."
-              style={{ width: "100%" }}
-            />
+        {isSalesRole ? (
+          <div className="card">
+            <h3>Filters</h3>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                gap: "12px",
+              }}
+            >
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ display: "block", marginBottom: "6px" }}>
+                  City
+                </label>
+                <input
+                  type="text"
+                  value={filters.city}
+                  onChange={(e) =>
+                    setFilters((prev) => ({ ...prev, city: e.target.value }))
+                  }
+                  placeholder="Enter city"
+                  style={{ width: "100%" }}
+                />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ display: "block", marginBottom: "6px" }}>
+                  Area
+                </label>
+                <input
+                  type="text"
+                  value={filters.area}
+                  onChange={(e) =>
+                    setFilters((prev) => ({ ...prev, area: e.target.value }))
+                  }
+                  placeholder="Enter area"
+                  style={{ width: "100%" }}
+                />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ display: "block", marginBottom: "6px" }}>
+                  Status
+                </label>
+                <select
+                  value={filters.status}
+                  onChange={(e) =>
+                    setFilters((prev) => ({ ...prev, status: e.target.value }))
+                  }
+                  style={{ width: "100%" }}
+                >
+                  <option value="">All</option>
+                  <option value="available">Available</option>
+                  <option value="tokenized">Tokenized</option>
+                  <option value="under_process">Under Processing</option>
+                  <option value="booked">Booked</option>
+                </select>
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="card">
+            <h3>Search by Landlord Name</h3>
+            <div className="form-group">
+              <input
+                type="text"
+                value={landlordSearch}
+                onChange={(e) => setLandlordSearch(e.target.value)}
+                placeholder="Type landlord name to search..."
+                style={{ width: "100%" }}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="card">
           {loading ? (
@@ -412,92 +456,112 @@ export default function Hoardings() {
                         <th>Location</th>
                         <th>Size</th>
                         <th>Status</th>
+                        <th>Ownership</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filtered.map((h: any) => (
-                        <tr key={h.id}>
-                          {!isSalesRole && <td>{h.id}</td>}
-                          <td>
-                            {h.code} {h.side ? `(${h.side})` : ""}
-                          </td>
-                          <td>{h.city || "—"}</td>
-                          <td>{h.area || "—"}</td>
-                          <td>{h.landmark || h.location || h.title || "—"}</td>
-                          <td>{toFt(h.widthCm, h.heightCm)}</td>
-                          <td>
-                            {h.hasActiveToken === true ||
-                            (h.status || "").toLowerCase() === "tokenized"
-                              ? "tokenized"
-                              : (h.status || "").toLowerCase() === "available"
-                              ? "Hoarding Available"
-                              : (h.status || "").toLowerCase() === "booked"
-                              ? "Booked"
-                              : (h.status || "").toLowerCase() === "occupied"
-                              ? "Occupied"
-                              : (h.status || "").toLowerCase() === "on_rent"
-                              ? "Hoarding On Rent"
-                              : h.status || "—"}
-                          </td>
-                          <td>{h.ownership || "—"}</td>
-                          <td>
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "6px",
-                                alignItems: "center",
-                              }}
-                            >
-                              <input
-                                type="date"
-                                value={bookingDatesById[h.id]?.from || ""}
-                                onChange={(e) =>
-                                  setBookingDatesById((prev) => ({
-                                    ...prev,
-                                    [h.id]: {
-                                      from: e.target.value,
-                                      to: prev[h.id]?.to || "",
-                                    },
-                                  }))
-                                }
-                                style={{ fontSize: "12px" }}
-                              />
-                              <input
-                                type="date"
-                                value={bookingDatesById[h.id]?.to || ""}
-                                onChange={(e) =>
-                                  setBookingDatesById((prev) => ({
-                                    ...prev,
-                                    [h.id]: {
-                                      from: prev[h.id]?.from || "",
-                                      to: e.target.value,
-                                    },
-                                  }))
-                                }
-                                style={{ fontSize: "12px" }}
-                              />
-                              <button
-                                className="btn btn-secondary"
+                      {filtered.map((h: any) => {
+                        const rawStatus = (h.status || "").toLowerCase();
+                        const displayStatus =
+                          h.hasActiveToken === true || rawStatus === "tokenized"
+                            ? "tokenized"
+                            : rawStatus === "under_process"
+                            ? "Under Process"
+                            : rawStatus === "available"
+                            ? "Hoarding Available"
+                            : rawStatus === "booked"
+                            ? "Booked"
+                            : rawStatus === "occupied"
+                            ? "Occupied"
+                            : rawStatus === "on_rent"
+                            ? "Hoarding On Rent"
+                            : h.status || "—";
+
+                        return (
+                          <tr key={h.id}>
+                            {!isSalesRole && <td>{h.id}</td>}
+                            <td>
+                              {h.code} {h.side ? `(${h.side})` : ""}
+                            </td>
+                            <td>{h.city || "—"}</td>
+                            <td>{h.area || "—"}</td>
+                            <td>
+                              {h.landmark || h.location || h.title || "—"}
+                            </td>
+                            <td>{toFt(h.widthCm, h.heightCm)}</td>
+                            <td>{displayStatus}</td>
+                            <td>{h.ownership || "—"}</td>
+                            <td>
+                              <div
                                 style={{
-                                  padding: "5px 10px",
-                                  fontSize: "12px",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: "8px",
+                                  alignItems: "stretch",
                                 }}
-                                onClick={() => createToken(h.id)}
-                                disabled={myTokenizedById[h.id] === true}
                               >
-                                {myTokenizedById[h.id] === true
-                                  ? "Tokenized"
-                                  : "Book (Token)"}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                                <Link
+                                  href={`/hoardings/${h.id}`}
+                                  className="btn btn-secondary"
+                                  style={{
+                                    padding: "6px 10px",
+                                    fontSize: "12px",
+                                    width: "100%",
+                                  }}
+                                >
+                                  Info
+                                </Link>
+                                {(() => {
+                                  const id = String(h.id);
+                                  const isTokenizing = tokenizingIds.has(id);
+                                  const isMyTokenized = !!h.myActiveToken;
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={() => tokenizeInline(id)}
+                                      disabled={isTokenizing || isMyTokenized}
+                                      className="btn btn-primary"
+                                      style={{
+                                        padding: "6px 10px",
+                                        fontSize: "12px",
+                                        width: "100%",
+                                        opacity:
+                                          isTokenizing || isMyTokenized
+                                            ? 0.7
+                                            : 1,
+                                        cursor:
+                                          isTokenizing || isMyTokenized
+                                            ? "not-allowed"
+                                            : "pointer",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        gap: "6px",
+                                      }}
+                                    >
+                                      {isTokenizing && (
+                                        <span
+                                          className="inline-block h-3 w-3 rounded-full border-2 border-current border-t-transparent animate-spin"
+                                          aria-hidden="true"
+                                        />
+                                      )}
+                                      {isMyTokenized
+                                        ? "Tokenized"
+                                        : "Book (Token)"}
+                                    </button>
+                                  );
+                                })()}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 );
               }
+
               // Helper to format size from cm -> ft string
               const toFt = (w?: number, h?: number) => {
                 if (!w || !h) return "—";
@@ -630,10 +694,7 @@ export default function Hoardings() {
                 });
               };
 
-              const handleLandlordRent = async (
-                landlord: string,
-                hoardings: any[]
-              ) => {
+              const handleLandlordRent = (landlord: string) => {
                 if (!canViewRent(userRole)) {
                   showError(
                     "You don't have permission to set hoardings on rent."
@@ -641,39 +702,8 @@ export default function Hoardings() {
                   return;
                 }
 
-                const confirmRent = window.confirm(
-                  `Are you sure you want to mark all ${hoardings.length} hoarding(s) under "${landlord}" as on rent? This will make them available for bookings.`
-                );
-                if (!confirmRent) return;
-
-                try {
-                  setRentingLandlords((prev) => new Set(prev).add(landlord));
-
-                  // Update all hoardings for this landlord to "on_rent"
-                  const updatePromises = hoardings.map((h) =>
-                    hoardingsAPI.update(h.id, { status: "on_rent" })
-                  );
-
-                  await Promise.all(updatePromises);
-
-                  // Refresh the hoardings list
-                  await fetchHoardings(1, true);
-
-                  showSuccess(
-                    `All hoardings under "${landlord}" have been marked as on rent.`
-                  );
-                } catch (error) {
-                  console.error("Failed to set hoardings on rent:", error);
-                  showError(
-                    "Failed to set hoardings on rent. Please try again."
-                  );
-                } finally {
-                  setRentingLandlords((prev) => {
-                    const newSet = new Set(prev);
-                    newSet.delete(landlord);
-                    return newSet;
-                  });
-                }
+                // Navigate to the bulk rent page for this landlord
+                router.push(`/landlords/${encodeURIComponent(landlord)}/rent`);
               };
 
               const isAllOnRent = (hoardings: any[]): boolean => {
@@ -704,7 +734,6 @@ export default function Hoardings() {
                     const totalHoardings = hoardingGroups.length;
                     const filteredCount = filteredHoardings.length;
                     const allOnRent = isAllOnRent(hoardingGroups);
-                    const isRenting = rentingLandlords.has(landlord);
 
                     return (
                       <div
@@ -792,20 +821,16 @@ export default function Hoardings() {
                                 }
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleLandlordRent(landlord, hoardingGroups);
+                                  handleLandlordRent(landlord);
                                 }}
-                                disabled={isRenting || allOnRent}
+                                disabled={allOnRent}
                                 style={{
                                   padding: "6px 16px",
                                   fontSize: "13px",
                                   whiteSpace: "nowrap",
                                 }}
                               >
-                                {isRenting
-                                  ? "Processing..."
-                                  : allOnRent
-                                  ? "On Rent"
-                                  : "Rent"}
+                                {allOnRent ? "On Rent" : "Rent"}
                               </button>
                             )}
                             <span
@@ -985,17 +1010,6 @@ export default function Hoardings() {
                                 <tbody>
                                   {filteredHoardings.map(
                                     (h: any, idx: number) => {
-                                      // Get propertyGroupId or code prefix for rent link
-                                      const rentLinkKey =
-                                        h.propertyGroupId ||
-                                        (() => {
-                                          const code = h.code || "";
-                                          const parts = code.split("-");
-                                          return parts.length >= 2
-                                            ? parts.slice(0, 2).join("-")
-                                            : code;
-                                        })();
-
                                       return (
                                         <tr key={`${h.id}-${idx}`}>
                                           <td>
@@ -1047,20 +1061,7 @@ export default function Hoardings() {
                                                 alignItems: "center",
                                               }}
                                             >
-                                              {canViewRent(userRole) && (
-                                                <Link
-                                                  href={`/property-rents/${encodeURIComponent(
-                                                    rentLinkKey
-                                                  )}`}
-                                                  className="btn btn-primary"
-                                                  style={{
-                                                    padding: "5px 10px",
-                                                    fontSize: "12px",
-                                                  }}
-                                                >
-                                                  Rent
-                                                </Link>
-                                              )}
+                                              {canViewRent(userRole) && <></>}
                                               {canEditHoarding && (
                                                 <Link
                                                   href={`/hoardings/${h.id}/edit`}

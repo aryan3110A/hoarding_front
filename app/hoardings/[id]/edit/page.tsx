@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
 import { hoardingsAPI } from "@/lib/api";
+import { showSuccess, showError } from "@/lib/toast";
 import AccessDenied from "@/components/AccessDenied";
+
+type UploadImageItem = {
+  id: string;
+  file: File;
+  url: string;
+};
 
 export default function EditHoarding() {
   const params = useParams();
@@ -38,6 +45,76 @@ export default function EditHoarding() {
   const [fetching, setFetching] = useState(true);
   const [groupHoardings, setGroupHoardings] = useState<any[]>([]);
   const [groupLoading, setGroupLoading] = useState(false);
+
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadType, setUploadType] = useState<
+    "construction" | "school" | "jewellery" | "flats" | "electronics"
+  >("construction");
+  const [selectedImages, setSelectedImages] = useState<UploadImageItem[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [hoveredImageId, setHoveredImageId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const openUploadModal = () => {
+    setUploadType("construction");
+    // reset any previous previews
+    setSelectedImages((prev) => {
+      for (const item of prev) {
+        try {
+          URL.revokeObjectURL(item.url);
+        } catch (_) {}
+      }
+      return [];
+    });
+    setIsDragOver(false);
+    setIsUploadModalOpen(true);
+  };
+
+  const closeUploadModal = () => {
+    setSelectedImages((prev) => {
+      for (const item of prev) {
+        try {
+          URL.revokeObjectURL(item.url);
+        } catch (_) {}
+      }
+      return [];
+    });
+    setIsUploadModalOpen(false);
+    setIsDragOver(false);
+    setHoveredImageId(null);
+  };
+
+  const addFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const images = Array.from(files).filter((f) =>
+      (f.type || "").toLowerCase().startsWith("image/")
+    );
+    if (images.length === 0) return;
+
+    setSelectedImages((prev) => {
+      const existing = new Set(prev.map((p) => p.id));
+      const toAdd: UploadImageItem[] = [];
+      for (const file of images) {
+        const id = `${file.name}|${file.size}|${file.lastModified}`;
+        if (existing.has(id)) continue;
+        const url = URL.createObjectURL(file);
+        toAdd.push({ id, file, url });
+      }
+      return [...prev, ...toAdd];
+    });
+  };
+
+  const removeImage = (id: string) => {
+    setSelectedImages((prev) => {
+      const item = prev.find((p) => p.id === id);
+      if (item) {
+        try {
+          URL.revokeObjectURL(item.url);
+        } catch (_) {}
+      }
+      return prev.filter((p) => p.id !== id);
+    });
+  };
 
   useEffect(() => {
     const fetchHoarding = async () => {
@@ -150,21 +227,25 @@ export default function EditHoarding() {
 
       const updatePayload: any = {
         code: formData.code,
-        propertyGroupId: formData.propertyGroupId || null,
         city: formData.city,
         area: formData.area,
         landmark: formData.landmark,
         roadName: formData.roadName,
-        side: formData.side || null,
-        widthCm: widthCm ? Math.round(widthCm) : null,
-        heightCm: heightCm ? Math.round(heightCm) : null,
-        type: formData.type || null,
+        widthCm: widthCm ? Math.round(widthCm) : undefined,
+        heightCm: heightCm ? Math.round(heightCm) : undefined,
+        type: formData.type || undefined,
         ownership: formData.ownership,
         status: formData.status,
-        baseRate: formData.baseRate ? parseFloat(formData.baseRate) : null,
-        lat: formData.lat ? parseFloat(formData.lat) : null,
-        lng: formData.lng ? parseFloat(formData.lng) : null,
+        lat: formData.lat ? parseFloat(formData.lat) : undefined,
+        lng: formData.lng ? parseFloat(formData.lng) : undefined,
       };
+
+      // Only include optional fields when they have a meaningful value
+      if (formData.side) updatePayload.side = formData.side;
+      if (formData.propertyGroupId)
+        updatePayload.propertyGroupId = formData.propertyGroupId;
+      if (formData.baseRate)
+        updatePayload.baseRate = parseFloat(formData.baseRate);
 
       if (Object.keys(mergedRateHistory).length > 0) {
         updatePayload.rateHistory = mergedRateHistory;
@@ -200,8 +281,14 @@ export default function EditHoarding() {
     <div>
       <div style={{ marginBottom: "20px" }}>
         <button
-          className="btn btn-secondary"
+          className="btn btn-warning"
           onClick={() => router.push(`/hoardings/${id}`)}
+          style={{
+            background: "#fb923c",
+            borderColor: "#fb923c",
+            color: "white",
+            boxShadow: "none",
+          }}
         >
           ← Back to Hoarding
         </button>
@@ -229,17 +316,6 @@ export default function EditHoarding() {
               gap: "15px",
             }}
           >
-            <div className="form-group">
-              <label>Property Group ID</label>
-              <input
-                type="text"
-                value={formData.propertyGroupId}
-                onChange={(e) =>
-                  setFormData({ ...formData, propertyGroupId: e.target.value })
-                }
-                placeholder="Group identifier (e.g. ABC-ROAD-01)"
-              />
-            </div>
             {/* Navigation Dropdown for Grouped Hoardings */}
             {groupHoardings.length > 1 && (
               <div
@@ -474,9 +550,10 @@ export default function EditHoarding() {
               type="button"
               className="btn btn-warning"
               style={{ padding: "12px 24px" }}
-              disabled
+              onClick={openUploadModal}
+              disabled={loading}
             >
-              Upload Images (Coming Soon)
+              Upload Images
             </button>
             <button
               type="button"
@@ -488,6 +565,237 @@ export default function EditHoarding() {
           </div>
         </form>
       </div>
+
+      {isUploadModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={closeUploadModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="card"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(720px, 100%)",
+              padding: "16px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+                marginBottom: "12px",
+              }}
+            >
+              <h3 style={{ margin: 0 }}>Upload Images</h3>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={closeUploadModal}
+              >
+                Close
+              </button>
+            </div>
+
+            <div style={{ display: "grid", gap: "12px" }}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label>Type</label>
+                <select
+                  value={uploadType}
+                  onChange={(e) => setUploadType(e.target.value as any)}
+                >
+                  <option value="construction">construction</option>
+                  <option value="school">school</option>
+                  <option value="jewellery">jewellery</option>
+                  <option value="flats">flats</option>
+                  <option value="electronics">electronics</option>
+                </select>
+              </div>
+
+              <div>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragOver(true);
+                  }}
+                  onDragLeave={() => setIsDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragOver(false);
+                    addFiles(e.dataTransfer.files);
+                  }}
+                  style={{
+                    border: "2px dashed var(--border-color, #e2e8f0)",
+                    borderRadius: "12px",
+                    padding: "24px",
+                    textAlign: "center",
+                    cursor: "pointer",
+                    background: isDragOver
+                      ? "var(--bg-primary, #f8f9fa)"
+                      : "var(--bg-secondary, #ffffff)",
+                  }}
+                >
+                  <div style={{ fontWeight: 600, marginBottom: "6px" }}>
+                    Drag & drop images here
+                  </div>
+                  <div
+                    style={{ color: "var(--text-secondary)", fontSize: "13px" }}
+                  >
+                    or click to choose from your device
+                  </div>
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      color: "var(--text-secondary)",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {selectedImages.length > 0
+                      ? `${selectedImages.length} image(s) selected`
+                      : "No images selected"}
+                  </div>
+                </div>
+
+                {selectedImages.length > 0 && (
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      display: "flex",
+                      gap: "10px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {selectedImages.map((img) => (
+                      <div
+                        key={img.id}
+                        onMouseEnter={() => setHoveredImageId(img.id)}
+                        onMouseLeave={() =>
+                          setHoveredImageId((cur) =>
+                            cur === img.id ? null : cur
+                          )
+                        }
+                        style={{
+                          position: "relative",
+                          width: "140px",
+                          height: "95px",
+                          borderRadius: "10px",
+                          overflow: "hidden",
+                          border: "1px solid var(--border-color, #e2e8f0)",
+                          background: "var(--bg-secondary, #ffffff)",
+                        }}
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.file.name}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
+                        />
+                        {hoveredImageId === img.id && (
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => removeImage(img.id)}
+                            style={{
+                              position: "absolute",
+                              top: "6px",
+                              right: "6px",
+                              padding: "2px 8px",
+                              fontSize: "12px",
+                              lineHeight: 1,
+                            }}
+                            aria-label="Remove image"
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    addFiles(e.target.files);
+                    // allow selecting the same file again later
+                    e.currentTarget.value = "";
+                  }}
+                />
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  justifyContent: "flex-end",
+                  marginTop: 12,
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    // allow selecting more
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  Choose More
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={async () => {
+                    try {
+                      if (selectedImages.length === 0) {
+                        showError("Please select images first");
+                        return;
+                      }
+                      // Create placeholder names: image 1, image 2, ...
+                      const filenames = selectedImages.map(
+                        (_, idx) => `image ${idx + 1}`
+                      );
+                      const resp = await hoardingsAPI.addImages(id, {
+                        type: uploadType,
+                        filenames,
+                      });
+                      showSuccess("Image saved");
+                      closeUploadModal();
+                    } catch (e: any) {
+                      showError(
+                        e?.response?.data?.message ||
+                          "Failed to save image metadata"
+                      );
+                    }
+                  }}
+                >
+                  Save Images
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
