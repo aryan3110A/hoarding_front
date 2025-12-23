@@ -108,11 +108,11 @@ function calculateNextIncrementPreview(args: {
 }
 
 export default function LandlordRentPage() {
-  const params = useParams();
+  const params = useParams<{ landlord: string }>();
   const router = useRouter();
   const userFromContext = useUser();
   const [user, setUser] = useState<any>(null);
-  const landlord = decodeURIComponent(params.landlord as string);
+  const landlord = decodeURIComponent(String(params?.landlord || ""));
 
   const [hoardings, setHoardings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

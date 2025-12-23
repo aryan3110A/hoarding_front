@@ -283,6 +283,9 @@ function DashboardContent() {
       console.log("Dashboard - Can view rent:", canViewRentInfo);
       fetchDashboardData();
       fetchUnreadCount();
+
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
     } else {
       // If no user, stop loading
       setLoading(false);

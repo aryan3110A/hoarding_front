@@ -94,10 +94,15 @@ export default function Hoardings() {
   useEffect(() => {
     if (!isSalesRole) return;
     // SSE: listen for backend push updates, patch only volatile fields
-    const source = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/events/hoarding-status`,
-      { withCredentials: true } as any
-    );
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "http://localhost:3001";
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const query = token ? `?token=${encodeURIComponent(token)}` : "";
+    const url = `${apiBase}/api/events/hoarding-status${query}`;
+    const source = new EventSource(url as any);
     source.onmessage = (evt) => {
       try {
         const payload = JSON.parse(evt.data || "{}") as {
@@ -217,55 +222,10 @@ export default function Hoardings() {
   };
 
   const tokenizeInline = async (hoardingId: string) => {
+    // New flow: open tokenization form page to collect client + duration.
     const id = String(hoardingId);
     if (!id) return;
-    if (tokenizingIds.has(id)) return;
-
-    setTokenizingIds((prev) => {
-      const next = new Set(prev);
-      next.add(id);
-      return next;
-    });
-
-    try {
-      const today = new Date().toISOString().slice(0, 10);
-      const resp = await bookingTokensAPI.create({
-        hoardingId: id,
-        dateFrom: today,
-        dateTo: today,
-      });
-
-      if (resp?.success) {
-        setHoardings((prev) =>
-          (prev || []).map((h: any) =>
-            String(h.id) === id
-              ? {
-                  ...h,
-                  status: "tokenized",
-                  hasActiveToken: true,
-                  myActiveToken: true,
-                }
-              : h
-          )
-        );
-        showSuccess("Tokenized");
-      } else {
-        showError(resp?.message || "Failed to tokenize");
-      }
-    } catch (error: any) {
-      const msg =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.message ||
-        "Failed to tokenize";
-      showError(msg);
-    } finally {
-      setTokenizingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-    }
+    router.push(`/hoardings/${id}/token`);
   };
 
   return (
@@ -516,24 +476,28 @@ export default function Hoardings() {
                                   const id = String(h.id);
                                   const isTokenizing = tokenizingIds.has(id);
                                   const isMyTokenized = !!h.myActiveToken;
+                                  const isUnderProcess =
+                                    String(rawStatus || "")
+                                      .toLowerCase()
+                                      .trim() === "under_process";
+                                  const isDisabled =
+                                    isTokenizing ||
+                                    isMyTokenized ||
+                                    isUnderProcess;
                                   return (
                                     <button
                                       type="button"
                                       onClick={() => tokenizeInline(id)}
-                                      disabled={isTokenizing || isMyTokenized}
+                                      disabled={isDisabled}
                                       className="btn btn-primary"
                                       style={{
                                         padding: "6px 10px",
                                         fontSize: "12px",
                                         width: "100%",
-                                        opacity:
-                                          isTokenizing || isMyTokenized
-                                            ? 0.7
-                                            : 1,
-                                        cursor:
-                                          isTokenizing || isMyTokenized
-                                            ? "not-allowed"
-                                            : "pointer",
+                                        opacity: isDisabled ? 0.7 : 1,
+                                        cursor: isDisabled
+                                          ? "not-allowed"
+                                          : "pointer",
                                         display: "inline-flex",
                                         alignItems: "center",
                                         justifyContent: "center",

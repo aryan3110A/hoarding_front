@@ -9,8 +9,10 @@ import { useUser } from "@/components/AppLayout";
 import { getRoleFromUser, canViewRent } from "@/lib/rbac";
 
 export default function PropertyRentPage() {
-  const params = useParams();
-  const propertyGroupId = decodeURIComponent(params.propertyGroupId as string);
+  const params = useParams<{ propertyGroupId: string }>();
+  const propertyGroupId = decodeURIComponent(
+    String(params?.propertyGroupId || "")
+  );
   const router = useRouter();
   const user = useUser();
   const role = getRoleFromUser(user);

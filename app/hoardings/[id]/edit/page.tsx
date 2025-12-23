@@ -14,8 +14,8 @@ type UploadImageItem = {
 };
 
 export default function EditHoarding() {
-  const params = useParams();
-  const id = params.id as string;
+  const params = useParams<{ id: string }>();
+  const id = String(params?.id || "");
   const router = useRouter();
   const user = useUser();
   const userRole = user?.role?.toLowerCase() || "";

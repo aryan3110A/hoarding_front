@@ -18,7 +18,19 @@ export default function HoardingTokenPage() {
   const [hoarding, setHoarding] = useState<any>(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [durationMonths, setDurationMonths] = useState<number | undefined>(
+    undefined
+  );
+  const [clientName, setClientName] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientCompany, setClientCompany] = useState("");
   const [queuePosition, setQueuePosition] = useState<number | null>(null);
+
+  const isUnderProcess =
+    String(hoarding?.status || "")
+      .toLowerCase()
+      .trim() === "under_process";
 
   useEffect(() => {
     if (!hoardingId) return;
@@ -44,18 +56,43 @@ export default function HoardingTokenPage() {
 
   const submit = async () => {
     if (!hoardingId) return;
-    if (!dateFrom || !dateTo) {
-      showError("Select date range");
+    if (isUnderProcess) {
+      showError("This hoarding is Under Process and cannot be tokenized");
+      return;
+    }
+    if (!dateFrom) {
+      showError("Select start date");
+      return;
+    }
+
+    // require duration or dateTo
+    if (!durationMonths && !dateTo) {
+      showError("Select duration or end date");
+      return;
+    }
+
+    if (!clientPhone || clientPhone.trim().length < 6) {
+      showError("Client phone is required");
       return;
     }
 
     try {
       setSubmitting(true);
-      const resp = await bookingTokensAPI.create({
+      const payload: any = {
         hoardingId,
         dateFrom,
-        dateTo,
-      });
+        notes: undefined,
+        client: {
+          name: clientName || "Unknown",
+          phone: clientPhone,
+          email: clientEmail || undefined,
+          companyName: clientCompany || undefined,
+        },
+      };
+      if (durationMonths) payload.durationMonths = durationMonths;
+      if (!durationMonths && dateTo) payload.dateTo = dateTo;
+
+      const resp = await bookingTokensAPI.create(payload);
       if (resp?.success) {
         const pos = Number(resp?.data?.queuePosition || 0) || 1;
         setQueuePosition(pos);
@@ -106,37 +143,104 @@ export default function HoardingTokenPage() {
             </div>
           )}
 
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: "12px" }}>From</label>
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-              />
-            </div>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: "12px" }}>To</label>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-              />
-            </div>
-            <button
-              className="btn btn-primary"
-              onClick={submit}
-              disabled={submitting}
+          <div>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
             >
-              {submitting ? "Booking..." : "Book (Token)"}
-            </button>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label style={{ fontSize: "12px" }}>From</label>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                />
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label style={{ fontSize: "12px" }}>Duration (months)</label>
+                <select
+                  value={durationMonths ?? ""}
+                  onChange={(e) =>
+                    setDurationMonths(
+                      e.target.value ? Number(e.target.value) : undefined
+                    )
+                  }
+                >
+                  <option value="">Select</option>
+                  <option value="3">3</option>
+                  <option value="6">6</option>
+                  <option value="9">9</option>
+                  <option value="12">12</option>
+                </select>
+              </div>
+
+              <div style={{ width: "100%" }} />
+
+              <div
+                className="form-group"
+                style={{ margin: 0, flex: "1 1 300px" }}
+              >
+                <label style={{ fontSize: "12px" }}>Client name</label>
+                <input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                />
+              </div>
+              <div
+                className="form-group"
+                style={{ margin: 0, flex: "1 1 200px" }}
+              >
+                <label style={{ fontSize: "12px" }}>Client phone</label>
+                <input
+                  type="text"
+                  value={clientPhone}
+                  onChange={(e) => setClientPhone(e.target.value)}
+                />
+              </div>
+              <div
+                className="form-group"
+                style={{ margin: 0, flex: "1 1 300px" }}
+              >
+                <label style={{ fontSize: "12px" }}>Client email</label>
+                <input
+                  type="email"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                />
+              </div>
+              <div
+                className="form-group"
+                style={{ margin: 0, flex: "1 1 300px" }}
+              >
+                <label style={{ fontSize: "12px" }}>Company</label>
+                <input
+                  type="text"
+                  value={clientCompany}
+                  onChange={(e) => setClientCompany(e.target.value)}
+                />
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: 24,
+              }}
+            >
+              <button
+                className="btn btn-primary"
+                onClick={submit}
+                disabled={submitting || isUnderProcess}
+                style={{ minWidth: 140 }}
+              >
+                {submitting ? "Booking..." : "Book (Token)"}
+              </button>
+            </div>
           </div>
 
           {queuePosition !== null && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@/components/AppLayout";
 import { hoardingsAPI, rentAPI } from "@/lib/api";
@@ -10,11 +10,12 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { showError, showSuccess } from "@/lib/toast";
 
 export default function HoardingDetailPage() {
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const userFromContext = useUser();
   const [user, setUser] = useState<any>(null);
-  const hoardingId = params.id as string;
+  const hoardingId = String(params?.id || "");
 
   const [hoarding, setHoarding] = useState<any>(null);
   const [rent, setRent] = useState<any>(null);
@@ -98,6 +99,20 @@ export default function HoardingDetailPage() {
   const canDeleteHoarding = canDelete(userRole, "hoardings");
   const canViewRentDetails = canViewRent(userRole);
 
+  const isOwner = useMemo(() => {
+    return String(userRole || "").toLowerCase() === "owner";
+  }, [userRole]);
+
+  const isManager = useMemo(() => {
+    return String(userRole || "").toLowerCase() === "manager";
+  }, [userRole]);
+
+  const openedFromNotification = useMemo(() => {
+    return (
+      String(searchParams?.get("from") || "").toLowerCase() === "notification"
+    );
+  }, [searchParams]);
+
   const canMarkUnderProcess = useMemo(() => {
     const r = String(userRole || "").toLowerCase();
     return r === "owner" || r === "manager" || r === "admin";
@@ -159,23 +174,45 @@ export default function HoardingDetailPage() {
           </div>
         ) : (
           <>
-            <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
-              <Link
-                href={`/hoardings/${hoardingId}/token`}
-                className="btn btn-primary"
-              >
-                Book (Token)
-              </Link>
-              {canMarkUnderProcess &&
-                String(hoarding.status || "").toLowerCase() === "tokenized" && (
-                  <button
-                    className="btn btn-warning"
-                    onClick={handleMarkUnderProcess}
-                  >
-                    Mark Under Process
-                  </button>
-                )}
-            </div>
+            {(() => {
+              const hoardingStatus = String(hoarding.status || "")
+                .toLowerCase()
+                .trim();
+              const isUnderProcess = hoardingStatus === "under_process";
+              const isTokenized = hoardingStatus === "tokenized";
+              const hideOwnerBookButton =
+                isOwner && (isUnderProcess || isTokenized);
+              const hideManagerBookButton = isManager && openedFromNotification;
+              return (
+                <div
+                  style={{ display: "flex", gap: "12px", marginBottom: "16px" }}
+                >
+                  {hideOwnerBookButton ||
+                  hideManagerBookButton ? null : isUnderProcess ? (
+                    <button className="btn btn-primary" disabled>
+                      Book (Token)
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/hoardings/${hoardingId}/token`}
+                      className="btn btn-primary"
+                    >
+                      Book (Token)
+                    </Link>
+                  )}
+                  {canMarkUnderProcess &&
+                    String(hoarding.status || "").toLowerCase() ===
+                      "tokenized" && (
+                      <button
+                        className="btn btn-warning"
+                        onClick={handleMarkUnderProcess}
+                      >
+                        Mark Under Process
+                      </button>
+                    )}
+                </div>
+              );
+            })()}
 
             <div className="card" style={{ marginBottom: "24px" }}>
               <h3>Basic Information</h3>
@@ -285,26 +322,36 @@ export default function HoardingDetailPage() {
             )}
 
             <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
-              {canViewRentDetails && (
-                <Link
-                  href={`/hoardings/${hoardingId}/rent`}
-                  className="btn btn-primary"
-                  style={{
-                    backgroundColor: "#f59e0b",
-                    borderColor: "#f59e0b",
-                  }}
-                >
-                  {hoarding.status === "on_rent" ? "View Rent" : "Rent"}
-                </Link>
-              )}
-              {canEdit && (
-                <Link
-                  href={`/hoardings/${hoardingId}/edit`}
-                  className="btn btn-warning"
-                >
-                  Edit
-                </Link>
-              )}
+              {canViewRentDetails &&
+                !(openedFromNotification && (isOwner || isManager)) && (
+                  <Link
+                    href={`/hoardings/${hoardingId}/rent`}
+                    className="btn btn-primary"
+                    style={{
+                      backgroundColor: "#f59e0b",
+                      borderColor: "#f59e0b",
+                    }}
+                  >
+                    {hoarding.status === "on_rent" ? "View Rent" : "Rent"}
+                  </Link>
+                )}
+              {canEdit &&
+                !(
+                  isOwner &&
+                  !openedFromNotification &&
+                  ["under_process", "tokenized"].includes(
+                    String(hoarding.status || "")
+                      .toLowerCase()
+                      .trim()
+                  )
+                ) && (
+                  <Link
+                    href={`/hoardings/${hoardingId}/edit`}
+                    className="btn btn-warning"
+                  >
+                    Edit
+                  </Link>
+                )}
               {canDeleteHoarding && (
                 <button className="btn btn-danger" onClick={handleDelete}>
                   Delete

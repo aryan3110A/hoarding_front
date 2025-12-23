@@ -6,6 +6,8 @@ type ToastItem = {
   id: number;
   type: "success" | "error" | "info";
   message: string;
+  title?: string | null;
+  hideTitle?: boolean;
 };
 
 export default function Toast() {
@@ -18,11 +20,19 @@ export default function Toast() {
         type: "success" | "error" | "info";
         message: string;
         timeout?: number;
+        title?: string | null;
+        hideTitle?: boolean;
       };
       const id = idCounter++;
       setToasts((t) => [
         ...t,
-        { id, type: detail.type, message: detail.message },
+        {
+          id,
+          type: detail.type,
+          message: detail.message,
+          title: detail.title,
+          hideTitle: detail.hideTitle,
+        },
       ]);
 
       const timeout = detail.timeout ?? 5000;
@@ -64,15 +74,17 @@ export default function Toast() {
             border: "1px solid rgba(0,0,0,0.04)",
           }}
         >
-          <div
-            style={{
-              fontWeight: 600,
-              marginBottom: 6,
-              textTransform: "capitalize",
-            }}
-          >
-            {t.type}
-          </div>
+          {t.hideTitle || t.title === "" || t.title === null ? null : (
+            <div
+              style={{
+                fontWeight: 600,
+                marginBottom: 6,
+                textTransform: "capitalize",
+              }}
+            >
+              {t.title ?? t.type}
+            </div>
+          )}
           <div style={{ fontSize: 14 }}>{t.message}</div>
         </div>
       ))}

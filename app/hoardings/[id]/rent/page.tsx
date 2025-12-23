@@ -7,11 +7,11 @@ import { rentAPI, hoardingsAPI } from "@/lib/api";
 import { getRoleFromUser, canEditRent } from "@/lib/rbac";
 
 export default function RentDetailsPage() {
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const userFromContext = useUser();
   const [user, setUser] = useState<any>(null);
-  const hoardingId = params.id as string;
+  const hoardingId = String(params?.id || "");
 
   const [hoarding, setHoarding] = useState<any>(null);
   const [rent, setRent] = useState<any>(null);

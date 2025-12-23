@@ -405,9 +405,22 @@ export const bookingTokensAPI = {
   create: async (data: {
     hoardingId: string;
     dateFrom: string;
-    dateTo: string;
+    // either provide durationMonths OR dateTo (legacy)
+    durationMonths?: number;
+    dateTo?: string;
+    notes?: string;
+    client?: {
+      name: string;
+      phone: string;
+      email?: string;
+      companyName?: string;
+    };
   }) => {
     const response = await api.post("/booking-tokens", data);
+    return response.data;
+  },
+  getById: async (id: string) => {
+    const response = await api.get(`/booking-tokens/${id}`);
     return response.data;
   },
   confirm: async (id: string) => {
