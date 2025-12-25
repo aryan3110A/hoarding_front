@@ -10,6 +10,9 @@ node_modules/
 /.next/
 /out/
 
+# Custom Next.js distDir (Windows workaround)
+/build_output/
+
 # Production
 /build
 
@@ -41,4 +44,5 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+
 

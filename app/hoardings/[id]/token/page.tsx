@@ -27,10 +27,12 @@ export default function HoardingTokenPage() {
   const [clientCompany, setClientCompany] = useState("");
   const [queuePosition, setQueuePosition] = useState<number | null>(null);
 
-  const isUnderProcess =
-    String(hoarding?.status || "")
-      .toLowerCase()
-      .trim() === "under_process";
+  const hoardingStatus = String(hoarding?.status || "")
+    .toLowerCase()
+    .trim();
+  const isUnderProcess = hoardingStatus === "under_process";
+  const isLive = hoardingStatus === "live";
+  const isBooked = hoardingStatus === "booked";
 
   useEffect(() => {
     if (!hoardingId) return;
@@ -40,7 +42,27 @@ export default function HoardingTokenPage() {
       setLoading(true);
       try {
         const resp = await hoardingsAPI.getById(hoardingId);
-        if (!cancelled) setHoarding(resp?.data || null);
+        const hoardingData = resp?.data || null;
+        if (!cancelled) setHoarding(hoardingData);
+
+        const s = String(hoardingData?.status || "")
+          .toLowerCase()
+          .trim();
+        if (s === "booked") {
+          showError("This hoarding is already booked and cannot be tokenized.");
+          router.replace(`/hoardings/${hoardingId}`);
+          return;
+        }
+        if (s === "live") {
+          showError("This hoarding is Live and cannot be tokenized");
+          router.replace(`/hoardings/${hoardingId}`);
+          return;
+        }
+        if (s === "under_process") {
+          showError("This hoarding is Under Process and cannot be tokenized");
+          router.replace(`/hoardings/${hoardingId}`);
+          return;
+        }
       } catch (e) {
         if (!cancelled) showError("Failed to load hoarding");
       } finally {
@@ -56,6 +78,14 @@ export default function HoardingTokenPage() {
 
   const submit = async () => {
     if (!hoardingId) return;
+    if (isBooked) {
+      showError("This hoarding is already booked and cannot be tokenized.");
+      return;
+    }
+    if (isLive) {
+      showError("This hoarding is Live and cannot be tokenized");
+      return;
+    }
     if (isUnderProcess) {
       showError("This hoarding is Under Process and cannot be tokenized");
       return;
@@ -235,7 +265,7 @@ export default function HoardingTokenPage() {
               <button
                 className="btn btn-primary"
                 onClick={submit}
-                disabled={submitting || isUnderProcess}
+                disabled={submitting || isUnderProcess || isLive || isBooked}
                 style={{ minWidth: 140 }}
               >
                 {submitting ? "Booking..." : "Book (Token)"}

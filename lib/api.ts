@@ -129,6 +129,16 @@ export const hoardingsAPI = {
     const response = await api.post(`/hoardings/${id}/under-process`);
     return response.data;
   },
+
+  finalizeStatus: async (
+    id: string,
+    status: "live" | "booked" | "LIVE" | "BOOKED"
+  ) => {
+    const response = await api.post(`/hoardings/${id}/finalize-status`, {
+      status,
+    });
+    return response.data;
+  },
 };
 
 // Rent API
@@ -423,8 +433,11 @@ export const bookingTokensAPI = {
     const response = await api.get(`/booking-tokens/${id}`);
     return response.data;
   },
-  confirm: async (id: string) => {
-    const response = await api.post(`/booking-tokens/${id}/confirm`);
+  confirm: async (id: string, data?: { designerId?: string }) => {
+    const response = await api.post(
+      `/booking-tokens/${id}/confirm`,
+      data || {}
+    );
     return response.data;
   },
   cancel: async (id: string) => {
@@ -433,6 +446,50 @@ export const bookingTokensAPI = {
   },
   mine: async () => {
     const response = await api.get("/booking-tokens/mine");
+    return response.data;
+  },
+  assigned: async () => {
+    const response = await api.get("/booking-tokens/assigned");
+    return response.data;
+  },
+  assignedInstallations: async () => {
+    const response = await api.get("/booking-tokens/assigned-installations");
+    return response.data;
+  },
+  updateDesignStatus: async (id: string, status: string) => {
+    const response = await api.put(`/booking-tokens/${id}/design-status`, {
+      status,
+    });
+    return response.data;
+  },
+  fitters: async () => {
+    const response = await api.get("/booking-tokens/fitters");
+    return response.data;
+  },
+  assignFitter: async (id: string, data?: { fitterId?: string }) => {
+    const response = await api.put(
+      `/booking-tokens/${id}/assign-fitter`,
+      data || {}
+    );
+    return response.data;
+  },
+  updateFitterStatus: async (id: string, status: string) => {
+    const response = await api.put(`/booking-tokens/${id}/fitter-status`, {
+      status,
+    });
+    return response.data;
+  },
+
+  completeInstallation: async (id: string, files: File[]) => {
+    const form = new FormData();
+    (files || []).forEach((f) => form.append("images", f));
+    const response = await api.post(
+      `/booking-tokens/${id}/complete-installation`,
+      form,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
     return response.data;
   },
 };

@@ -10,10 +10,10 @@ import {
   hoardingsAPI,
   bookingsAPI,
   enquiriesAPI,
-  tasksAPI,
-  designAssignmentsAPI,
+  bookingTokensAPI,
 } from "@/lib/api";
 import { canViewRent, canAssignTasks } from "@/lib/rbac";
+import { showError, showSuccess } from "@/lib/toast";
 
 function DashboardContent() {
   const [stats, setStats] = useState<any>(null);
@@ -29,6 +29,15 @@ function DashboardContent() {
 
   // Designer/Fitter-specific data
   const [tasks, setTasks] = useState<any[]>([]);
+  const [fitterStatusDraftByTokenId, setFitterStatusDraftByTokenId] = useState<
+    Record<string, "pending" | "in_progress" | "fitted">
+  >({});
+  const [fitterProofFilesByTokenId, setFitterProofFilesByTokenId] = useState<
+    Record<string, File[]>
+  >({});
+  const [savingFitterByTokenId, setSavingFitterByTokenId] = useState<
+    Record<string, boolean>
+  >({});
 
   const user = useUser();
   const router = useRouter();
@@ -148,40 +157,34 @@ function DashboardContent() {
       // Designer: Fetch design tasks
       else if (userRole === "designer") {
         try {
-          const response = await tasksAPI.getAll({
-            assignedTo: user?.id,
-            type: "design",
-          });
+          const response = await bookingTokensAPI.assigned();
           if (response.success && response.data) {
-            const designTasks = Array.isArray(response.data)
+            const rows = Array.isArray(response.data)
               ? response.data
-              : response.data.tasks || [];
+              : response.data || [];
+            const designTasks = (rows || []).map((t: any) => {
+              const statusRaw = String(
+                t?.designStatus || "PENDING"
+              ).toLowerCase();
+              const status =
+                statusRaw === "in_progress"
+                  ? "in_progress"
+                  : statusRaw === "completed"
+                  ? "completed"
+                  : "pending";
+              return {
+                id: String(t.id),
+                tokenId: String(t.id),
+                title: `Design for ${t?.hoarding?.code || "Hoarding"}`,
+                status,
+                hoardingCode: t?.hoarding?.code || t?.hoardingId,
+                clientName: t?.client?.name || "N/A",
+                dueDate: t?.createdAt,
+              };
+            });
             setTasks(designTasks);
           } else {
-            // Fallback: try design assignments API
-            try {
-              const designResponse = await designAssignmentsAPI.getAll({
-                designerId: user?.id,
-              });
-              if (designResponse.success && designResponse.data) {
-                const assignments = Array.isArray(designResponse.data)
-                  ? designResponse.data
-                  : designResponse.data.assignments || [];
-                setTasks(
-                  assignments.map((a: any) => ({
-                    id: a.id,
-                    title: `Design for ${a.hoarding?.code || "Hoarding"}`,
-                    status: a.status?.toLowerCase() || "pending",
-                    hoardingCode: a.hoarding?.code || a.hoardingId,
-                    clientName: a.clientName,
-                    dueDate: a.dueDate,
-                  }))
-                );
-              }
-            } catch (err) {
-              console.error("Failed to fetch design assignments:", err);
-              setTasks([]);
-            }
+            setTasks([]);
           }
         } catch (error) {
           console.error("Failed to fetch design tasks:", error);
@@ -191,15 +194,54 @@ function DashboardContent() {
       // Fitter: Fetch assigned installation jobs
       else if (userRole === "fitter") {
         try {
-          const response = await tasksAPI.getAll({
-            assignedTo: user?.id,
-            type: "installation",
-          });
+          const response = await bookingTokensAPI.assignedInstallations();
           if (response.success && response.data) {
-            const installationTasks = Array.isArray(response.data)
+            const rows = Array.isArray(response.data)
               ? response.data
-              : response.data.tasks || [];
+              : response.data || [];
+            const installationTasks = (rows || []).map((t: any) => {
+              const statusRaw = String(
+                t?.fitterStatus || "PENDING"
+              ).toLowerCase();
+              const status =
+                statusRaw === "in_progress"
+                  ? "in_progress"
+                  : statusRaw === "completed"
+                  ? "completed"
+                  : "pending";
+              const location = `${t?.hoarding?.city || ""}${
+                t?.hoarding?.area ? ", " + t.hoarding.area : ""
+              }`.trim();
+              return {
+                id: String(t.id),
+                tokenId: String(t.id),
+                title: `Installation for ${t?.hoarding?.code || "Hoarding"}`,
+                status,
+                hoardingCode: t?.hoarding?.code || t?.hoardingId,
+                location: location || "N/A",
+                clientName: t?.client?.name || "N/A",
+                assignedDate: t?.fitterAssignedAt || t?.createdAt,
+              };
+            });
             setTasks(installationTasks);
+
+            // Keep status drafts in sync (non-destructive for in-progress edits)
+            setFitterStatusDraftByTokenId((prev) => {
+              const next = { ...(prev || {}) };
+              (installationTasks || []).forEach((t: any) => {
+                const tokenId = String(t?.tokenId || t?.id);
+                if (!tokenId) return;
+                if (next[tokenId]) return;
+                const normalized =
+                  t?.status === "completed"
+                    ? ("fitted" as const)
+                    : t?.status === "in_progress"
+                    ? ("in_progress" as const)
+                    : ("pending" as const);
+                next[tokenId] = normalized;
+              });
+              return next;
+            });
           } else {
             setTasks([]);
           }
@@ -291,6 +333,148 @@ function DashboardContent() {
       setLoading(false);
     }
   }, [user]);
+
+  // Real-time: keep fitter task statuses updated
+  useEffect(() => {
+    if (!user) return;
+    if (userRoleLower !== "fitter") return;
+
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "http://localhost:3001";
+    const accessToken =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const query = accessToken
+      ? `?token=${encodeURIComponent(accessToken)}`
+      : "";
+    const url = `${apiBase}/api/events/fitter-status${query}`;
+    const source = new EventSource(url as any);
+    source.onmessage = (evt) => {
+      try {
+        const payload = JSON.parse(evt.data || "{}") as {
+          tokenId?: string;
+          fitterStatus?: string;
+        };
+        if (!payload?.tokenId || !payload.fitterStatus) return;
+        const statusRaw = String(payload.fitterStatus).toLowerCase();
+        const status =
+          statusRaw === "in_progress"
+            ? "in_progress"
+            : statusRaw === "completed"
+            ? "completed"
+            : "pending";
+        setTasks((prev) =>
+          (prev || []).map((t: any) =>
+            String(t?.tokenId || t?.id) === String(payload.tokenId)
+              ? { ...t, status }
+              : t
+          )
+        );
+
+        // If we haven't started editing this row, keep draft aligned.
+        setFitterStatusDraftByTokenId((prev) => {
+          const tokenId = String(payload.tokenId);
+          if (!tokenId) return prev;
+          if (prev?.[tokenId]) return prev;
+          const normalized =
+            status === "completed"
+              ? ("fitted" as const)
+              : status === "in_progress"
+              ? ("in_progress" as const)
+              : ("pending" as const);
+          return { ...(prev || {}), [tokenId]: normalized };
+        });
+      } catch (_) {}
+    };
+    source.onerror = () => {
+      // ignore; browser reconnects
+    };
+    return () => {
+      try {
+        source.close();
+      } catch (_) {}
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, userRoleLower]);
+
+  const normalizedFitterStatus = (s?: string | null) => {
+    const raw = String(s || "").toLowerCase();
+    if (raw === "completed" || raw === "fitted") return "fitted" as const;
+    if (raw === "in_progress") return "in_progress" as const;
+    return "pending" as const;
+  };
+
+  const handleSaveFitterRow = async (
+    tokenId: string,
+    currentStatus?: string
+  ) => {
+    if (!tokenId) return;
+    const draft = fitterStatusDraftByTokenId[String(tokenId)] || "pending";
+    const current = normalizedFitterStatus(currentStatus);
+    try {
+      setSavingFitterByTokenId((prev) => ({
+        ...(prev || {}),
+        [String(tokenId)]: true,
+      }));
+
+      if (current === "fitted") {
+        showError("Already fitted");
+        return;
+      }
+      if (draft === "pending") {
+        showError("Cannot move back to pending");
+        return;
+      }
+
+      if (draft === "fitted") {
+        if (current !== "in_progress") {
+          showError("Must be in progress before fitting");
+          return;
+        }
+        const files = fitterProofFilesByTokenId[String(tokenId)] || [];
+        if (!files.length) {
+          showError("Please upload at least 1 proof image.");
+          return;
+        }
+        const resp = await bookingTokensAPI.completeInstallation(
+          String(tokenId),
+          files
+        );
+        if (resp?.success) {
+          showSuccess("Installation marked as fitted");
+          // refresh list so counts and status sync
+          await fetchDashboardData();
+        } else {
+          showError(resp?.message || "Failed to complete installation");
+        }
+        return;
+      }
+
+      if (draft === "in_progress" && current !== "pending") {
+        showError("Cannot mark in progress");
+        return;
+      }
+
+      const resp = await bookingTokensAPI.updateFitterStatus(
+        String(tokenId),
+        draft
+      );
+      if (resp?.success) {
+        showSuccess("Installation status updated");
+        await fetchDashboardData();
+      } else {
+        showError(resp?.message || "Failed to update installation status");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to update installation");
+    } finally {
+      setSavingFitterByTokenId((prev) => ({
+        ...(prev || {}),
+        [String(tokenId)]: false,
+      }));
+    }
+  };
 
   // Don't show loading spinner - show content immediately with empty states if needed
 
@@ -900,7 +1084,9 @@ function DashboardContent() {
                           <button
                             className="btn btn-primary"
                             style={{ padding: "5px 10px", fontSize: "12px" }}
-                            onClick={() => router.push("/tasks")}
+                            onClick={() =>
+                              router.push(`/booking-tokens/${task.tokenId}`)
+                            }
                           >
                             View Details
                           </button>
@@ -975,7 +1161,7 @@ function DashboardContent() {
                 <h3>
                   {tasks.filter((t: any) => t.status === "completed").length}
                 </h3>
-                <p>Completed</p>
+                <p>Fitted</p>
               </div>
             </div>
 
@@ -1014,23 +1200,100 @@ function DashboardContent() {
                             : "N/A"}
                         </td>
                         <td>
-                          <span
-                            className={`badge ${
-                              task.status === "completed"
-                                ? "badge-success"
-                                : task.status === "in_progress"
-                                ? "badge-warning"
-                                : "badge-info"
-                            }`}
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 6,
+                            }}
                           >
-                            {task.status || "Pending"}
-                          </span>
+                            <select
+                              className="input"
+                              value={
+                                fitterStatusDraftByTokenId[
+                                  String(task.tokenId)
+                                ] || normalizedFitterStatus(task.status)
+                              }
+                              disabled={
+                                !!savingFitterByTokenId[String(task.tokenId)]
+                              }
+                              onChange={(e) =>
+                                setFitterStatusDraftByTokenId((prev) => ({
+                                  ...(prev || {}),
+                                  [String(task.tokenId)]:
+                                    normalizedFitterStatus(e.target.value),
+                                }))
+                              }
+                            >
+                              <option value="pending">Pending</option>
+                              <option
+                                value="in_progress"
+                                disabled={
+                                  normalizedFitterStatus(task.status) !==
+                                  "pending"
+                                }
+                              >
+                                In Progress
+                              </option>
+                              <option
+                                value="fitted"
+                                disabled={
+                                  normalizedFitterStatus(task.status) !==
+                                  "in_progress"
+                                }
+                              >
+                                Fitted
+                              </option>
+                            </select>
+
+                            {(fitterStatusDraftByTokenId[
+                              String(task.tokenId)
+                            ] || normalizedFitterStatus(task.status)) ===
+                              "fitted" && (
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                disabled={
+                                  !!savingFitterByTokenId[String(task.tokenId)]
+                                }
+                                onChange={(e) => {
+                                  const list = Array.from(e.target.files || []);
+                                  setFitterProofFilesByTokenId((prev) => ({
+                                    ...(prev || {}),
+                                    [String(task.tokenId)]: list,
+                                  }));
+                                }}
+                              />
+                            )}
+                          </div>
                         </td>
                         <td>
                           <button
                             className="btn btn-primary"
                             style={{ padding: "5px 10px", fontSize: "12px" }}
-                            onClick={() => router.push("/tasks")}
+                            disabled={
+                              !!savingFitterByTokenId[String(task.tokenId)]
+                            }
+                            onClick={() =>
+                              handleSaveFitterRow(
+                                String(task.tokenId),
+                                task.status
+                              )
+                            }
+                          >
+                            Submit
+                          </button>
+                          <button
+                            className="btn btn-secondary"
+                            style={{
+                              padding: "5px 10px",
+                              fontSize: "12px",
+                              marginLeft: 8,
+                            }}
+                            onClick={() =>
+                              router.push(`/booking-tokens/${task.tokenId}`)
+                            }
                           >
                             View Details
                           </button>

@@ -179,10 +179,15 @@ export default function HoardingDetailPage() {
                 .toLowerCase()
                 .trim();
               const isUnderProcess = hoardingStatus === "under_process";
+              const isLive = hoardingStatus === "live";
+              const isBooked = hoardingStatus === "booked";
               const isTokenized = hoardingStatus === "tokenized";
               const hideOwnerBookButton =
                 isOwner && (isUnderProcess || isTokenized);
               const hideManagerBookButton = isManager && openedFromNotification;
+
+              const tokenizeDisabled = isUnderProcess || isLive || isBooked;
+              const tokenizeLabel = isBooked ? "Booked" : "Book (Token)";
               return (
                 <div
                   style={{ display: "flex", gap: "12px", marginBottom: "16px" }}
@@ -190,14 +195,18 @@ export default function HoardingDetailPage() {
                   {hideOwnerBookButton ||
                   hideManagerBookButton ? null : isUnderProcess ? (
                     <button className="btn btn-primary" disabled>
-                      Book (Token)
+                      {tokenizeLabel}
+                    </button>
+                  ) : tokenizeDisabled ? (
+                    <button className="btn btn-primary" disabled>
+                      {tokenizeLabel}
                     </button>
                   ) : (
                     <Link
                       href={`/hoardings/${hoardingId}/token`}
                       className="btn btn-primary"
                     >
-                      Book (Token)
+                      {tokenizeLabel}
                     </Link>
                   )}
                   {canMarkUnderProcess &&

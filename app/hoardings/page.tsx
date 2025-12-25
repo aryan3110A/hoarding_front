@@ -480,10 +480,35 @@ export default function Hoardings() {
                                     String(rawStatus || "")
                                       .toLowerCase()
                                       .trim() === "under_process";
+                                  const isBooked =
+                                    String(rawStatus || "")
+                                      .toLowerCase()
+                                      .trim() === "booked";
+                                  const isLive =
+                                    String(rawStatus || "")
+                                      .toLowerCase()
+                                      .trim() === "live";
+                                  const isOccupied =
+                                    String(rawStatus || "")
+                                      .toLowerCase()
+                                      .trim() === "occupied";
+
+                                  const isEligibleStatus =
+                                    String(rawStatus || "")
+                                      .toLowerCase()
+                                      .trim() === "available" ||
+                                    String(rawStatus || "")
+                                      .toLowerCase()
+                                      .trim() === "tokenized";
+
                                   const isDisabled =
                                     isTokenizing ||
                                     isMyTokenized ||
-                                    isUnderProcess;
+                                    isUnderProcess ||
+                                    isBooked ||
+                                    isLive ||
+                                    isOccupied ||
+                                    !isEligibleStatus;
                                   return (
                                     <button
                                       type="button"
@@ -512,6 +537,8 @@ export default function Hoardings() {
                                       )}
                                       {isMyTokenized
                                         ? "Tokenized"
+                                        : isBooked
+                                        ? "Booked"
                                         : "Book (Token)"}
                                     </button>
                                   );
