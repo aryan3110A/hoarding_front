@@ -1,11 +1,12 @@
 /** @type {import('next').NextConfig} */
+const isVercel = !!process.env.VERCEL;
+const isWindows = process.platform === "win32";
+
 const nextConfig = {
   reactStrictMode: true,
-  // Workaround: in some Windows setups .next/trace can be blocked by permissions/locks.
-  // Using a custom distDir avoids reusing a problematic folder.
-  // NOTE: This Windows environment denies writes to Next's default trace file when distDir is named
-  // ".next" / "next-build". Using a neutral folder name keeps builds working.
-  distDir: "build_output",
+  // Use default `.next` on Vercel so routing manifests are found.
+  // Keep Windows-only distDir locally to avoid occasional filesystem lock issues.
+  ...(isVercel ? {} : isWindows ? { distDir: "build_output" } : {}),
   // Environment variables are automatically loaded from .env.local
   // NEXT_PUBLIC_API_URL is available in client components
 };
