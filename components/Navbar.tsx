@@ -215,10 +215,14 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
                 {item.href === "/hoardings" && user?.role === "sales" && (
                   <Link
                     href="/proposals/pdf"
-                    className={`navbar-link ${isActive('/proposals/pdf') ? 'active' : ''}`}
+                    className={`navbar-link ${
+                      isActive("/proposals/pdf") ? "active" : ""
+                    }`}
                     style={{ marginLeft: 10 }}
                   >
-                    <span className="navbar-icon">{renderIcon('FileText')}</span>
+                    <span className="navbar-icon">
+                      {renderIcon("FileText")}
+                    </span>
                     <span className="navbar-text">Generate Proposal PDF</span>
                   </Link>
                 )}
@@ -298,8 +302,13 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
               </Link>
 
               {item.href === "/hoardings" && user?.role === "sales" && (
-                <Link href="/proposals/pdf" className={`navbar-link ${isActive('/proposals/pdf') ? 'active' : ''}`}>
-                  <span className="navbar-icon">{renderIcon('FileText')}</span>
+                <Link
+                  href="/proposals/pdf"
+                  className={`navbar-link ${
+                    isActive("/proposals/pdf") ? "active" : ""
+                  }`}
+                >
+                  <span className="navbar-icon">{renderIcon("FileText")}</span>
                   <span className="navbar-text">Generate Proposal PDF</span>
                 </Link>
               )}
