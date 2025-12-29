@@ -152,7 +152,7 @@ export default function HoardingTokenPage() {
         </div>
 
         <div className="card">
-          <h2 style={{ marginBottom: "12px" }}>Book (Token)</h2>
+          <h2 style={{ marginBottom: "12px" }}>Block Hoarding</h2>
 
           {loading ? (
             <div>Loading...</div>
@@ -268,7 +268,7 @@ export default function HoardingTokenPage() {
                 disabled={submitting || isUnderProcess || isLive || isBooked}
                 style={{ minWidth: 140 }}
               >
-                {submitting ? "Booking..." : "Book (Token)"}
+                {submitting ? "Blocking..." : "Block Hoarding"}
               </button>
             </div>
           </div>

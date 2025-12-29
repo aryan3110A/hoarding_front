@@ -187,7 +187,7 @@ export default function HoardingDetailPage() {
               const hideManagerBookButton = isManager && openedFromNotification;
 
               const tokenizeDisabled = isUnderProcess || isLive || isBooked;
-              const tokenizeLabel = isBooked ? "Booked" : "Book (Token)";
+              const tokenizeLabel = isBooked ? "Booked" : "Block Hoarding";
               return (
                 <div
                   style={{ display: "flex", gap: "12px", marginBottom: "16px" }}

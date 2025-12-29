@@ -193,19 +193,35 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
           {/* Desktop Menu */}
           <div className="navbar-menu-desktop">
             {filteredMenuItems.map((item) => (
-              <Link
+              <div
                 key={item.href}
-                href={item.href}
-                className={`navbar-link ${isActive(item.href) ? "active" : ""}`}
+                style={{ display: "inline-flex", alignItems: "center" }}
               >
-                <span className="navbar-icon">
-                  {renderIcon((item as any).iconName)}
-                </span>
-                <span className="navbar-text">{item.title}</span>
-                {item.badge && item.badge > 0 && (
-                  <span className="navbar-badge">{item.badge}</span>
+                <Link
+                  href={item.href}
+                  className={`navbar-link ${
+                    isActive(item.href) ? "active" : ""
+                  }`}
+                >
+                  <span className="navbar-icon">
+                    {renderIcon((item as any).iconName)}
+                  </span>
+                  <span className="navbar-text">{item.title}</span>
+                  {item.badge && item.badge > 0 && (
+                    <span className="navbar-badge">{item.badge}</span>
+                  )}
+                </Link>
+
+                {item.href === "/hoardings" && user?.role === "sales" && (
+                  <Link
+                    href="/proposals/pdf"
+                    className={`navbar-link`}
+                    style={{ marginLeft: 10 }}
+                  >
+                    <span className="navbar-text">Generate Proposal PDF</span>
+                  </Link>
                 )}
-              </Link>
+              </div>
             ))}
           </div>
 
@@ -266,19 +282,26 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
         {/* Mobile Menu */}
         <div className={`navbar-menu-mobile ${isMobileMenuOpen ? "open" : ""}`}>
           {filteredMenuItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`navbar-link ${isActive(item.href) ? "active" : ""}`}
-            >
-              <span className="navbar-icon">
-                {renderIcon((item as any).iconName)}
-              </span>
-              <span className="navbar-text">{item.title}</span>
-              {item.badge && item.badge > 0 && (
-                <span className="navbar-badge">{item.badge}</span>
+            <div key={item.href} style={{ display: "block" }}>
+              <Link
+                href={item.href}
+                className={`navbar-link ${isActive(item.href) ? "active" : ""}`}
+              >
+                <span className="navbar-icon">
+                  {renderIcon((item as any).iconName)}
+                </span>
+                <span className="navbar-text">{item.title}</span>
+                {item.badge && item.badge > 0 && (
+                  <span className="navbar-badge">{item.badge}</span>
+                )}
+              </Link>
+
+              {item.href === "/hoardings" && user?.role === "sales" && (
+                <Link href="/proposals/pdf" className={`navbar-link`}>
+                  <span className="navbar-text">Generate Proposal PDF</span>
+                </Link>
               )}
-            </Link>
+            </div>
           ))}
           <div className="navbar-mobile-user">
             <div className="navbar-user">

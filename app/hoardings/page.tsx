@@ -539,7 +539,7 @@ export default function Hoardings() {
                                         ? "Tokenized"
                                         : isBooked
                                         ? "Booked"
-                                        : "Book (Token)"}
+                                        : "Block Hoarding"}
                                     </button>
                                   );
                                 })()}
