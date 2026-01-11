@@ -18,9 +18,9 @@ export default function HoardingTokenPage() {
   const [hoarding, setHoarding] = useState<any>(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [durationMonths, setDurationMonths] = useState<number | undefined>(
-    undefined
-  );
+  const [durationMonths, setDurationMonths] = useState<
+    string | number | undefined
+  >(undefined);
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [clientEmail, setClientEmail] = useState("");
@@ -90,10 +90,10 @@ export default function HoardingTokenPage() {
       showError("This hoarding is Under Process and cannot be tokenized");
       return;
     }
-    if (!dateFrom) {
-      showError("Select start date");
-      return;
-    }
+    // Sales users should not supply start date; it will be set when fitter marks fitted.
+    // We no longer ask sales or other users to provide `From`/`To` here.
+    // Backend expects a dateFrom value; use today's date as a placeholder —
+    // the contract startDate will be set when the fitter marks the hoarding fitted.
 
     // require duration or dateTo
     if (!durationMonths && !dateTo) {
@@ -108,9 +108,13 @@ export default function HoardingTokenPage() {
 
     try {
       setSubmitting(true);
+      const defaultDateFrom = new Date();
+      const defaultDateFromStr = defaultDateFrom.toISOString().split("T")[0];
+
       const payload: any = {
         hoardingId,
-        dateFrom,
+        // always send today's date as placeholder; actual contract start is set on fitter completion
+        dateFrom: dateFrom || defaultDateFromStr,
         notes: undefined,
         client: {
           name: clientName || "Unknown",
@@ -119,8 +123,20 @@ export default function HoardingTokenPage() {
           companyName: clientCompany || undefined,
         },
       };
-      if (durationMonths) payload.durationMonths = durationMonths;
-      if (!durationMonths && dateTo) payload.dateTo = dateTo;
+      if (typeof durationMonths === "string" && durationMonths.endsWith("d")) {
+        // day-based selection e.g. '8d' -> compute dateTo from effective dateFrom
+        const days = parseInt(durationMonths.replace("d", ""), 10) || 0;
+        const effectiveFrom = dateFrom || defaultDateFromStr;
+        if (days > 0 && effectiveFrom) {
+          const start = new Date(effectiveFrom);
+          const dt = new Date(start);
+          dt.setDate(start.getDate() + days);
+          // API expects date string (YYYY-MM-DD)
+          payload.dateTo = dt.toISOString().split("T")[0];
+        }
+      } else if (typeof durationMonths === "number") {
+        payload.durationMonths = durationMonths;
+      } else if (!durationMonths && dateTo) payload.dateTo = dateTo;
 
       const resp = await bookingTokensAPI.create(payload);
       if (resp?.success) {
@@ -182,29 +198,28 @@ export default function HoardingTokenPage() {
                 flexWrap: "wrap",
               }}
             >
+              {/* From input removed — start date is set when fitter marks fitted */}
               <div className="form-group" style={{ margin: 0 }}>
-                <label style={{ fontSize: "12px" }}>From</label>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                />
-              </div>
-              <div className="form-group" style={{ margin: 0 }}>
-                <label style={{ fontSize: "12px" }}>Duration (months)</label>
+                <label style={{ fontSize: "12px" }}>
+                  Duration (months / days)
+                </label>
                 <select
                   value={durationMonths ?? ""}
-                  onChange={(e) =>
-                    setDurationMonths(
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (!v) return setDurationMonths(undefined);
+                    // support day-based option like '8d'
+                    if (v.endsWith("d")) return setDurationMonths(v);
+                    const n = Number(v);
+                    setDurationMonths(isNaN(n) ? undefined : n);
+                  }}
                 >
                   <option value="">Select</option>
                   <option value="3">3</option>
                   <option value="6">6</option>
                   <option value="9">9</option>
                   <option value="12">12</option>
+                  <option value="8d">8 days</option>
                 </select>
               </div>
 

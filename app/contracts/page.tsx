@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useUser } from "@/components/AppLayout";
 import AccessDenied from "@/components/AccessDenied";
+import { showSuccess, showError } from "@/lib/toast";
 
 export default function Contracts() {
   const [contracts, setContracts] = useState<any[]>([]);
@@ -26,12 +27,76 @@ export default function Contracts() {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       const contractsData = response.data?.data || response.data || [];
-      setContracts(Array.isArray(contractsData) ? contractsData : []);
+      const list = Array.isArray(contractsData) ? contractsData : [];
+
+      // Use denormalized fields `clientName` and `hoardingCode` when available to avoid N+1 fetches.
+      setContracts(
+        list.map((c: any) => ({
+          ...c,
+          clientName: c.clientName || null,
+          hoardingCode: c.hoardingCode || null,
+        }))
+      );
       setLoading(false); // Set loading to false immediately after setting data
     } catch (error) {
       console.error("Failed to fetch contracts:", error);
       setContracts([]);
       setLoading(false); // Set loading to false on error too
+    }
+  };
+
+  const handleRenew = async (contractId: string) => {
+    try {
+      const authToken = localStorage.getItem("token");
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const resp = await axios.post(
+        `${API_URL}/api/contracts/${contractId}/renew`,
+        {},
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+      showSuccess("Renewal requested/created");
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      showError("Failed to renew contract");
+    }
+  };
+
+  const handleCancel = async (contractId: string) => {
+    if (!confirm("Are you sure you want to cancel this contract?")) return;
+    try {
+      const authToken = localStorage.getItem("token");
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      await axios.post(
+        `${API_URL}/api/contracts/${contractId}/cancel`,
+        {},
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+      showSuccess("Contract cancelled");
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      showError("Failed to cancel contract");
+    }
+  };
+
+  const handleRequestRenew = async (contractId: string) => {
+    try {
+      const authToken = localStorage.getItem("token");
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      await axios.post(
+        `${API_URL}/api/contracts/${contractId}/renew`,
+        { requestOnly: true },
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+      showSuccess("Renewal request submitted");
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      showError("Failed to request renewal");
     }
   };
 
@@ -44,7 +109,7 @@ export default function Contracts() {
   }
 
   const userRole = user?.role?.toLowerCase() || "";
-  if (!["owner", "manager", "admin"].includes(userRole)) {
+  if (!["owner", "manager", "admin", "sales"].includes(userRole)) {
     return <AccessDenied />;
   }
 
@@ -68,28 +133,85 @@ export default function Contracts() {
               </tr>
             </thead>
             <tbody>
-              {contracts.map((contract: any) => (
-                <tr key={contract.id}>
-                  <td>{contract.id}</td>
-                  <td>{contract.clientName || "N/A"}</td>
-                  <td>{contract.hoardingCode || "N/A"}</td>
-                  <td>
-                    {contract.startDate
-                      ? new Date(contract.startDate).toLocaleDateString()
-                      : "N/A"}
-                  </td>
-                  <td>
-                    {contract.endDate
-                      ? new Date(contract.endDate).toLocaleDateString()
-                      : "N/A"}
-                  </td>
-                  <td>
-                    <span className="badge badge-info">
-                      {contract.status || "Active"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {contracts
+                .filter((contract: any) => {
+                  if (userRole === "sales") {
+                    // Sales see only contracts they created/assigned to
+                    return (
+                      String(contract.createdById) === String(user?.id) ||
+                      String(contract.salesUserId) === String(user?.id)
+                    );
+                  }
+                  return true;
+                })
+                .map((contract: any) => (
+                  <tr key={contract.id}>
+                    <td>{contract.id}</td>
+                    <td>{contract.clientName || "N/A"}</td>
+                    <td>{contract.hoardingCode || "N/A"}</td>
+                    <td>
+                      {contract.startDate
+                        ? new Date(contract.startDate).toLocaleDateString()
+                        : "N/A"}
+                    </td>
+                    <td>
+                      {contract.endDate
+                        ? new Date(contract.endDate).toLocaleDateString()
+                        : "N/A"}
+                    </td>
+                    <td>
+                      <span className="badge badge-info">
+                        {contract.status || "Active"}
+                      </span>
+                    </td>
+                    <td>
+                      {/* Role-based actions */}
+                      {["owner", "admin"].includes(userRole) && (
+                        <>
+                          <button
+                            className="btn btn-sm"
+                            onClick={() => handleRenew(contract.id)}
+                          >
+                            Renew
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => handleCancel(contract.id)}
+                            style={{ marginLeft: 8 }}
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      )}
+                      {userRole === "manager" && (
+                        <>
+                          <button
+                            className="btn btn-sm"
+                            onClick={() => handleRenew(contract.id)}
+                          >
+                            Renew
+                          </button>
+                          <button
+                            className="btn btn-sm"
+                            disabled
+                            style={{ marginLeft: 8 }}
+                          >
+                            Cancel (restricted)
+                          </button>
+                        </>
+                      )}
+                      {userRole === "sales" &&
+                        String(contract.createdById) === String(user?.id) && (
+                          <button
+                            className="btn btn-sm"
+                            onClick={() => handleRequestRenew(contract.id)}
+                          >
+                            Request Renew
+                          </button>
+                        )}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         ) : (

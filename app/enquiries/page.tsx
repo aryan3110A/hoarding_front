@@ -78,7 +78,19 @@ export default function Enquiries() {
       const authToken = localStorage.getItem("token");
       const API_URL =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      await axios.post(`${API_URL}/api/enquiries`, formData, {
+      // Map frontend form fields to API payload keys expected by the backend
+      const payload = {
+        clientName: formData.clientName,
+        contact: formData.contact,
+        source: formData.source,
+        preferredArea: formData.preferredArea,
+        campaignDates: formData.campaignDates,
+        budget: formData.budget,
+        hoardingId: formData.hoardingId || undefined,
+        assignedToId: formData.assignedTo || undefined,
+      };
+
+      await axios.post(`${API_URL}/api/enquiries`, payload, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setShowForm(false);

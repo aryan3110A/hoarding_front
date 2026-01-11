@@ -501,6 +501,14 @@ export default function Hoardings() {
                                       .toLowerCase()
                                       .trim() === "tokenized";
 
+                                  const isSearchActive = Boolean(
+                                    (filters.city && filters.city.trim()) ||
+                                      (filters.area && filters.area.trim()) ||
+                                      (filters.status &&
+                                        filters.status.trim()) ||
+                                      (landlordSearch && landlordSearch.trim())
+                                  );
+
                                   const isDisabled =
                                     isTokenizing ||
                                     isMyTokenized ||
@@ -508,7 +516,9 @@ export default function Hoardings() {
                                     isBooked ||
                                     isLive ||
                                     isOccupied ||
-                                    !isEligibleStatus;
+                                    !isEligibleStatus ||
+                                    // Prevent Sales users from blocking hoardings via ad-hoc search results
+                                    (isSalesRole && isSearchActive);
                                   return (
                                     <button
                                       type="button"

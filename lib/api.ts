@@ -274,6 +274,10 @@ export const contractsAPI = {
     const response = await api.get("/contracts");
     return response.data;
   },
+  getById: async (id: string) => {
+    const response = await api.get(`/contracts/${id}`);
+    return response.data;
+  },
 };
 
 // Clients API

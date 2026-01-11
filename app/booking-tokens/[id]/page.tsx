@@ -719,18 +719,7 @@ export default function BookingTokenDetailPage() {
                     {token.fitter?.name || tokenFitterId}
                   </div>
                 )}
-                <div>
-                  <strong>From:</strong>{" "}
-                  {token.dateFrom
-                    ? new Date(token.dateFrom).toLocaleDateString()
-                    : "—"}
-                </div>
-                <div>
-                  <strong>To:</strong>{" "}
-                  {token.dateTo
-                    ? new Date(token.dateTo).toLocaleDateString()
-                    : "—"}
-                </div>
+                {/* Hide From/To — these are determined when fitter completes installation */}
                 <div>
                   <strong>Duration:</strong>{" "}
                   {token.durationMonths
