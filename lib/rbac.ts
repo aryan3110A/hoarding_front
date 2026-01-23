@@ -742,21 +742,25 @@ export function getRoleFromUser(user: any): string {
 
   // Handle if role is an object with a name property
   if (role && typeof role === "object" && (role as any).name) {
-    const name = String((role as any).name || "").trim().toLowerCase();
+    const name = String((role as any).name || "")
+      .trim()
+      .toLowerCase();
     console.log("🔍 [RBAC] Role is object, extracting name:", name);
     return name;
   }
 
   // Handle if role is a string
   if (role && typeof role === "string") {
-    const name = String(role || "").trim().toLowerCase();
+    const name = String(role || "")
+      .trim()
+      .toLowerCase();
     console.log("🔍 [RBAC] Role is string:", name);
     return name;
   }
 
   console.warn(
     "🔍 [RBAC] Could not extract role from user. User keys:",
-    Object.keys(user)
+    Object.keys(user),
   );
   return "";
 }
@@ -765,19 +769,19 @@ export function getRoleFromUser(user: any): string {
 export function hasPermission(
   role: string,
   component: string,
-  action: "create" | "read" | "update" | "delete"
+  action: "create" | "read" | "update" | "delete",
 ): boolean {
   console.log(
-    `🔐 [RBAC] hasPermission called: role="${role}", component="${component}", action="${action}"`
+    `🔐 [RBAC] hasPermission called: role="${role}", component="${component}", action="${action}"`,
   );
   console.log(
-    `🔐 [RBAC] Role type: ${typeof role}, Component type: ${typeof component}`
+    `🔐 [RBAC] Role type: ${typeof role}, Component type: ${typeof component}`,
   );
 
   // Validate inputs - allow empty string for role but check it's a string type
   if (typeof role !== "string" || typeof component !== "string") {
     console.warn(
-      `🔐 [RBAC] Invalid input types - role: ${role} (${typeof role}), component: ${component} (${typeof component})`
+      `🔐 [RBAC] Invalid input types - role: ${role} (${typeof role}), component: ${component} (${typeof component})`,
     );
     return false;
   }
@@ -791,7 +795,7 @@ export function hasPermission(
 
   if (!component.trim()) {
     console.warn(
-      `🔐 [RBAC] Component is empty or whitespace only: "${component}"`
+      `🔐 [RBAC] Component is empty or whitespace only: "${component}"`,
     );
     return false;
   }
@@ -802,25 +806,25 @@ export function hasPermission(
   const permissions = rolePermissions[normalizedRole];
   console.log(
     `🔐 [RBAC] Permissions for role "${normalizedRole}":`,
-    permissions
+    permissions,
   );
 
   if (!permissions) {
     console.warn(`🔐 [RBAC] No permissions found for role "${normalizedRole}"`);
     console.log(
       `🔐 [RBAC] Available roles in rolePermissions:`,
-      Object.keys(rolePermissions)
+      Object.keys(rolePermissions),
     );
     return false;
   }
 
   if (!permissions[component]) {
     console.warn(
-      `🔐 [RBAC] No permissions found for role "${normalizedRole}" and component "${component}"`
+      `🔐 [RBAC] No permissions found for role "${normalizedRole}" and component "${component}"`,
     );
     console.log(
       `🔐 [RBAC] Available components for role "${normalizedRole}":`,
-      Object.keys(permissions)
+      Object.keys(permissions),
     );
     return false;
   }
@@ -828,7 +832,7 @@ export function hasPermission(
   const result = permissions[component][action] || false;
   console.log(
     `🔐 [RBAC] Permission result for "${normalizedRole}" -> "${component}" -> "${action}":`,
-    result
+    result,
   );
   console.log(`🔐 [RBAC] Full permission object:`, permissions[component]);
   return result;
@@ -836,7 +840,7 @@ export function hasPermission(
 
 export function canAccess(role: string, component: string): boolean {
   console.log(
-    `🔐 [RBAC] canAccess called: role="${role}", component="${component}"`
+    `🔐 [RBAC] canAccess called: role="${role}", component="${component}"`,
   );
   const result = hasPermission(role, component, "read");
   console.log(`🔐 [RBAC] canAccess result:`, result);
@@ -897,7 +901,7 @@ export function canEditOwn(
   role: string,
   component: string,
   userId: string,
-  resourceUserId?: string
+  resourceUserId?: string,
 ): boolean {
   if (canUpdate(role, component)) {
     return true; // If they can update all, they can update own
@@ -933,4 +937,3 @@ export function canManageRole(role1: string, role2: string): boolean {
   }
   return getRoleLevel(role1) > getRoleLevel(role2);
 }
-

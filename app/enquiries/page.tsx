@@ -258,21 +258,27 @@ export default function Enquiries() {
         const rows = Array.isArray(prev) ? prev : [];
 
         // If a status filter is active and the new status no longer matches, remove the row.
-        if (filters.status && String(filters.status).toUpperCase() !== String(status).toUpperCase()) {
+        if (
+          filters.status &&
+          String(filters.status).toUpperCase() !== String(status).toUpperCase()
+        ) {
           return rows.filter((r) => r?.id !== id);
         }
 
         return rows.map((r) => {
           if (r?.id !== id) return r;
-          if (updated && typeof updated === 'object') {
+          if (updated && typeof updated === "object") {
             return { ...r, ...updated };
           }
           return { ...r, status };
         });
       });
 
-      if (filters.status && String(filters.status).toUpperCase() !== String(status).toUpperCase()) {
-        setTotal((t) => (typeof t === 'number' && t > 0 ? t - 1 : t));
+      if (
+        filters.status &&
+        String(filters.status).toUpperCase() !== String(status).toUpperCase()
+      ) {
+        setTotal((t) => (typeof t === "number" && t > 0 ? t - 1 : t));
       }
       showSuccess("Status updated");
     } catch (error: any) {
@@ -538,7 +544,9 @@ export default function Enquiries() {
                               // Sales cannot change inquiry status (backend-enforced)
                             }}
                             placeholder={String(inquiry.status || "Status")}
-                            options={statusOptions.filter((o) => o.value !== "")}
+                            options={statusOptions.filter(
+                              (o) => o.value !== "",
+                            )}
                             disabled
                           />
                         ) : canUpdateInquiry && !salesReadOnly ? (
@@ -546,19 +554,19 @@ export default function Enquiries() {
                             value={String(inquiry.status || "")}
                             onChange={(v) => handleUpdateStatus(inquiry.id, v)}
                             placeholder={String(inquiry.status || "Status")}
-                            options={statusOptions.filter((o) => o.value !== "")}
+                            options={statusOptions.filter(
+                              (o) => o.value !== "",
+                            )}
                           />
                         ) : (
                           <span>{inquiry.status}</span>
                         )}
                       </td>
-
                     </tr>
                   );
                 })}
               </tbody>
             </table>
-
           ) : (
             <div
               style={{
