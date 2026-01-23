@@ -52,7 +52,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Auth API
@@ -114,7 +114,7 @@ export const hoardingsAPI = {
 
   addImages: async (
     id: string,
-    data: { type: string; filenames: string[] }
+    data: { type: string; filenames: string[] },
   ) => {
     const response = await api.post(`/hoardings/${id}/images`, data);
     return response.data;
@@ -132,7 +132,7 @@ export const hoardingsAPI = {
 
   finalizeStatus: async (
     id: string,
-    status: "live" | "booked" | "LIVE" | "BOOKED"
+    status: "live" | "booked" | "LIVE" | "BOOKED",
   ) => {
     const response = await api.post(`/hoardings/${id}/finalize-status`, {
       status,
@@ -160,7 +160,7 @@ export const rentAPI = {
 
   recalculateRent: async (hoardingId: string) => {
     const response = await api.post(
-      `/hoardings/${hoardingId}/rent/recalculate`
+      `/hoardings/${hoardingId}/rent/recalculate`,
     );
     return response.data;
   },
@@ -355,36 +355,59 @@ export const designAssignmentsAPI = {
 
 // Enquiries API
 export const enquiriesAPI = {
-  getAll: async (params?: { assignedTo?: string; status?: string }) => {
-    const response = await api.get("/enquiries", { params });
+  getAll: async (params?: {
+    page?: number;
+    limit?: number;
+    q?: string;
+    city?: string;
+    area?: string;
+    location?: string;
+    status?: "OPEN" | "LOCKED" | "CLOSED" | string;
+    createdByRole?: "owner" | "sales" | string;
+  }) => {
+    // Backend supports both /enquiries and /inquiries; prefer /inquiries.
+    const response = await api.get("/inquiries", { params });
     return response.data;
   },
 
   getById: async (id: string) => {
-    const response = await api.get(`/enquiries/${id}`);
+    const response = await api.get(`/inquiries/${id}`);
     return response.data;
   },
 
-  create: async (data: any) => {
-    const response = await api.post("/enquiries", data);
+  create: async (data: {
+    clientName: string;
+    phone: string;
+    email?: string;
+    city: string;
+    area: string;
+    location: string;
+    purpose?: string;
+  }) => {
+    const response = await api.post("/inquiries", data);
     return response.data;
   },
 
-  update: async (id: string, data: any) => {
-    const response = await api.put(`/enquiries/${id}`, data);
-    return response.data;
-  },
-
-  delete: async (id: string) => {
-    const response = await api.delete(`/enquiries/${id}`);
-    return response.data;
-  },
-
-  assign: async (id: string, userId: string) => {
-    const response = await api.post(`/enquiries/${id}/assign`, { userId });
+  update: async (
+    id: string,
+    data: Partial<{
+      clientName: string;
+      phone: string;
+      email: string | null;
+      city: string;
+      area: string;
+      location: string;
+      purpose: string | null;
+      status: "OPEN" | "LOCKED" | "CLOSED";
+    }>,
+  ) => {
+    const response = await api.put(`/inquiries/${id}`, data);
     return response.data;
   },
 };
+
+// Preferred name (Phase 1 Inquiry System)
+export const inquiriesAPI = enquiriesAPI;
 
 // Bookings API
 export const bookingsAPI = {
@@ -440,7 +463,7 @@ export const bookingTokensAPI = {
   confirm: async (id: string, data?: { designerId?: string }) => {
     const response = await api.post(
       `/booking-tokens/${id}/confirm`,
-      data || {}
+      data || {},
     );
     return response.data;
   },
@@ -473,7 +496,7 @@ export const bookingTokensAPI = {
   assignFitter: async (id: string, data?: { fitterId?: string }) => {
     const response = await api.put(
       `/booking-tokens/${id}/assign-fitter`,
-      data || {}
+      data || {},
     );
     return response.data;
   },
@@ -492,7 +515,7 @@ export const bookingTokensAPI = {
       form,
       {
         headers: { "Content-Type": "multipart/form-data" },
-      }
+      },
     );
     return response.data;
   },

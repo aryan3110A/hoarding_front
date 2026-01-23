@@ -730,20 +730,28 @@ export function getRoleFromUser(user: any): string {
     return "";
   }
 
-  // Try different possible role properties
-  const role = user.role || user.userRole || user.roleName;
+  // Try different possible role properties / shapes
+  const role =
+    user.role ||
+    user.userRole ||
+    user.roleName ||
+    user?.user?.role ||
+    user?.user?.roleName ||
+    user?.user?.userRole;
   console.log("🔍 [RBAC] Found role property:", role, "Type:", typeof role);
 
   // Handle if role is an object with a name property
-  if (role && typeof role === "object" && role.name) {
-    console.log("🔍 [RBAC] Role is object, extracting name:", role.name);
-    return role.name;
+  if (role && typeof role === "object" && (role as any).name) {
+    const name = String((role as any).name || "").trim().toLowerCase();
+    console.log("🔍 [RBAC] Role is object, extracting name:", name);
+    return name;
   }
 
   // Handle if role is a string
   if (role && typeof role === "string") {
-    console.log("🔍 [RBAC] Role is string:", role);
-    return role;
+    const name = String(role || "").trim().toLowerCase();
+    console.log("🔍 [RBAC] Role is string:", name);
+    return name;
   }
 
   console.warn(
@@ -925,3 +933,4 @@ export function canManageRole(role1: string, role2: string): boolean {
   }
   return getRoleLevel(role1) > getRoleLevel(role2);
 }
+
