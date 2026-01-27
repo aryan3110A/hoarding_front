@@ -2,6 +2,6 @@
 
 import ProposalBuilder from "@/components/ProposalBuilder";
 
-export default function Page() {
+export default function CreateProposalPage() {
   return <ProposalBuilder />;
 }

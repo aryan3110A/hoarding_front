@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { proposalsAPI } from "@/lib/api";
 
 export default function ProposalsListPage() {
   const [proposals, setProposals] = useState<any[]>([]);
@@ -10,14 +11,8 @@ export default function ProposalsListPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-        const token =
-          typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        const headers: any = {};
-        if (token) headers.Authorization = `Bearer ${token}`;
-        const resp = await fetch(`${API}/api/proposals`, { headers });
-        const data = await resp.json();
-        if (resp.ok) setProposals(data.data || []);
+        const data = await proposalsAPI.list();
+        setProposals(data.data || []);
       } catch (e) {}
       setLoading(false);
     };
@@ -27,16 +22,13 @@ export default function ProposalsListPage() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h1>Proposals</h1>
-        <Link href="/proposals/create" className="btn btn-primary">
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-semibold">Proposals</h1>
+        <Link
+          href="/proposals/create"
+          className="px-4 py-2 rounded bg-blue-600 text-white"
+        >
           Create Proposal
         </Link>
       </div>
@@ -44,12 +36,14 @@ export default function ProposalsListPage() {
       {proposals.length === 0 ? (
         <div>No proposals</div>
       ) : (
-        <div>
-          <table className="table">
+        <div className="bg-white border rounded overflow-auto">
+          <table className="w-full text-sm">
             <thead>
               <tr>
                 <th>Client</th>
                 <th>Hoardings</th>
+                <th>Status</th>
+                <th>Mode</th>
                 <th>Created</th>
                 <th>Actions</th>
               </tr>
@@ -61,63 +55,40 @@ export default function ProposalsListPage() {
                     {p.client?.name} ({p.client?.phone})
                   </td>
                   <td>{(p.hoardings || []).length}</td>
+                  <td>{p.status || "—"}</td>
+                  <td>{p.mode || "—"}</td>
                   <td>{new Date(p.createdAt).toLocaleString()}</td>
                   <td>
                     <Link
                       href={`/proposals/${p.id}`}
-                      className="btn btn-secondary"
+                      className="px-3 py-1.5 rounded border bg-gray-50 hover:bg-gray-100"
                     >
                       Open
                     </Link>
-                    <a
-                      href="#"
-                      onClick={async (e) => {
-                        e.preventDefault();
+                    <button
+                      onClick={async () => {
                         try {
-                          const API =
-                            process.env.NEXT_PUBLIC_API_URL ||
-                            "http://localhost:3001";
-                          const token =
-                            typeof window !== "undefined"
-                              ? localStorage.getItem("token")
-                              : null;
-                          const headers: any = {
-                            "Content-Type": "application/json",
-                          };
-                          if (token) headers.Authorization = `Bearer ${token}`;
-
-                          const resp = await fetch(`${API}/api/proposals/pdf`, {
-                            method: "POST",
-                            headers,
-                            body: JSON.stringify({
-                              hoardings: (p.hoardings || []).map(
-                                (h: any) => h.hoardingId
-                              ),
-                              client: { name: p.client?.name },
-                            }),
+                          const resp = await proposalsAPI.downloadPdf(
+                            String(p.id),
+                          );
+                          const blob = new Blob([resp.data], {
+                            type: "application/pdf",
                           });
-
-                          if (resp.ok) {
-                            const blob = await resp.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement("a");
-                            a.href = url;
-                            a.download = "proposal.pdf";
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                          } else {
-                            alert("Failed to generate PDF");
-                          }
-                        } catch (err) {
-                          alert("Failed to generate PDF");
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `proposal-${p.id}.pdf`;
+                          document.body.appendChild(a);
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                        } catch {
+                          alert("Failed to download PDF");
                         }
                       }}
-                      className="btn btn-primary"
-                      style={{ marginLeft: 8 }}
+                      className="px-3 py-1.5 rounded bg-blue-600 text-white ml-2"
                     >
-                      Generate PDF
-                    </a>
+                      PDF
+                    </button>
                   </td>
                 </tr>
               ))}

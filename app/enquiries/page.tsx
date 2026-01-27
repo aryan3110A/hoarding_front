@@ -517,8 +517,13 @@ export default function Enquiries() {
                   const createdByRole = String(
                     inquiry?.createdBy?.role?.name || "",
                   ).toLowerCase();
-                  const salesReadOnly =
-                    isSalesRole && createdByRole === "owner";
+                  const isMine =
+                    String(inquiry?.createdById || "") ===
+                    String((user as any)?.id || "");
+                  const salesCanEdit =
+                    isSalesRole &&
+                    canUpdateInquiry &&
+                    (isMine || createdByRole === "owner");
                   return (
                     <tr key={inquiry.id}>
                       <td>{inquiry.clientName}</td>
@@ -538,18 +543,29 @@ export default function Enquiries() {
                       </td>
                       <td>
                         {isSalesRole ? (
-                          <StatusDropdown
-                            value={String(inquiry.status || "")}
-                            onChange={() => {
-                              // Sales cannot change inquiry status (backend-enforced)
-                            }}
-                            placeholder={String(inquiry.status || "Status")}
-                            options={statusOptions.filter(
-                              (o) => o.value !== "",
-                            )}
-                            disabled
-                          />
-                        ) : canUpdateInquiry && !salesReadOnly ? (
+                          salesCanEdit ? (
+                            <StatusDropdown
+                              value={String(inquiry.status || "")}
+                              onChange={(v) =>
+                                handleUpdateStatus(inquiry.id, v)
+                              }
+                              placeholder={String(inquiry.status || "Status")}
+                              options={statusOptions.filter(
+                                (o) => o.value !== "",
+                              )}
+                            />
+                          ) : (
+                            <StatusDropdown
+                              value={String(inquiry.status || "")}
+                              onChange={() => {}}
+                              placeholder={String(inquiry.status || "Status")}
+                              options={statusOptions.filter(
+                                (o) => o.value !== "",
+                              )}
+                              disabled
+                            />
+                          )
+                        ) : canUpdateInquiry ? (
                           <StatusDropdown
                             value={String(inquiry.status || "")}
                             onChange={(v) => handleUpdateStatus(inquiry.id, v)}

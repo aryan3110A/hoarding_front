@@ -85,6 +85,10 @@ export const hoardingsAPI = {
     limit?: number;
     city?: string;
     area?: string;
+    location?: string;
+    type?: string;
+    size?: string;
+    availability?: string;
     status?: string;
     ownership?: string;
   }) => {
@@ -209,6 +213,46 @@ export const remindersAPI = {
   sendReminders: async (days: number = 7) => {
     const response = await api.post("/reminders/send", { days });
     return response.data;
+  },
+};
+
+// Proposals API (Phase 2)
+export const proposalsAPI = {
+  list: async () => {
+    const response = await api.get("/proposals");
+    return response.data;
+  },
+
+  getById: async (id: string) => {
+    const response = await api.get(`/proposals/${id}`);
+    return response.data;
+  },
+
+  createDraft: async (data: any) => {
+    const response = await api.post("/proposals", data);
+    return response.data;
+  },
+
+  updateDraft: async (id: string, data: any) => {
+    const response = await api.patch(`/proposals/${id}`, data);
+    return response.data;
+  },
+
+  send: async (id: string) => {
+    const response = await api.post(`/proposals/${id}/send`);
+    return response.data;
+  },
+
+  finalize: async (id: string) => {
+    const response = await api.post(`/proposals/${id}/finalize`);
+    return response.data;
+  },
+
+  downloadPdf: async (id: string) => {
+    const response = await api.get(`/proposals/${id}/pdf`, {
+      responseType: "blob",
+    });
+    return response;
   },
 };
 
