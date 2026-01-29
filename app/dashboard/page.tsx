@@ -11,6 +11,7 @@ import {
   bookingsAPI,
   enquiriesAPI,
   bookingTokensAPI,
+  proposalsAPI,
 } from "@/lib/api";
 import { canViewRent, canAssignTasks } from "@/lib/rbac";
 import { showError, showSuccess } from "@/lib/toast";
@@ -26,6 +27,7 @@ function DashboardContent() {
   const [salesStats, setSalesStats] = useState<any>(null);
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
   const [recentEnquiries, setRecentEnquiries] = useState<any[]>([]);
+  const [myProposals, setMyProposals] = useState<any[]>([]);
 
   // Designer/Fitter-specific data
   const [tasks, setTasks] = useState<any[]>([]);
@@ -59,7 +61,7 @@ function DashboardContent() {
           } else {
             console.warn(
               "Dashboard API returned unexpected response:",
-              response
+              response,
             );
             // If response is not successful, set empty stats
             setStats({
@@ -82,11 +84,12 @@ function DashboardContent() {
       // Sales: Fetch hoardings, bookings, enquiries stats
       else if (userRole === "sales") {
         try {
-          const [hoardingsRes, bookingsRes, enquiriesRes] =
+          const [hoardingsRes, bookingsRes, enquiriesRes, proposalsRes] =
             await Promise.allSettled([
               hoardingsAPI.getAll({ page: 1, limit: 1000 }),
               bookingsAPI.getAll().catch(() => ({ data: [] })),
               enquiriesAPI.getAll().catch(() => ({ data: [] })),
+              proposalsAPI.list().catch(() => ({ success: true, data: [] })),
             ]);
 
           const hoardingsData =
@@ -102,21 +105,31 @@ function DashboardContent() {
               ? enquiriesRes.value
               : { data: [] };
 
+          const proposalsData =
+            proposalsRes.status === "fulfilled"
+              ? proposalsRes.value
+              : { data: [] };
+
           const totalHoardings = hoardingsData.data?.total || 0;
           const availableHoardings =
             hoardingsData.data?.hoardings?.filter(
-              (h: any) => h.status === "available"
+              (h: any) => h.status === "available",
             ).length || 0;
           const bookings = bookingsData.data?.data || bookingsData.data || [];
           const enquiries =
             enquiriesData.data?.data || enquiriesData.data || [];
+
+          const proposals = proposalsData.data || [];
+          setMyProposals(
+            Array.isArray(proposals) ? proposals.slice(0, 10) : [],
+          );
 
           // Get recent bookings (last 5)
           const recent = bookings
             .sort(
               (a: any, b: any) =>
                 new Date(b.createdAt || b.startDate || 0).getTime() -
-                new Date(a.createdAt || a.startDate || 0).getTime()
+                new Date(a.createdAt || a.startDate || 0).getTime(),
             )
             .slice(0, 5);
 
@@ -125,7 +138,7 @@ function DashboardContent() {
             .sort(
               (a: any, b: any) =>
                 new Date(b.createdAt || b.created_at || 0).getTime() -
-                new Date(a.createdAt || a.created_at || 0).getTime()
+                new Date(a.createdAt || a.created_at || 0).getTime(),
             )
             .slice(0, 5);
 
@@ -135,7 +148,7 @@ function DashboardContent() {
             totalBookings: bookings.length,
             totalEnquiries: enquiries.length,
             pendingEnquiries: enquiries.filter(
-              (e: any) => e.status === "pending" || e.status === "new"
+              (e: any) => e.status === "pending" || e.status === "new",
             ).length,
           });
           setRecentBookings(recent);
@@ -152,6 +165,7 @@ function DashboardContent() {
           });
           setRecentBookings([]);
           setRecentEnquiries([]);
+          setMyProposals([]);
         }
       }
       // Designer: Fetch design tasks
@@ -164,14 +178,14 @@ function DashboardContent() {
               : response.data || [];
             const designTasks = (rows || []).map((t: any) => {
               const statusRaw = String(
-                t?.designStatus || "PENDING"
+                t?.designStatus || "PENDING",
               ).toLowerCase();
               const status =
                 statusRaw === "in_progress"
                   ? "in_progress"
                   : statusRaw === "completed"
-                  ? "completed"
-                  : "pending";
+                    ? "completed"
+                    : "pending";
               return {
                 id: String(t.id),
                 tokenId: String(t.id),
@@ -201,14 +215,14 @@ function DashboardContent() {
               : response.data || [];
             const installationTasks = (rows || []).map((t: any) => {
               const statusRaw = String(
-                t?.fitterStatus || "PENDING"
+                t?.fitterStatus || "PENDING",
               ).toLowerCase();
               const status =
                 statusRaw === "in_progress"
                   ? "in_progress"
                   : statusRaw === "completed"
-                  ? "completed"
-                  : "pending";
+                    ? "completed"
+                    : "pending";
               const location = `${t?.hoarding?.city || ""}${
                 t?.hoarding?.area ? ", " + t.hoarding.area : ""
               }`.trim();
@@ -236,8 +250,8 @@ function DashboardContent() {
                   t?.status === "completed"
                     ? ("fitted" as const)
                     : t?.status === "in_progress"
-                    ? ("in_progress" as const)
-                    : ("pending" as const);
+                      ? ("in_progress" as const)
+                      : ("pending" as const);
                 next[tokenId] = normalized;
               });
               return next;
@@ -287,19 +301,19 @@ function DashboardContent() {
         alert(
           `Reminders sent successfully! ${
             response.data?.sent || 0
-          } emails sent.`
+          } emails sent.`,
         );
         fetchDashboardData();
         fetchUnreadCount();
       } else {
         alert(
-          "Failed to send reminders: " + (response.message || "Unknown error")
+          "Failed to send reminders: " + (response.message || "Unknown error"),
         );
       }
     } catch (error: any) {
       alert(
         "Error sending reminders: " +
-          (error.response?.data?.message || "Unknown error")
+          (error.response?.data?.message || "Unknown error"),
       );
     } finally {
       setSendingReminders(false);
@@ -362,14 +376,14 @@ function DashboardContent() {
           statusRaw === "in_progress"
             ? "in_progress"
             : statusRaw === "completed"
-            ? "completed"
-            : "pending";
+              ? "completed"
+              : "pending";
         setTasks((prev) =>
           (prev || []).map((t: any) =>
             String(t?.tokenId || t?.id) === String(payload.tokenId)
               ? { ...t, status }
-              : t
-          )
+              : t,
+          ),
         );
 
         // If we haven't started editing this row, keep draft aligned.
@@ -381,8 +395,8 @@ function DashboardContent() {
             status === "completed"
               ? ("fitted" as const)
               : status === "in_progress"
-              ? ("in_progress" as const)
-              : ("pending" as const);
+                ? ("in_progress" as const)
+                : ("pending" as const);
           return { ...(prev || {}), [tokenId]: normalized };
         });
       } catch (_) {}
@@ -407,7 +421,7 @@ function DashboardContent() {
 
   const handleSaveFitterRow = async (
     tokenId: string,
-    currentStatus?: string
+    currentStatus?: string,
   ) => {
     if (!tokenId) return;
     const draft = fitterStatusDraftByTokenId[String(tokenId)] || "pending";
@@ -439,7 +453,7 @@ function DashboardContent() {
         }
         const resp = await bookingTokensAPI.completeInstallation(
           String(tokenId),
-          files
+          files,
         );
         if (resp?.success) {
           showSuccess("Installation marked as fitted");
@@ -458,7 +472,7 @@ function DashboardContent() {
 
       const resp = await bookingTokensAPI.updateFitterStatus(
         String(tokenId),
-        draft
+        draft,
       );
       if (resp?.success) {
         showSuccess("Installation status updated");
@@ -555,7 +569,7 @@ function DashboardContent() {
                     <h3>
                       ₹
                       {Number(
-                        stats?.totalMonthlyRentLoad || 0
+                        stats?.totalMonthlyRentLoad || 0,
                       ).toLocaleString()}
                     </h3>
                     <p>Total Monthly Rent Load</p>
@@ -666,7 +680,7 @@ function DashboardContent() {
                       const daysUntilDue = dueDate
                         ? Math.ceil(
                             (dueDate.getTime() - today.getTime()) /
-                              (1000 * 60 * 60 * 24)
+                              (1000 * 60 * 60 * 24),
                           )
                         : null;
                       const isOverdue =
@@ -683,8 +697,8 @@ function DashboardContent() {
                             isOverdue
                               ? { backgroundColor: "#ffebee" } // Red tint for overdue
                               : isUrgent
-                              ? { backgroundColor: "#fff3cd" } // Yellow tint for urgent
-                              : {}
+                                ? { backgroundColor: "#fff3cd" } // Yellow tint for urgent
+                                : {}
                           }
                         >
                           <td>
@@ -710,15 +724,15 @@ function DashboardContent() {
                                   isOverdue
                                     ? "badge-danger"
                                     : isUrgent
-                                    ? "badge-warning"
-                                    : "badge-success"
+                                      ? "badge-warning"
+                                      : "badge-success"
                                 }`}
                               >
                                 {daysUntilDue === 0
                                   ? "Due Today"
                                   : daysUntilDue < 0
-                                  ? `Overdue by ${Math.abs(daysUntilDue)} days`
-                                  : `${daysUntilDue} days`}
+                                    ? `Overdue by ${Math.abs(daysUntilDue)} days`
+                                    : `${daysUntilDue} days`}
                               </span>
                             ) : (
                               "N/A"
@@ -730,7 +744,7 @@ function DashboardContent() {
                               style={{ padding: "5px 10px", fontSize: "12px" }}
                               onClick={() =>
                                 router.push(
-                                  `/hoardings/${rent.hoardingId}/rent`
+                                  `/hoardings/${rent.hoardingId}/rent`,
                                 )
                               }
                             >
@@ -932,8 +946,8 @@ function DashboardContent() {
                               enquiry.status === "converted"
                                 ? "badge-success"
                                 : enquiry.status === "pending"
-                                ? "badge-warning"
-                                : "badge-info"
+                                  ? "badge-warning"
+                                  : "badge-info"
                             }`}
                           >
                             {enquiry.status || "New"}
@@ -966,6 +980,136 @@ function DashboardContent() {
                 </div>
               </div>
             )}
+
+            {/* My Proposals */}
+            <div className="card" style={{ marginTop: "24px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "16px",
+                }}
+              >
+                <h3>My Proposals</h3>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => router.push("/proposals")}
+                  style={{ padding: "8px 16px", fontSize: "14px" }}
+                >
+                  View All
+                </button>
+              </div>
+
+              {myProposals.length === 0 ? (
+                <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
+                  No proposals yet.
+                </p>
+              ) : (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Proposal</th>
+                      <th>Client</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {myProposals.map((p: any) => (
+                      <tr key={p.id}>
+                        <td
+                          style={{ fontFamily: "monospace", fontSize: "12px" }}
+                        >
+                          {String(p.id || "").slice(0, 8)}
+                        </td>
+                        <td>{p?.client?.name || "N/A"}</td>
+                        <td>{p?.status || "—"}</td>
+                        <td>
+                          {p?.createdAt
+                            ? new Date(p.createdAt).toLocaleDateString()
+                            : "—"}
+                        </td>
+                        <td>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "8px",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <button
+                              className="btn btn-secondary"
+                              onClick={() => router.push(`/proposals/${p.id}`)}
+                              style={{ padding: "6px 10px", fontSize: "12px" }}
+                            >
+                              View
+                            </button>
+
+                            {p.status === "DRAFT" && (
+                              <button
+                                className="btn btn-secondary"
+                                onClick={() =>
+                                  router.push(`/proposals/${p.id}/edit`)
+                                }
+                                style={{
+                                  padding: "6px 10px",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                Open Builder
+                              </button>
+                            )}
+
+                            {p.status === "DRAFT" && (
+                              <button
+                                className="btn btn-primary"
+                                onClick={() =>
+                                  router.push(`/proposals/${p.id}/finalize`)
+                                }
+                                style={{
+                                  padding: "6px 10px",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                Finalize
+                              </button>
+                            )}
+
+                            <button
+                              className="btn btn-primary"
+                              onClick={async () => {
+                                try {
+                                  const resp = await proposalsAPI.downloadPdf(
+                                    String(p.id),
+                                  );
+                                  const blob = new Blob([resp.data], {
+                                    type: "application/pdf",
+                                  });
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement("a");
+                                  a.href = url;
+                                  a.download = `proposal-${p.id}.pdf`;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  window.URL.revokeObjectURL(url);
+                                } catch {
+                                  showError("Failed to download PDF");
+                                }
+                              }}
+                              style={{ padding: "6px 10px", fontSize: "12px" }}
+                            >
+                              PDF
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
 
             {/* Quick Actions for Sales */}
             <div className="card" style={{ marginTop: "24px" }}>
@@ -1073,8 +1217,8 @@ function DashboardContent() {
                               task.status === "completed"
                                 ? "badge-success"
                                 : task.status === "in_progress"
-                                ? "badge-warning"
-                                : "badge-info"
+                                  ? "badge-warning"
+                                  : "badge-info"
                             }`}
                           >
                             {task.status || "Pending"}
@@ -1278,7 +1422,7 @@ function DashboardContent() {
                             onClick={() =>
                               handleSaveFitterRow(
                                 String(task.tokenId),
-                                task.status
+                                task.status,
                               )
                             }
                           >

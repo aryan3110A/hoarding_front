@@ -243,8 +243,13 @@ export const proposalsAPI = {
     return response.data;
   },
 
-  finalize: async (id: string) => {
-    const response = await api.post(`/proposals/${id}/finalize`);
+  generatePdf: async (id: string) => {
+    const response = await api.post(`/proposals/${id}/generate-pdf`);
+    return response.data;
+  },
+
+  finalize: async (id: string, payload?: { hoardingIds?: string[] }) => {
+    const response = await api.post(`/proposals/${id}/finalize`, payload || {});
     return response.data;
   },
 
@@ -328,6 +333,26 @@ export const contractsAPI = {
 export const clientsAPI = {
   getAll: async () => {
     const response = await api.get("/clients");
+    return response.data;
+  },
+
+  search: async (q: string, limit: number = 10) => {
+    const response = await api.get("/clients/search", { params: { q, limit } });
+    return response.data;
+  },
+
+  getById: async (id: string) => {
+    const response = await api.get(`/clients/${id}`);
+    return response.data;
+  },
+
+  create: async (data: {
+    name: string;
+    phone: string;
+    email?: string;
+    companyName?: string;
+  }) => {
+    const response = await api.post("/clients", data);
     return response.data;
   },
 };

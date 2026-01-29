@@ -245,6 +245,14 @@ export const rolePermissions: RolePermissions = {
     },
   },
   sales: {
+    proposals: {
+      component: "proposals",
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Sales proposal workflow",
+    },
     hoardings: {
       component: "hoardings",
       create: false,

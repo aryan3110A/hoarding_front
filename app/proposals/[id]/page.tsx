@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { proposalsAPI } from "@/lib/api";
 import { getRoleFromUser } from "@/lib/rbac";
 
 export default function ProposalDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id as string;
   const [proposal, setProposal] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -67,25 +68,14 @@ export default function ProposalDetailPage() {
     }
   };
 
-  const sendProposal = async () => {
+  const generatePdf = async () => {
     setActing(true);
     try {
-      const resp = await proposalsAPI.send(String(id));
+      const resp = await proposalsAPI.generatePdf(String(id));
       setProposal(resp.data);
+      await downloadPdf();
     } catch (e: any) {
-      alert(e?.response?.data?.message || "Failed to send");
-    } finally {
-      setActing(false);
-    }
-  };
-
-  const finalizeProposal = async () => {
-    setActing(true);
-    try {
-      const resp = await proposalsAPI.finalize(String(id));
-      setProposal(resp.data);
-    } catch (e: any) {
-      alert(e?.response?.data?.message || "Failed to finalize");
+      alert(e?.response?.data?.message || "Failed to generate PDF");
     } finally {
       setActing(false);
     }
@@ -123,24 +113,29 @@ export default function ProposalDetailPage() {
           >
             Download PDF
           </button>
-          {proposal.status === "DRAFT" ? (
-            <button
-              onClick={sendProposal}
-              disabled={acting}
-              className="px-3 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
-            >
-              {acting ? "Sending..." : "Send"}
-            </button>
-          ) : null}
-          {proposal.status === "SENT" ? (
-            <button
-              onClick={finalizeProposal}
-              disabled={acting}
-              className="px-3 py-2 rounded bg-green-600 text-white disabled:opacity-50"
-            >
-              {acting ? "Finalizing..." : "Finalize"}
-            </button>
-          ) : null}
+          {proposal.status === "DRAFT" && (
+            <>
+              <button
+                onClick={() => router.push(`/proposals/${id}/edit`)}
+                className="px-3 py-2 rounded border bg-white hover:bg-gray-50"
+              >
+                Open Builder
+              </button>
+              <button
+                onClick={generatePdf}
+                disabled={acting}
+                className="px-3 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+              >
+                {acting ? "Generating..." : "Generate PDF"}
+              </button>
+              <button
+                onClick={() => router.push(`/proposals/${id}/finalize`)}
+                className="px-3 py-2 rounded bg-green-600 text-white"
+              >
+                Finalize Hoardings
+              </button>
+            </>
+          )}
         </div>
       </div>
 
