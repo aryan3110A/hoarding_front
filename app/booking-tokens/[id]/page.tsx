@@ -34,7 +34,7 @@ export default function BookingTokenDetailPage() {
     "pending" | "in_progress" | "fitted"
   >("pending");
   const [installationProofFiles, setInstallationProofFiles] = useState<File[]>(
-    []
+    [],
   );
 
   useEffect(() => {
@@ -73,6 +73,21 @@ export default function BookingTokenDetailPage() {
   const isFitter = useMemo(() => roleLower === "fitter", [roleLower]);
 
   const canCancel = useMemo(() => {
+    return (
+      roleLower === "owner" || roleLower === "manager" || roleLower === "admin"
+    );
+  }, [roleLower]);
+
+  const canRelease = useMemo(() => {
+    return (
+      roleLower === "owner" ||
+      roleLower === "manager" ||
+      roleLower === "sales" ||
+      roleLower === "admin"
+    );
+  }, [roleLower]);
+
+  const canManageExtension = useMemo(() => {
     return (
       roleLower === "owner" || roleLower === "manager" || roleLower === "admin"
     );
@@ -125,7 +140,7 @@ export default function BookingTokenDetailPage() {
         if (String(payload.tokenId) !== String(tokenId)) return;
         if (!payload.designStatus) return;
         setToken((prev: any) =>
-          prev ? { ...prev, designStatus: payload.designStatus } : prev
+          prev ? { ...prev, designStatus: payload.designStatus } : prev,
         );
       } catch (_) {}
     };
@@ -168,7 +183,7 @@ export default function BookingTokenDetailPage() {
                 fitterStatus: payload.fitterStatus ?? prev.fitterStatus,
                 fitterId: payload.fitterId ?? prev.fitterId,
               }
-            : prev
+            : prev,
         );
       } catch (_) {}
     };
@@ -185,22 +200,62 @@ export default function BookingTokenDetailPage() {
   const statusLabel = (raw?: string) => {
     const s = String(raw || "").toLowerCase();
     if (s === "active") return "Active";
+    if (s === "pending") return "Queued";
+    if (s === "blocked") return "Blocked";
+    if (s === "extension_requested") return "Extension Requested";
     if (s === "confirmed") return "Confirmed";
+    if (s === "approved") return "Approved";
+    if (s === "released") return "Released";
     if (s === "expired") return "Expired";
     if (s === "cancelled") return "Cancelled";
     return raw || "—";
   };
 
   const tokenStatusLower = String(token?.status || "").toLowerCase();
-  const isActiveToken = tokenStatusLower === "active";
+  const tokenStatusUpper = String(token?.status || "").toUpperCase();
+  const isHeadToken =
+    typeof token?.queuePosition === "number" ? token.queuePosition === 1 : true;
+  const isBlockingToken = ["BLOCKED", "EXTENSION_REQUESTED", "ACTIVE"].includes(
+    tokenStatusUpper,
+  );
+  const isActiveToken = isHeadToken && isBlockingToken;
+
+  const isConfirmedLike =
+    tokenStatusUpper === "CONFIRMED" || tokenStatusUpper === "APPROVED";
+  const isReleasableToken = [
+    "PENDING",
+    "BLOCKED",
+    "EXTENSION_REQUESTED",
+    "ACTIVE",
+  ].includes(tokenStatusUpper);
+
+  const tokenSalesUserId = String(
+    token?.salesUserId || token?.salesUser?.id || token?.salesUserId || "",
+  );
+  const isSalesOwnerOfToken =
+    roleLower === "sales" &&
+    tokenSalesUserId &&
+    String(tokenSalesUserId) === String(user?.id || "");
   const hoardingStatusLower = String(token?.hoarding?.status || "")
     .toLowerCase()
     .trim();
   const actionsDisabledByHoardingStatus =
     hoardingStatusLower === "under_process";
 
+  const canRequestExtension =
+    isSalesOwnerOfToken &&
+    isHeadToken &&
+    ["BLOCKED", "ACTIVE"].includes(tokenStatusUpper) &&
+    !actionsDisabledByHoardingStatus;
+  const canApproveOrRejectExtension =
+    canManageExtension &&
+    tokenStatusUpper === "EXTENSION_REQUESTED" &&
+    !actionsDisabledByHoardingStatus;
+  const canReleaseThisToken =
+    canRelease && isReleasableToken && !actionsDisabledByHoardingStatus;
+
   const tokenDesignerId = String(
-    token?.designerId || token?.designer?.id || ""
+    token?.designerId || token?.designer?.id || "",
   );
   const tokenFitterId = String(token?.fitterId || token?.fitter?.id || "");
   const canUpdateDesignStatus =
@@ -240,10 +295,8 @@ export default function BookingTokenDetailPage() {
   }, [token?.designStatus]);
 
   const isDesignCompleted = useMemo(() => {
-    return (
-      token?.status === "CONFIRMED" && normalizedDesignStatus === "completed"
-    );
-  }, [token?.status, normalizedDesignStatus]);
+    return isConfirmedLike && normalizedDesignStatus === "completed";
+  }, [isConfirmedLike, normalizedDesignStatus]);
 
   const fitterStatusLabel = (raw?: string) => {
     const normalized = String(raw || "")
@@ -278,8 +331,8 @@ export default function BookingTokenDetailPage() {
       normalizedFitterStatus === "in_progress"
         ? "in_progress"
         : normalizedFitterStatus === "fitted"
-        ? "fitted"
-        : "pending";
+          ? "fitted"
+          : "pending";
     setInstallationStatusDraft(next);
     if (next !== "fitted") {
       setInstallationProofFiles([]);
@@ -303,7 +356,7 @@ export default function BookingTokenDetailPage() {
         const list = (rows || []).filter((u: any) =>
           String(u?.role?.name || u?.role || "")
             .toLowerCase()
-            .includes("designer")
+            .includes("designer"),
         );
         setDesigners(list);
         if (list.length === 1) {
@@ -388,7 +441,7 @@ export default function BookingTokenDetailPage() {
       if (lower.includes("already") && lower.includes("under process")) {
         if (roleLower === "manager") {
           showErrorNoTitle(
-            "By the time you confirm the token, it was already confirmed by other"
+            "By the time you confirm the token, it was already confirmed by other",
           );
           await fetchToken();
           return;
@@ -396,13 +449,13 @@ export default function BookingTokenDetailPage() {
         if (roleLower === "owner") {
           if (lower.includes("manager")) {
             showErrorNoTitle(
-              "By the time you confirm the token, it was already confirmed by the manager"
+              "By the time you confirm the token, it was already confirmed by the manager",
             );
             await fetchToken();
             return;
           }
           showErrorNoTitle(
-            "By the time you confirm the token, it was already confirmed by other"
+            "By the time you confirm the token, it was already confirmed by other",
           );
           await fetchToken();
           return;
@@ -415,7 +468,7 @@ export default function BookingTokenDetailPage() {
   };
 
   const handleDesignStatusUpdate = async (
-    next: "pending" | "in_progress" | "completed"
+    next: "pending" | "in_progress" | "completed",
   ) => {
     if (!tokenId) return;
     try {
@@ -456,7 +509,7 @@ export default function BookingTokenDetailPage() {
       }
     } catch (e: any) {
       const msg = String(
-        e?.response?.data?.message || "Failed to assign fitter"
+        e?.response?.data?.message || "Failed to assign fitter",
       );
       const status = Number(e?.response?.status || 0);
       const isAlreadyAssigned =
@@ -487,7 +540,7 @@ export default function BookingTokenDetailPage() {
       }
     } catch (e: any) {
       showError(
-        e?.response?.data?.message || "Failed to update installation status"
+        e?.response?.data?.message || "Failed to update installation status",
       );
     } finally {
       setSubmitting(false);
@@ -535,7 +588,7 @@ export default function BookingTokenDetailPage() {
         setSubmitting(true);
         const resp = await bookingTokensAPI.completeInstallation(
           tokenId,
-          installationProofFiles
+          installationProofFiles,
         );
         if (resp?.success) {
           showSuccess("Installation marked as fitted");
@@ -545,7 +598,7 @@ export default function BookingTokenDetailPage() {
         }
       } catch (e: any) {
         showError(
-          e?.response?.data?.message || "Failed to complete installation"
+          e?.response?.data?.message || "Failed to complete installation",
         );
       } finally {
         setSubmitting(false);
@@ -565,7 +618,7 @@ export default function BookingTokenDetailPage() {
       return;
     }
     const currentHoardingStatus = String(
-      token?.hoarding?.status || ""
+      token?.hoarding?.status || "",
     ).toLowerCase();
     if (currentHoardingStatus === "booked") {
       showError("Already booked");
@@ -608,6 +661,86 @@ export default function BookingTokenDetailPage() {
       }
     } catch (e: any) {
       showError(e?.response?.data?.message || "Failed to cancel");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRelease = async () => {
+    if (!tokenId) return;
+    if (!confirm("Release this token?")) return;
+
+    try {
+      setSubmitting(true);
+      const resp = await bookingTokensAPI.release(tokenId);
+      if (resp?.success) {
+        showSuccess("Token released");
+        await fetchToken();
+      } else {
+        showError(resp?.message || "Failed to release");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to release");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRequestExtension = async () => {
+    if (!tokenId) return;
+    if (!confirm("Request extension for this token?")) return;
+
+    try {
+      setSubmitting(true);
+      const resp = await bookingTokensAPI.requestExtension(tokenId);
+      if (resp?.success) {
+        showSuccess("Extension requested");
+        await fetchToken();
+      } else {
+        showError(resp?.message || "Failed to request extension");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to request extension");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleApproveExtension = async () => {
+    if (!tokenId) return;
+    if (!confirm("Approve extension request?")) return;
+
+    try {
+      setSubmitting(true);
+      const resp = await bookingTokensAPI.approveExtension(tokenId);
+      if (resp?.success) {
+        showSuccess("Extension approved");
+        await fetchToken();
+      } else {
+        showError(resp?.message || "Failed to approve extension");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to approve extension");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRejectExtension = async () => {
+    if (!tokenId) return;
+    if (!confirm("Reject extension request?")) return;
+
+    try {
+      setSubmitting(true);
+      const resp = await bookingTokensAPI.rejectExtension(tokenId);
+      if (resp?.success) {
+        showSuccess("Extension rejected");
+        await fetchToken();
+      } else {
+        showError(resp?.message || "Failed to reject extension");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to reject extension");
     } finally {
       setSubmitting(false);
     }
@@ -678,13 +811,20 @@ export default function BookingTokenDetailPage() {
                     {new Date(token.expiresAt).toLocaleString()}
                   </div>
                 )}
-                {token.status === "CONFIRMED" && (
+                {tokenStatusUpper === "EXTENSION_REQUESTED" &&
+                  token.extensionRequestedUntil && (
+                    <div>
+                      <strong>Requested Until:</strong>{" "}
+                      {new Date(token.extensionRequestedUntil).toLocaleString()}
+                    </div>
+                  )}
+                {isConfirmedLike && (
                   <div>
                     <strong>Design Status:</strong>{" "}
                     {designStatusLabel(normalizedDesignStatus)}
                   </div>
                 )}
-                {token.status === "CONFIRMED" && tokenFitterId && (
+                {isConfirmedLike && tokenFitterId && (
                   <div>
                     <strong>Installation Status:</strong>{" "}
                     {fitterStatusLabel(normalizedFitterStatus)}
@@ -765,7 +905,7 @@ export default function BookingTokenDetailPage() {
                 </div>
               </div>
 
-              {token.status === "CONFIRMED" && (
+              {isConfirmedLike && (
                 <div style={{ marginTop: 16 }}>
                   <h3 style={{ marginBottom: 8 }}>Design Progress</h3>
                   {canUpdateDesignStatus ? (
@@ -839,7 +979,7 @@ export default function BookingTokenDetailPage() {
                 </div>
               )}
 
-              {token.status === "CONFIRMED" && isDesignCompleted && (
+              {isConfirmedLike && isDesignCompleted && (
                 <div style={{ marginTop: 16 }}>
                   <h3 style={{ marginBottom: 8 }}>Fitter Assignment</h3>
                   {canConfirm ? (
@@ -902,7 +1042,7 @@ export default function BookingTokenDetailPage() {
                 </div>
               )}
 
-              {token.status === "CONFIRMED" && isDesignCompleted && (
+              {isConfirmedLike && isDesignCompleted && (
                 <div style={{ marginTop: 16 }}>
                   <h3 style={{ marginBottom: 8 }}>Installation Progress</h3>
                   {canUpdateFitterStatus ? (
@@ -935,8 +1075,8 @@ export default function BookingTokenDetailPage() {
                               String(e.target.value) === "fitted"
                                 ? "fitted"
                                 : String(e.target.value) === "in_progress"
-                                ? "in_progress"
-                                : "pending"
+                                  ? "in_progress"
+                                  : "pending",
                             )
                           }
                         >
@@ -976,7 +1116,7 @@ export default function BookingTokenDetailPage() {
                             disabled={submitting}
                             onChange={(e) =>
                               setInstallationProofFiles(
-                                Array.from(e.target.files || [])
+                                Array.from(e.target.files || []),
                               )
                             }
                           />
@@ -1003,7 +1143,7 @@ export default function BookingTokenDetailPage() {
                 </div>
               )}
 
-              {token.status === "CONFIRMED" && isDesignCompleted && (
+              {isConfirmedLike && isDesignCompleted && (
                 <div style={{ marginTop: 16 }}>
                   <h3 style={{ marginBottom: 8 }}>Finalize Hoarding Status</h3>
                   {canFinalize ? (
@@ -1014,7 +1154,7 @@ export default function BookingTokenDetailPage() {
                           submitting ||
                           normalizedFitterStatus !== "fitted" ||
                           String(
-                            token?.hoarding?.status || ""
+                            token?.hoarding?.status || "",
                           ).toLowerCase() !== "live"
                         }
                         onClick={handleMarkBooked}
@@ -1067,17 +1207,51 @@ export default function BookingTokenDetailPage() {
                   flexWrap: "wrap",
                 }}
               >
-                {canCancel &&
-                  isActiveToken &&
-                  !actionsDisabledByHoardingStatus && (
+                {canRequestExtension && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={handleRequestExtension}
+                    disabled={submitting}
+                  >
+                    Request Extension
+                  </button>
+                )}
+                {canApproveOrRejectExtension && (
+                  <>
                     <button
                       className="btn btn-secondary"
-                      onClick={handleCancel}
+                      onClick={handleRejectExtension}
                       disabled={submitting}
                     >
-                      Cancel Token
+                      Reject Extension
                     </button>
-                  )}
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleApproveExtension}
+                      disabled={submitting}
+                    >
+                      Approve Extension
+                    </button>
+                  </>
+                )}
+                {canReleaseThisToken && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={handleRelease}
+                    disabled={submitting}
+                  >
+                    Release Token
+                  </button>
+                )}
+                {canCancel && isConfirmedLike && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={handleCancel}
+                    disabled={submitting}
+                  >
+                    Cancel Token
+                  </button>
+                )}
                 {canConfirm &&
                   isActiveToken &&
                   !actionsDisabledByHoardingStatus && (

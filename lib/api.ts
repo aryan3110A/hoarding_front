@@ -540,6 +540,22 @@ export const bookingTokensAPI = {
     const response = await api.post(`/booking-tokens/${id}/cancel`);
     return response.data;
   },
+  release: async (id: string) => {
+    const response = await api.post(`/booking-tokens/${id}/release`);
+    return response.data;
+  },
+  requestExtension: async (id: string) => {
+    const response = await api.post(`/booking-tokens/${id}/request-extension`);
+    return response.data;
+  },
+  approveExtension: async (id: string) => {
+    const response = await api.post(`/booking-tokens/${id}/approve-extension`);
+    return response.data;
+  },
+  rejectExtension: async (id: string) => {
+    const response = await api.post(`/booking-tokens/${id}/reject-extension`);
+    return response.data;
+  },
   mine: async () => {
     const response = await api.get("/booking-tokens/mine");
     return response.data;

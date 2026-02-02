@@ -32,7 +32,7 @@ export default function Hoardings() {
     Map<string, { city: string; area: string; status: string }>
   >(new Map());
   const [expandedLandlords, setExpandedLandlords] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [tokenizingIds, setTokenizingIds] = useState<Set<string>>(new Set());
@@ -130,8 +130,8 @@ export default function Hoardings() {
                       ? payload.propertyRent
                       : h.propertyRent,
                 }
-              : h
-          )
+              : h,
+          ),
         );
       } catch (_) {}
     };
@@ -147,7 +147,7 @@ export default function Hoardings() {
 
   const fetchHoardings = async (
     pageNum: number = page,
-    reset: boolean = false
+    reset: boolean = false,
   ) => {
     try {
       if (reset) {
@@ -192,7 +192,7 @@ export default function Hoardings() {
   const deleteGroup = async (group: any) => {
     if (!canDeleteHoarding) return;
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this property and all its hoardings?"
+      "Are you sure you want to delete this property and all its hoardings?",
     );
     if (!confirmDelete) return;
 
@@ -200,7 +200,7 @@ export default function Hoardings() {
       setDeletingKey(group.uniqueKey);
       // Delete all hoardings in this grouped property
       const ids: string[] = (group.hoardings || []).map((h: any) =>
-        String(h.id)
+        String(h.id),
       );
       for (const id of ids) {
         try {
@@ -226,6 +226,19 @@ export default function Hoardings() {
     const id = String(hoardingId);
     if (!id) return;
     router.push(`/hoardings/${id}/token`);
+  };
+
+  const formatRemaining = (expiresAt: any) => {
+    if (!expiresAt) return null;
+    const exp = new Date(expiresAt);
+    if (isNaN(exp.getTime())) return null;
+    const ms = exp.getTime() - Date.now();
+    if (ms <= 0) return "Expired";
+    const totalMinutes = Math.ceil(ms / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours <= 0) return `${minutes}m`;
+    return `${hours}h ${minutes}m`;
   };
 
   return (
@@ -280,8 +293,8 @@ export default function Hoardings() {
                   {isSalesView
                     ? `Total: ${isOnRent ? totalDisplay : total} hoardings`
                     : (filters.status || "").toLowerCase() === "on_rent"
-                    ? `Total: ${totalDisplay} properties on rent`
-                    : `Total: ${total} hoardings`}
+                      ? `Total: ${totalDisplay} properties on rent`
+                      : `Total: ${total} hoardings`}
                 </p>
               </div>
               {canCreateHoarding && (
@@ -382,7 +395,7 @@ export default function Hoardings() {
                 const toFt = (w?: number, h?: number) => {
                   if (!w || !h) return "—";
                   return `${Math.round(w / 30.48)}ft x ${Math.round(
-                    h / 30.48
+                    h / 30.48,
                   )}ft`;
                 };
                 const statusFilter = (filters.status || "").toLowerCase();
@@ -394,7 +407,7 @@ export default function Hoardings() {
                     return list.filter((h: any) => h.hasActiveToken === true);
                   }
                   return list.filter(
-                    (h: any) => (h.status || "").toLowerCase() === statusFilter
+                    (h: any) => (h.status || "").toLowerCase() === statusFilter,
                   );
                 })();
                 if (!filtered.length) {
@@ -423,20 +436,35 @@ export default function Hoardings() {
                     <tbody>
                       {filtered.map((h: any) => {
                         const rawStatus = (h.status || "").toLowerCase();
+                        const tokens = Array.isArray(h.tokens) ? h.tokens : [];
+                        const activeToken =
+                          tokens.find((t: any) =>
+                            [
+                              "BLOCKED",
+                              "EXTENSION_REQUESTED",
+                              "ACTIVE",
+                            ].includes(String(t?.status || "").toUpperCase()),
+                          ) || null;
+                        const remaining = activeToken
+                          ? formatRemaining(activeToken.expiresAt)
+                          : null;
+                        const activeTokenStatus = String(
+                          activeToken?.status || "",
+                        ).toUpperCase();
                         const displayStatus =
                           h.hasActiveToken === true || rawStatus === "tokenized"
                             ? "tokenized"
                             : rawStatus === "under_process"
-                            ? "Under Process"
-                            : rawStatus === "available"
-                            ? "Hoarding Available"
-                            : rawStatus === "booked"
-                            ? "Booked"
-                            : rawStatus === "occupied"
-                            ? "Occupied"
-                            : rawStatus === "on_rent"
-                            ? "Hoarding On Rent"
-                            : h.status || "—";
+                              ? "Under Process"
+                              : rawStatus === "available"
+                                ? "Hoarding Available"
+                                : rawStatus === "booked"
+                                  ? "Booked"
+                                  : rawStatus === "occupied"
+                                    ? "Occupied"
+                                    : rawStatus === "on_rent"
+                                      ? "Hoarding On Rent"
+                                      : h.status || "—";
 
                         return (
                           <tr key={h.id}>
@@ -450,7 +478,25 @@ export default function Hoardings() {
                               {h.landmark || h.location || h.title || "—"}
                             </td>
                             <td>{toFt(h.widthCm, h.heightCm)}</td>
-                            <td>{displayStatus}</td>
+                            <td>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 4,
+                                }}
+                              >
+                                <div>{displayStatus}</div>
+                                {h.hasActiveToken === true && remaining ? (
+                                  <div style={{ fontSize: 12, opacity: 0.9 }}>
+                                    {activeTokenStatus === "EXTENSION_REQUESTED"
+                                      ? "Extension requested"
+                                      : "Block expires"}
+                                    : {remaining}
+                                  </div>
+                                ) : null}
+                              </div>
+                            </td>
                             <td>{h.ownership || "—"}</td>
                             <td>
                               <div
@@ -472,6 +518,31 @@ export default function Hoardings() {
                                 >
                                   Info
                                 </Link>
+                                {(() => {
+                                  const myTokenId = h.myActiveTokenId
+                                    ? String(h.myActiveTokenId)
+                                    : "";
+                                  const activeTokenId = activeToken?.id
+                                    ? String(activeToken.id)
+                                    : "";
+                                  const linkTokenId = isSalesRole
+                                    ? myTokenId
+                                    : activeTokenId;
+                                  if (!linkTokenId) return null;
+                                  return (
+                                    <Link
+                                      href={`/booking-tokens/${linkTokenId}`}
+                                      className="btn btn-secondary"
+                                      style={{
+                                        padding: "6px 10px",
+                                        fontSize: "12px",
+                                        width: "100%",
+                                      }}
+                                    >
+                                      View Token
+                                    </Link>
+                                  );
+                                })()}
                                 {(() => {
                                   const id = String(h.id);
                                   const isTokenizing = tokenizingIds.has(id);
@@ -503,10 +574,9 @@ export default function Hoardings() {
 
                                   const isSearchActive = Boolean(
                                     (filters.city && filters.city.trim()) ||
-                                      (filters.area && filters.area.trim()) ||
-                                      (filters.status &&
-                                        filters.status.trim()) ||
-                                      (landlordSearch && landlordSearch.trim())
+                                    (filters.area && filters.area.trim()) ||
+                                    (filters.status && filters.status.trim()) ||
+                                    (landlordSearch && landlordSearch.trim()),
                                   );
 
                                   const isDisabled =
@@ -548,8 +618,8 @@ export default function Hoardings() {
                                       {isMyTokenized
                                         ? "Tokenized"
                                         : isBooked
-                                        ? "Booked"
-                                        : "Block Hoarding"}
+                                          ? "Booked"
+                                          : "Block Hoarding"}
                                     </button>
                                   );
                                 })()}
@@ -567,7 +637,7 @@ export default function Hoardings() {
               const toFt = (w?: number, h?: number) => {
                 if (!w || !h) return "—";
                 return `${Math.round(w / 30.48)}ft x ${Math.round(
-                  h / 30.48
+                  h / 30.48,
                 )}ft`;
               };
 
@@ -592,7 +662,7 @@ export default function Hoardings() {
                   const ownership = h.ownership.toString();
                   // Extract landlord from patterns like "GOV - R & B Mehsana" => "R & B Mehsana"
                   const match = ownership.match(
-                    /^(gov|govt|government)\s*-\s*(.+)$/i
+                    /^(gov|govt|government)\s*-\s*(.+)$/i,
                   );
                   if (match && match[2]) {
                     return match[2].trim();
@@ -614,7 +684,7 @@ export default function Hoardings() {
 
               // Filter landlords by search term
               const filteredLandlordGroups = Array.from(
-                landlordGroups.entries()
+                landlordGroups.entries(),
               )
                 .filter(([landlord]) => {
                   if (!landlordSearch.trim()) return true;
@@ -639,7 +709,7 @@ export default function Hoardings() {
               const updateLandlordFilter = (
                 landlord: string,
                 field: "city" | "area" | "status",
-                value: string
+                value: string,
               ) => {
                 setLandlordFilters((prev) => {
                   const newMap = new Map(prev);
@@ -665,7 +735,7 @@ export default function Hoardings() {
 
               const filterHoardingsForLandlord = (
                 hoardings: any[],
-                filters: { city: string; area: string; status: string }
+                filters: { city: string; area: string; status: string },
               ) => {
                 return hoardings.filter((h) => {
                   if (
@@ -698,7 +768,7 @@ export default function Hoardings() {
               const handleLandlordRent = (landlord: string) => {
                 if (!canViewRent(userRole)) {
                   showError(
-                    "You don't have permission to set hoardings on rent."
+                    "You don't have permission to set hoardings on rent.",
                   );
                   return;
                 }
@@ -709,7 +779,7 @@ export default function Hoardings() {
 
               const isAllOnRent = (hoardings: any[]): boolean => {
                 return hoardings.every(
-                  (h) => (h.status || "").toLowerCase() === "on_rent"
+                  (h) => (h.status || "").toLowerCase() === "on_rent",
                 );
               };
 
@@ -730,7 +800,7 @@ export default function Hoardings() {
                     const landlordFilter = getLandlordFilter(landlord);
                     const filteredHoardings = filterHoardingsForLandlord(
                       hoardingGroups,
-                      landlordFilter
+                      landlordFilter,
                     );
                     const totalHoardings = hoardingGroups.length;
                     const filteredCount = filteredHoardings.length;
@@ -906,7 +976,7 @@ export default function Hoardings() {
                                       updateLandlordFilter(
                                         landlord,
                                         "city",
-                                        e.target.value
+                                        e.target.value,
                                       )
                                     }
                                     placeholder="Filter by city"
@@ -932,7 +1002,7 @@ export default function Hoardings() {
                                       updateLandlordFilter(
                                         landlord,
                                         "area",
-                                        e.target.value
+                                        e.target.value,
                                       )
                                     }
                                     placeholder="Filter by area"
@@ -957,7 +1027,7 @@ export default function Hoardings() {
                                       updateLandlordFilter(
                                         landlord,
                                         "status",
-                                        val
+                                        val,
                                       )
                                     }
                                     options={[
@@ -1040,18 +1110,20 @@ export default function Hoardings() {
                                             "available"
                                               ? "Available"
                                               : (
-                                                  h.status || ""
-                                                ).toLowerCase() === "on_rent"
-                                              ? "On Rent"
-                                              : (
-                                                  h.status || ""
-                                                ).toLowerCase() === "occupied"
-                                              ? "Occupied"
-                                              : (
-                                                  h.status || ""
-                                                ).toLowerCase() === "booked"
-                                              ? "Booked"
-                                              : h.status || "—"}
+                                                    h.status || ""
+                                                  ).toLowerCase() === "on_rent"
+                                                ? "On Rent"
+                                                : (
+                                                      h.status || ""
+                                                    ).toLowerCase() ===
+                                                    "occupied"
+                                                  ? "Occupied"
+                                                  : (
+                                                        h.status || ""
+                                                      ).toLowerCase() ===
+                                                      "booked"
+                                                    ? "Booked"
+                                                    : h.status || "—"}
                                           </td>
                                           <td>
                                             <div
@@ -1088,28 +1160,28 @@ export default function Hoardings() {
                                                       return;
                                                     const confirmDelete =
                                                       window.confirm(
-                                                        "Are you sure you want to delete this hoarding?"
+                                                        "Are you sure you want to delete this hoarding?",
                                                       );
                                                     if (!confirmDelete) return;
 
                                                     try {
                                                       await hoardingsAPI.delete(
-                                                        h.id
+                                                        h.id,
                                                       );
                                                       await fetchHoardings(
                                                         1,
-                                                        true
+                                                        true,
                                                       );
                                                       showSuccess(
-                                                        "Hoarding deleted successfully."
+                                                        "Hoarding deleted successfully.",
                                                       );
                                                     } catch (error) {
                                                       console.error(
                                                         "Failed to delete hoarding:",
-                                                        error
+                                                        error,
                                                       );
                                                       showError(
-                                                        "Failed to delete hoarding. Please try again."
+                                                        "Failed to delete hoarding. Please try again.",
                                                       );
                                                     }
                                                   }}
@@ -1121,7 +1193,7 @@ export default function Hoardings() {
                                           </td>
                                         </tr>
                                       );
-                                    }
+                                    },
                                   )}
                                 </tbody>
                               </table>
