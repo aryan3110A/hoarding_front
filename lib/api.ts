@@ -660,14 +660,20 @@ export const supervisorAPI = {
       isReadyForInstall?: boolean;
     },
   ) => {
-    const response = await api.put(`/supervisor/hoardings/${id}/checklist`, data);
+    const response = await api.put(
+      `/supervisor/hoardings/${id}/checklist`,
+      data,
+    );
     return response.data;
   },
   setExecutionType: async (
     id: string,
     data: { executionType: string; designerId?: string },
   ) => {
-    const response = await api.put(`/supervisor/hoardings/${id}/execution-type`, data);
+    const response = await api.put(
+      `/supervisor/hoardings/${id}/execution-type`,
+      data,
+    );
     return response.data;
   },
   markFit: async (id: string) => {
@@ -718,10 +724,17 @@ export const accountantAPI = {
     return response.data;
   },
   recordPayment: async (invoiceId: string, data: any) => {
-    const response = await api.post(`/accountant/invoices/${invoiceId}/payments`, data);
+    const response = await api.post(
+      `/accountant/invoices/${invoiceId}/payments`,
+      data,
+    );
     return response.data;
   },
-  listPayments: async (params?: { page?: number; limit?: number; invoiceId?: string }) => {
+  listPayments: async (params?: {
+    page?: number;
+    limit?: number;
+    invoiceId?: string;
+  }) => {
     const response = await api.get("/accountant/payments", { params });
     return response.data;
   },

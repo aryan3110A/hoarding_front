@@ -125,7 +125,15 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Notifications",
       href: "/notifications",
       iconName: "Bell",
-      roles: ["owner", "manager", "sales", "designer", "supervisor", "accountant", "admin"],
+      roles: [
+        "owner",
+        "manager",
+        "sales",
+        "designer",
+        "supervisor",
+        "accountant",
+        "admin",
+      ],
       badge: unreadCount > 0 ? unreadCount : null,
     },
     // {
@@ -137,7 +145,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
   ];
 
   const filteredMenuItems = menuItems.filter((item) =>
-    item.roles.includes(userRole)
+    item.roles.includes(userRole),
   );
 
   const isActive = (href: string) => {

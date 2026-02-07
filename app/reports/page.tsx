@@ -32,7 +32,7 @@ export default function Reports() {
           {
             params: { startDate, endDate },
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
       } else {
         // For other reports, fetch from bookings/contracts
@@ -44,7 +44,7 @@ export default function Reports() {
               }/api/bookings`,
               {
                 headers: { Authorization: `Bearer ${token}` },
-              }
+              },
             ),
             axios.get(
               `${
@@ -52,7 +52,7 @@ export default function Reports() {
               }/api/contracts`,
               {
                 headers: { Authorization: `Bearer ${token}` },
-              }
+              },
             ),
             axios.get(
               `${
@@ -60,7 +60,7 @@ export default function Reports() {
               }/api/hoardings`,
               {
                 headers: { Authorization: `Bearer ${token}` },
-              }
+              },
             ),
             axios.get(
               `${
@@ -68,7 +68,7 @@ export default function Reports() {
               }/api/enquiries`,
               {
                 headers: { Authorization: `Bearer ${token}` },
-              }
+              },
             ),
           ]);
 
@@ -85,7 +85,7 @@ export default function Reports() {
           const contracts = contractsRes.data.filter((c: any) => {
             const daysUntilExpiry = Math.ceil(
               (new Date(c.endDate).getTime() - new Date().getTime()) /
-                (1000 * 60 * 60 * 24)
+                (1000 * 60 * 60 * 24),
             );
             return c.status === "Active" && daysUntilExpiry <= 30;
           });
@@ -153,188 +153,160 @@ export default function Reports() {
 
   return (
     <div>
-        <h1>Reports</h1>
+      <h1>Reports</h1>
 
-        <div className="card">
-          <h3>Report Filters</h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "15px",
-            }}
-          >
-            <div className="form-group">
-              <label>Report Type</label>
-              <select
-                value={reportType}
-                onChange={(e) => setReportType(e.target.value)}
-              >
-                <option value="occupancy">Occupancy Report</option>
-                <option value="revenue">Revenue Report</option>
-                <option value="expiring">Expiring Contracts</option>
-                <option value="sales">Sales Performance</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Start Date</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div className="form-group">
-              <label>End Date</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-          </div>
-          <button onClick={fetchReport} className="btn btn-primary">
-            Generate Report
-          </button>
-          {reportData && (
-            <button
-              onClick={exportToCSV}
-              className="btn btn-secondary"
-              style={{ marginLeft: "10px" }}
+      <div className="card">
+        <h3>Report Filters</h3>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "15px",
+          }}
+        >
+          <div className="form-group">
+            <label>Report Type</label>
+            <select
+              value={reportType}
+              onChange={(e) => setReportType(e.target.value)}
             >
-              Export to CSV
-            </button>
-          )}
+              <option value="occupancy">Occupancy Report</option>
+              <option value="revenue">Revenue Report</option>
+              <option value="expiring">Expiring Contracts</option>
+              <option value="sales">Sales Performance</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>End Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
         </div>
-
+        <button onClick={fetchReport} className="btn btn-primary">
+          Generate Report
+        </button>
         {reportData && (
-          <div className="card">
-            <h3>
-              {reportType === "occupancy"
-                ? "Occupancy Report"
-                : reportType === "revenue"
+          <button
+            onClick={exportToCSV}
+            className="btn btn-secondary"
+            style={{ marginLeft: "10px" }}
+          >
+            Export to CSV
+          </button>
+        )}
+      </div>
+
+      {reportData && (
+        <div className="card">
+          <h3>
+            {reportType === "occupancy"
+              ? "Occupancy Report"
+              : reportType === "revenue"
                 ? "Revenue Report"
                 : reportType === "expiring"
-                ? "Expiring Contracts"
-                : "Sales Performance"}
-            </h3>
-            {Array.isArray(reportData) && reportData.length > 0 ? (
-              <table className="table">
-                <thead>
-                  {reportType === "occupancy" && (
-                    <tr>
-                      <th>Hoarding Location</th>
-                      <th>Total Days</th>
-                      <th>Booked Days</th>
-                      <th>Occupancy %</th>
-                    </tr>
-                  )}
-                  {reportType === "revenue" && (
-                    <tr>
-                      <th>Hoarding ID</th>
-                      <th>Client ID</th>
-                      <th>Start Date</th>
-                      <th>End Date</th>
-                      <th>Total Amount</th>
-                    </tr>
-                  )}
-                  {reportType === "expiring" && (
-                    <tr>
-                      <th>Client ID</th>
-                      <th>Start Date</th>
-                      <th>End Date</th>
-                      <th>Days Until Expiry</th>
-                      <th>Total Value</th>
-                    </tr>
-                  )}
-                  {reportType === "sales" && (
-                    <tr>
-                      <th>Client Name</th>
-                      <th>Contact</th>
-                      <th>Source</th>
-                      <th>Status</th>
-                      <th>Created Date</th>
-                    </tr>
-                  )}
-                </thead>
-                <tbody>
-                  {reportData.map((item: any, index: number) => (
-                    <tr key={index}>
-                      {reportType === "occupancy" && (
-                        <>
-                          <td>{item.hoardingLocation}</td>
-                          <td>{item.totalDays}</td>
-                          <td>{item.bookedDays}</td>
-                          <td>{item.occupancyPercentage.toFixed(2)}%</td>
-                        </>
-                      )}
-                      {reportType === "revenue" && (
-                        <>
-                          <td>{item.hoardingId}</td>
-                          <td>{item.clientId}</td>
-                          <td>
-                            {new Date(item.startDate).toLocaleDateString()}
-                          </td>
-                          <td>{new Date(item.endDate).toLocaleDateString()}</td>
-                          <td>₹{item.pricing?.total || 0}</td>
-                        </>
-                      )}
-                      {reportType === "expiring" && (
-                        <>
-                          <td>{item.clientId}</td>
-                          <td>
-                            {new Date(item.startDate).toLocaleDateString()}
-                          </td>
-                          <td>{new Date(item.endDate).toLocaleDateString()}</td>
-                          <td>
-                            {Math.ceil(
-                              (new Date(item.endDate).getTime() -
-                                new Date().getTime()) /
-                                (1000 * 60 * 60 * 24)
-                            )}{" "}
-                            days
-                          </td>
-                          <td>₹{item.pricing?.total || 0}</td>
-                        </>
-                      )}
-                      {reportType === "sales" && (
-                        <>
-                          <td>{item.clientName}</td>
-                          <td>{item.contact}</td>
-                          <td>{item.source}</td>
-                          <td>{item.status}</td>
-                          <td>
-                            {new Date(item.createdAt).toLocaleDateString()}
-                          </td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "60px 20px",
-                  color: "var(--text-secondary)",
-                }}
-              >
-                <div style={{ fontSize: "48px", marginBottom: "16px" }}>📊</div>
-                <h3
-                  style={{ marginBottom: "8px", color: "var(--text-primary)" }}
-                >
-                  No Data Available
-                </h3>
-                <p>
-                  No data found for the selected report type and date range.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-        {!reportData && (
-          <div className="card">
+                  ? "Expiring Contracts"
+                  : "Sales Performance"}
+          </h3>
+          {Array.isArray(reportData) && reportData.length > 0 ? (
+            <table className="table">
+              <thead>
+                {reportType === "occupancy" && (
+                  <tr>
+                    <th>Hoarding Location</th>
+                    <th>Total Days</th>
+                    <th>Booked Days</th>
+                    <th>Occupancy %</th>
+                  </tr>
+                )}
+                {reportType === "revenue" && (
+                  <tr>
+                    <th>Hoarding ID</th>
+                    <th>Client ID</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Total Amount</th>
+                  </tr>
+                )}
+                {reportType === "expiring" && (
+                  <tr>
+                    <th>Client ID</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Days Until Expiry</th>
+                    <th>Total Value</th>
+                  </tr>
+                )}
+                {reportType === "sales" && (
+                  <tr>
+                    <th>Client Name</th>
+                    <th>Contact</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Created Date</th>
+                  </tr>
+                )}
+              </thead>
+              <tbody>
+                {reportData.map((item: any, index: number) => (
+                  <tr key={index}>
+                    {reportType === "occupancy" && (
+                      <>
+                        <td>{item.hoardingLocation}</td>
+                        <td>{item.totalDays}</td>
+                        <td>{item.bookedDays}</td>
+                        <td>{item.occupancyPercentage.toFixed(2)}%</td>
+                      </>
+                    )}
+                    {reportType === "revenue" && (
+                      <>
+                        <td>{item.hoardingId}</td>
+                        <td>{item.clientId}</td>
+                        <td>{new Date(item.startDate).toLocaleDateString()}</td>
+                        <td>{new Date(item.endDate).toLocaleDateString()}</td>
+                        <td>₹{item.pricing?.total || 0}</td>
+                      </>
+                    )}
+                    {reportType === "expiring" && (
+                      <>
+                        <td>{item.clientId}</td>
+                        <td>{new Date(item.startDate).toLocaleDateString()}</td>
+                        <td>{new Date(item.endDate).toLocaleDateString()}</td>
+                        <td>
+                          {Math.ceil(
+                            (new Date(item.endDate).getTime() -
+                              new Date().getTime()) /
+                              (1000 * 60 * 60 * 24),
+                          )}{" "}
+                          days
+                        </td>
+                        <td>₹{item.pricing?.total || 0}</td>
+                      </>
+                    )}
+                    {reportType === "sales" && (
+                      <>
+                        <td>{item.clientName}</td>
+                        <td>{item.contact}</td>
+                        <td>{item.source}</td>
+                        <td>{item.status}</td>
+                        <td>{new Date(item.createdAt).toLocaleDateString()}</td>
+                      </>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
             <div
               style={{
                 textAlign: "center",
@@ -344,14 +316,32 @@ export default function Reports() {
             >
               <div style={{ fontSize: "48px", marginBottom: "16px" }}>📊</div>
               <h3 style={{ marginBottom: "8px", color: "var(--text-primary)" }}>
-                No Report Generated
+                No Data Available
               </h3>
-              <p style={{ marginBottom: "24px" }}>
-                Select a report type and click "Generate Report" to view data.
-              </p>
+              <p>No data found for the selected report type and date range.</p>
             </div>
+          )}
+        </div>
+      )}
+      {!reportData && (
+        <div className="card">
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 20px",
+              color: "var(--text-secondary)",
+            }}
+          >
+            <div style={{ fontSize: "48px", marginBottom: "16px" }}>📊</div>
+            <h3 style={{ marginBottom: "8px", color: "var(--text-primary)" }}>
+              No Report Generated
+            </h3>
+            <p style={{ marginBottom: "24px" }}>
+              Select a report type and click "Generate Report" to view data.
+            </p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
   );
 }

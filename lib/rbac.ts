@@ -1047,7 +1047,7 @@ export function canViewReports(role: string): boolean {
 
 export function canAccessLocationTracking(role: string): boolean {
   const normalizedRole = role?.toLowerCase() || "";
-    return ["owner", "supervisor", "admin"].includes(normalizedRole);
+  return ["owner", "supervisor", "admin"].includes(normalizedRole);
 }
 
 export function canAccessAdminSettings(role: string): boolean {

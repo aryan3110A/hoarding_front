@@ -35,7 +35,7 @@ export default function Contracts() {
           ...c,
           clientName: c.clientName || null,
           hoardingCode: c.hoardingCode || null,
-        }))
+        })),
       );
       setLoading(false); // Set loading to false immediately after setting data
     } catch (error) {
@@ -53,7 +53,7 @@ export default function Contracts() {
       const resp = await axios.post(
         `${API_URL}/api/contracts/${contractId}/renew`,
         {},
-        { headers: { Authorization: `Bearer ${authToken}` } }
+        { headers: { Authorization: `Bearer ${authToken}` } },
       );
       showSuccess("Renewal requested/created");
       fetchData();
@@ -72,7 +72,7 @@ export default function Contracts() {
       await axios.post(
         `${API_URL}/api/contracts/${contractId}/cancel`,
         {},
-        { headers: { Authorization: `Bearer ${authToken}` } }
+        { headers: { Authorization: `Bearer ${authToken}` } },
       );
       showSuccess("Contract cancelled");
       fetchData();
@@ -90,7 +90,7 @@ export default function Contracts() {
       await axios.post(
         `${API_URL}/api/contracts/${contractId}/renew`,
         { requestOnly: true },
-        { headers: { Authorization: `Bearer ${authToken}` } }
+        { headers: { Authorization: `Bearer ${authToken}` } },
       );
       showSuccess("Renewal request submitted");
       fetchData();
@@ -109,7 +109,9 @@ export default function Contracts() {
   }
 
   const userRole = user?.role?.toLowerCase() || "";
-  if (!["owner", "manager", "admin", "sales", "accountant"].includes(userRole)) {
+  if (
+    !["owner", "manager", "admin", "sales", "accountant"].includes(userRole)
+  ) {
     return <AccessDenied />;
   }
 

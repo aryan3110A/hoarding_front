@@ -97,7 +97,7 @@ export default function Notifications() {
       await notificationsAPI.markAsRead(id);
       // Update local state
       setNotifications(
-        notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
+        notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
       );
     } catch (error) {
       console.error("Failed to mark as read:", error);
@@ -225,7 +225,7 @@ export default function Notifications() {
       setAssigningNotificationId(String(notification.id));
       const resp = await bookingTokensAPI.assignFitter(
         tokenId,
-        fitterId ? { fitterId } : undefined
+        fitterId ? { fitterId } : undefined,
       );
       if (resp?.success) {
         showSuccess("Fitter assigned");
@@ -257,7 +257,7 @@ export default function Notifications() {
       }
     } catch (e: any) {
       const msg = String(
-        e?.response?.data?.message || "Failed to assign fitter"
+        e?.response?.data?.message || "Failed to assign fitter",
       );
       const status = Number(e?.response?.status || 0);
       const isAlreadyAssigned =
@@ -402,7 +402,7 @@ export default function Notifications() {
                         >
                           {(() => {
                             const hoardingId = hoardingIdFromLink(
-                              notification.link
+                              notification.link,
                             );
                             const booked =
                               !!bookedHoardingIds[String(hoardingId)];
@@ -419,8 +419,8 @@ export default function Notifications() {
                                 {booked
                                   ? "Booked"
                                   : busy
-                                  ? "Booking..."
-                                  : "Mark as Booked"}
+                                    ? "Booking..."
+                                    : "Mark as Booked"}
                               </button>
                             );
                           })()}
@@ -436,7 +436,7 @@ export default function Notifications() {
                         const assigned =
                           assignedFitterByTokenId[String(tokenId)];
                         const assignedFitterId = String(
-                          assigned?.fitterId || ""
+                          assigned?.fitterId || "",
                         );
                         const locked = !!assignedFitterId;
                         return (
@@ -469,7 +469,7 @@ export default function Notifications() {
                                   locked
                                     ? assignedFitterId
                                     : getSelectedFitterId(
-                                        String(notification.id)
+                                        String(notification.id),
                                       )
                                 }
                                 onChange={(e) =>

@@ -55,7 +55,7 @@ export default function Login() {
       const response = await authAPI.login(
         trimmedEmail,
         trimmedPassword,
-        deviceId
+        deviceId,
       );
 
       console.log(response, "response");
@@ -75,7 +75,7 @@ export default function Login() {
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||
-          "Login failed. Please check your credentials."
+          "Login failed. Please check your credentials.",
       );
     } finally {
       setLoading(false);

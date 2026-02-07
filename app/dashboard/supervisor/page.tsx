@@ -24,7 +24,8 @@ const statusBadge = (status?: string) => {
   if (s === "booked") return { text: "Booked", color: "#0ea5e9" };
   if (s === "under_process") return { text: "Under Process", color: "#f59e0b" };
   if (s === "live") return { text: "Live", color: "#22c55e" };
-  if (s === "removal_pending") return { text: "Removal Pending", color: "#ef4444" };
+  if (s === "removal_pending")
+    return { text: "Removal Pending", color: "#ef4444" };
   return { text: status || "—", color: "#6b7280" };
 };
 
@@ -83,7 +84,9 @@ export default function SupervisorDashboardPage() {
     } catch (e: any) {
       setRows([]);
       setTotal(0);
-      showError(e?.response?.data?.message || "Failed to load supervisor hoardings");
+      showError(
+        e?.response?.data?.message || "Failed to load supervisor hoardings",
+      );
     } finally {
       setLoading(false);
     }
@@ -126,7 +129,11 @@ export default function SupervisorDashboardPage() {
     }
   };
 
-  const setExecutionType = async (id: string, executionType: string, designerId?: string) => {
+  const setExecutionType = async (
+    id: string,
+    executionType: string,
+    designerId?: string,
+  ) => {
     // Optimistic local update to avoid full refresh
     setRows((prev) =>
       (prev || []).map((h) =>
@@ -147,7 +154,9 @@ export default function SupervisorDashboardPage() {
         showError(resp?.message || "Failed to update execution type");
       }
     } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to update execution type");
+      showError(
+        e?.response?.data?.message || "Failed to update execution type",
+      );
     }
   };
 
@@ -162,7 +171,9 @@ export default function SupervisorDashboardPage() {
         showError(resp?.message || "Failed to mark as Under Process");
       }
     } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to mark as Under Process");
+      showError(
+        e?.response?.data?.message || "Failed to mark as Under Process",
+      );
     }
   };
 
@@ -224,7 +235,13 @@ export default function SupervisorDashboardPage() {
 
         <div className="card" style={{ marginBottom: 16 }}>
           <h3 style={{ marginBottom: 12 }}>Filters</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: 12,
+            }}
+          >
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="">All Status</option>
               {statusOptions.map((s) => (
@@ -233,17 +250,26 @@ export default function SupervisorDashboardPage() {
                 </option>
               ))}
             </select>
-            <select value={sizeMatch} onChange={(e) => setSizeMatch(e.target.value)}>
+            <select
+              value={sizeMatch}
+              onChange={(e) => setSizeMatch(e.target.value)}
+            >
               <option value="">Size Match (All)</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
-            <select value={condition} onChange={(e) => setCondition(e.target.value)}>
+            <select
+              value={condition}
+              onChange={(e) => setCondition(e.target.value)}
+            >
               <option value="">Condition (All)</option>
               <option value="good">Good</option>
               <option value="damaged">Damaged</option>
             </select>
-            <select value={materialReceived} onChange={(e) => setMaterialReceived(e.target.value)}>
+            <select
+              value={materialReceived}
+              onChange={(e) => setMaterialReceived(e.target.value)}
+            >
               <option value="">Material Received (All)</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
@@ -327,7 +353,11 @@ export default function SupervisorDashboardPage() {
                             value={execType}
                             onChange={(e) => {
                               e.stopPropagation();
-                              setExecutionType(h.id, e.target.value, h.designerId);
+                              setExecutionType(
+                                h.id,
+                                e.target.value,
+                                h.designerId,
+                              );
                             }}
                           >
                             <option value="">Select</option>
@@ -343,7 +373,11 @@ export default function SupervisorDashboardPage() {
                                 value={h.designerId || ""}
                                 onChange={(e) => {
                                   e.stopPropagation();
-                                  setExecutionType(h.id, "IN_HOUSE_DESIGN", e.target.value);
+                                  setExecutionType(
+                                    h.id,
+                                    "IN_HOUSE_DESIGN",
+                                    e.target.value,
+                                  );
                                 }}
                               >
                                 <option value="">Select Designer</option>
@@ -356,7 +390,13 @@ export default function SupervisorDashboardPage() {
                             </div>
                           )}
                           {needsDesignComplete && (
-                            <div style={{ marginTop: 6, fontSize: 12, color: "#6b7280" }}>
+                            <div
+                              style={{
+                                marginTop: 6,
+                                fontSize: 12,
+                                color: "#6b7280",
+                              }}
+                            >
                               Design status: {designStatusLower || "pending"}
                             </div>
                           )}
@@ -369,7 +409,9 @@ export default function SupervisorDashboardPage() {
                                 checked={!!checklist.isCorrectSize}
                                 onChange={(e) => {
                                   e.stopPropagation();
-                                  updateChecklist(h.id, { isCorrectSize: e.target.checked });
+                                  updateChecklist(h.id, {
+                                    isCorrectSize: e.target.checked,
+                                  });
                                 }}
                               />{" "}
                               Size OK
@@ -380,7 +422,9 @@ export default function SupervisorDashboardPage() {
                                 checked={!!checklist.isGoodCondition}
                                 onChange={(e) => {
                                   e.stopPropagation();
-                                  updateChecklist(h.id, { isGoodCondition: e.target.checked });
+                                  updateChecklist(h.id, {
+                                    isGoodCondition: e.target.checked,
+                                  });
                                 }}
                               />{" "}
                               Condition OK
@@ -391,7 +435,9 @@ export default function SupervisorDashboardPage() {
                                 checked={!!checklist.isFlexReceived}
                                 onChange={(e) => {
                                   e.stopPropagation();
-                                  updateChecklist(h.id, { isFlexReceived: e.target.checked });
+                                  updateChecklist(h.id, {
+                                    isFlexReceived: e.target.checked,
+                                  });
                                 }}
                               />{" "}
                               Material Received
@@ -402,18 +448,33 @@ export default function SupervisorDashboardPage() {
                                 checked={!!checklist.isReadyForInstall}
                                 onChange={(e) => {
                                   e.stopPropagation();
-                                  updateChecklist(h.id, { isReadyForInstall: e.target.checked });
+                                  updateChecklist(h.id, {
+                                    isReadyForInstall: e.target.checked,
+                                  });
                                 }}
                               />{" "}
                               Ready for Install
                             </label>
-                            <div style={{ fontSize: 12, color: isComplete ? "green" : "#999" }}>
-                              {isComplete ? "Checklist complete" : "Checklist incomplete"}
+                            <div
+                              style={{
+                                fontSize: 12,
+                                color: isComplete ? "green" : "#999",
+                              }}
+                            >
+                              {isComplete
+                                ? "Checklist complete"
+                                : "Checklist incomplete"}
                             </div>
                           </div>
                         </td>
                         <td>
-                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 8,
+                              flexWrap: "wrap",
+                            }}
+                          >
                             <button
                               className="btn btn-secondary"
                               disabled={!canMarkFit}
@@ -438,13 +499,23 @@ export default function SupervisorDashboardPage() {
                             >
                               Mark Removal
                             </button>
-                            <button className="btn btn-secondary" onClick={() => downloadPdf(h.id)}>
+                            <button
+                              className="btn btn-secondary"
+                              onClick={() => downloadPdf(h.id)}
+                            >
                               PDF
                             </button>
                           </div>
                           {!canMarkFit && (
-                            <div style={{ marginTop: 6, fontSize: 12, color: "#6b7280" }}>
-                              Mark Fit requires: status BOOKED, execution type selected, checklist complete.
+                            <div
+                              style={{
+                                marginTop: 6,
+                                fontSize: 12,
+                                color: "#6b7280",
+                              }}
+                            >
+                              Mark Fit requires: status BOOKED, execution type
+                              selected, checklist complete.
                             </div>
                           )}
                         </td>
@@ -458,8 +529,18 @@ export default function SupervisorDashboardPage() {
           )}
         </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12 }}>
-          <button className="btn btn-secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: 12,
+          }}
+        >
+          <button
+            className="btn btn-secondary"
+            disabled={page <= 1}
+            onClick={() => setPage(page - 1)}
+          >
             Previous
           </button>
           <div>

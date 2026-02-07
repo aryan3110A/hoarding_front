@@ -45,7 +45,15 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Dashboard",
       href: "/dashboard",
       icon: "📊",
-      roles: ["owner", "manager", "sales", "designer", "supervisor", "accountant", "admin"],
+      roles: [
+        "owner",
+        "manager",
+        "sales",
+        "designer",
+        "supervisor",
+        "accountant",
+        "admin",
+      ],
     },
     {
       title: "Supervisor",
@@ -123,7 +131,15 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Notifications",
       href: "/notifications",
       icon: "🔔",
-      roles: ["owner", "manager", "sales", "designer", "supervisor", "accountant", "admin"],
+      roles: [
+        "owner",
+        "manager",
+        "sales",
+        "designer",
+        "supervisor",
+        "accountant",
+        "admin",
+      ],
       badge: unreadCount > 0 ? unreadCount : null,
     },
     {
@@ -135,7 +151,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
   ];
 
   const filteredMenuItems = menuItems.filter((item) =>
-    item.roles.includes(userRole)
+    item.roles.includes(userRole),
   );
 
   const isActive = (href: string) => {

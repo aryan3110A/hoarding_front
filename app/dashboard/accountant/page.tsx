@@ -3,11 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useUser } from "@/components/AppLayout";
-import {
-  accountantAPI,
-  clientsAPI,
-  contractsAPI,
-} from "@/lib/api";
+import { accountantAPI, clientsAPI, contractsAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
 const paymentMethods = [

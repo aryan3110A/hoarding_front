@@ -238,7 +238,8 @@ export default function BookingTokenDetailPage() {
 
   const tokenStatusLower = String(token?.status || "").toLowerCase();
   const tokenStatusUpper = String(token?.status || "").toUpperCase();
-  const hasLegacyExtensionRequest = !isPhase3Payload && !!legacyExtensionRequestedUntil;
+  const hasLegacyExtensionRequest =
+    !isPhase3Payload && !!legacyExtensionRequestedUntil;
   const isHeadToken =
     typeof token?.queuePosition === "number" ? token.queuePosition === 1 : true;
   const isBlockingToken = ["BLOCKED", "EXTENSION_REQUESTED", "ACTIVE"].includes(
@@ -1021,16 +1022,79 @@ export default function BookingTokenDetailPage() {
                 </div>
               )}
 
-              {fitterWorkflowEnabled && isConfirmedLike && isDesignCompleted && (
-                <div style={{ marginTop: 16 }}>
-                  <h3 style={{ marginBottom: 8 }}>Fitter Assignment</h3>
-                  {canConfirm ? (
-                    tokenFitterId ? (
-                      <div style={{ color: "var(--text-secondary)" }}>
-                        Assigned to: {token.fitter?.name || tokenFitterId} (
-                        {fitterStatusLabel(normalizedFitterStatus)})
-                      </div>
+              {fitterWorkflowEnabled &&
+                isConfirmedLike &&
+                isDesignCompleted && (
+                  <div style={{ marginTop: 16 }}>
+                    <h3 style={{ marginBottom: 8 }}>Fitter Assignment</h3>
+                    {canConfirm ? (
+                      tokenFitterId ? (
+                        <div style={{ color: "var(--text-secondary)" }}>
+                          Assigned to: {token.fitter?.name || tokenFitterId} (
+                          {fitterStatusLabel(normalizedFitterStatus)})
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 10,
+                            flexWrap: "wrap",
+                            alignItems: "end",
+                          }}
+                        >
+                          <div style={{ minWidth: 220 }}>
+                            <label
+                              style={{
+                                display: "block",
+                                fontSize: 12,
+                                marginBottom: 4,
+                              }}
+                            >
+                              Assign Fitter
+                            </label>
+                            <select
+                              className="input"
+                              value={selectedFitterId}
+                              onChange={(e) =>
+                                setSelectedFitterId(e.target.value)
+                              }
+                              disabled={submitting || loadingFitters}
+                            >
+                              <option value="">
+                                {loadingFitters
+                                  ? "Loading..."
+                                  : "Select fitter"}
+                              </option>
+                              {fitters.map((f: any) => (
+                                <option key={String(f.id)} value={String(f.id)}>
+                                  {f.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <button
+                            className="btn btn-primary"
+                            onClick={handleAssignFitter}
+                            disabled={submitting}
+                          >
+                            Assign Fitter
+                          </button>
+                        </div>
+                      )
                     ) : (
+                      <div style={{ color: "var(--text-secondary)" }}>
+                        Only Owner/Manager can assign a fitter.
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              {fitterWorkflowEnabled &&
+                isConfirmedLike &&
+                isDesignCompleted && (
+                  <div style={{ marginTop: 16 }}>
+                    <h3 style={{ marginBottom: 8 }}>Installation Progress</h3>
+                    {canUpdateFitterStatus ? (
                       <div
                         style={{
                           display: "flex",
@@ -1047,143 +1111,88 @@ export default function BookingTokenDetailPage() {
                               marginBottom: 4,
                             }}
                           >
-                            Assign Fitter
+                            Status
                           </label>
                           <select
                             className="input"
-                            value={selectedFitterId}
-                            onChange={(e) =>
-                              setSelectedFitterId(e.target.value)
+                            value={installationStatusDraft}
+                            disabled={
+                              submitting || normalizedFitterStatus === "fitted"
                             }
-                            disabled={submitting || loadingFitters}
+                            onChange={(e) =>
+                              setInstallationStatusDraft(
+                                String(e.target.value) === "fitted"
+                                  ? "fitted"
+                                  : String(e.target.value) === "in_progress"
+                                    ? "in_progress"
+                                    : "pending",
+                              )
+                            }
                           >
-                            <option value="">
-                              {loadingFitters ? "Loading..." : "Select fitter"}
+                            <option value="pending" disabled>
+                              Pending
                             </option>
-                            {fitters.map((f: any) => (
-                              <option key={String(f.id)} value={String(f.id)}>
-                                {f.name}
-                              </option>
-                            ))}
+                            <option
+                              value="in_progress"
+                              disabled={normalizedFitterStatus !== "pending"}
+                            >
+                              In Progress
+                            </option>
+                            <option
+                              value="fitted"
+                              disabled={
+                                normalizedFitterStatus !== "in_progress"
+                              }
+                            >
+                              Fitted
+                            </option>
                           </select>
                         </div>
+
+                        {installationStatusDraft === "fitted" && (
+                          <div style={{ minWidth: 260 }}>
+                            <label
+                              style={{
+                                display: "block",
+                                fontSize: 12,
+                                marginBottom: 4,
+                              }}
+                            >
+                              Proof Images (required)
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              disabled={submitting}
+                              onChange={(e) =>
+                                setInstallationProofFiles(
+                                  Array.from(e.target.files || []),
+                                )
+                              }
+                            />
+                          </div>
+                        )}
+
                         <button
                           className="btn btn-primary"
-                          onClick={handleAssignFitter}
-                          disabled={submitting}
-                        >
-                          Assign Fitter
-                        </button>
-                      </div>
-                    )
-                  ) : (
-                    <div style={{ color: "var(--text-secondary)" }}>
-                      Only Owner/Manager can assign a fitter.
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {fitterWorkflowEnabled && isConfirmedLike && isDesignCompleted && (
-                <div style={{ marginTop: 16 }}>
-                  <h3 style={{ marginBottom: 8 }}>Installation Progress</h3>
-                  {canUpdateFitterStatus ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: 10,
-                        flexWrap: "wrap",
-                        alignItems: "end",
-                      }}
-                    >
-                      <div style={{ minWidth: 220 }}>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: 12,
-                            marginBottom: 4,
-                          }}
-                        >
-                          Status
-                        </label>
-                        <select
-                          className="input"
-                          value={installationStatusDraft}
                           disabled={
                             submitting || normalizedFitterStatus === "fitted"
                           }
-                          onChange={(e) =>
-                            setInstallationStatusDraft(
-                              String(e.target.value) === "fitted"
-                                ? "fitted"
-                                : String(e.target.value) === "in_progress"
-                                  ? "in_progress"
-                                  : "pending",
-                            )
-                          }
+                          onClick={handleInstallationSubmit}
                         >
-                          <option value="pending" disabled>
-                            Pending
-                          </option>
-                          <option
-                            value="in_progress"
-                            disabled={normalizedFitterStatus !== "pending"}
-                          >
-                            In Progress
-                          </option>
-                          <option
-                            value="fitted"
-                            disabled={normalizedFitterStatus !== "in_progress"}
-                          >
-                            Fitted
-                          </option>
-                        </select>
+                          Submit
+                        </button>
                       </div>
-
-                      {installationStatusDraft === "fitted" && (
-                        <div style={{ minWidth: 260 }}>
-                          <label
-                            style={{
-                              display: "block",
-                              fontSize: 12,
-                              marginBottom: 4,
-                            }}
-                          >
-                            Proof Images (required)
-                          </label>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            disabled={submitting}
-                            onChange={(e) =>
-                              setInstallationProofFiles(
-                                Array.from(e.target.files || []),
-                              )
-                            }
-                          />
-                        </div>
-                      )}
-
-                      <button
-                        className="btn btn-primary"
-                        disabled={
-                          submitting || normalizedFitterStatus === "fitted"
-                        }
-                        onClick={handleInstallationSubmit}
-                      >
-                        Submit
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ color: "var(--text-secondary)" }}>
-                      {isFitter
-                        ? "Only the assigned fitter can update installation status."
-                        : "Installation status will be updated by the assigned fitter."}
-                    </div>
-                  )}
-                </div>
-              )}
+                    ) : (
+                      <div style={{ color: "var(--text-secondary)" }}>
+                        {isFitter
+                          ? "Only the assigned fitter can update installation status."
+                          : "Installation status will be updated by the assigned fitter."}
+                      </div>
+                    )}
+                  </div>
+                )}
 
               {isConfirmedLike && isDesignCompleted && (
                 <div style={{ marginTop: 16 }}>
