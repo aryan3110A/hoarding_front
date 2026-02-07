@@ -44,6 +44,13 @@ function DashboardContent() {
   const user = useUser();
   const router = useRouter();
 
+  useEffect(() => {
+    const roleLower = String(user?.role || "").toLowerCase();
+    if (roleLower === "supervisor") {
+      router.replace("/dashboard/supervisor");
+    }
+  }, [user, router]);
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);

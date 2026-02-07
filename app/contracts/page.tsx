@@ -109,7 +109,7 @@ export default function Contracts() {
   }
 
   const userRole = user?.role?.toLowerCase() || "";
-  if (!["owner", "manager", "admin", "sales"].includes(userRole)) {
+  if (!["owner", "manager", "admin", "sales", "accountant"].includes(userRole)) {
     return <AccessDenied />;
   }
 

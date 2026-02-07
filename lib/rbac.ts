@@ -6,7 +6,8 @@ export type Role =
   | "manager"
   | "sales"
   | "designer"
-  | "fitter"
+  | "supervisor"
+  | "accountant"
   | "admin";
 
 export interface Permission {
@@ -106,6 +107,13 @@ export const rolePermissions: RolePermissions = {
     },
     reports: {
       component: "reports",
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+    },
+    accounting: {
+      component: "accounting",
       create: true,
       read: true,
       update: true,
@@ -219,6 +227,13 @@ export const rolePermissions: RolePermissions = {
       read: true,
       update: true,
       delete: true,
+    },
+    accounting: {
+      component: "accounting",
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
     },
     adminSettings: {
       component: "adminSettings",
@@ -496,23 +511,22 @@ export const rolePermissions: RolePermissions = {
       notes: "No access",
     },
   },
-  fitter: {
-    // Spec adjustment: Fitter should NOT access hoarding master list; only sees assigned jobs via tasks
+  supervisor: {
     hoardings: {
       component: "hoardings",
       create: false,
-      read: false,
-      update: false,
+      read: true,
+      update: true,
       delete: false,
-      notes: "No direct list access",
+      notes: "Execution workflow only",
     },
     bookings: {
       component: "bookings",
       create: false,
-      read: false,
+      read: true,
       update: false,
       delete: false,
-      notes: "No access",
+      notes: "Read-only",
     },
     bookingTokens: {
       component: "bookingTokens",
@@ -520,7 +534,7 @@ export const rolePermissions: RolePermissions = {
       read: true,
       update: true,
       delete: false,
-      notes: "Assigned tokens only (installation workflow)",
+      notes: "Design assignment for execution",
     },
     enquiries: {
       component: "enquiries",
@@ -576,15 +590,15 @@ export const rolePermissions: RolePermissions = {
       read: true,
       update: true,
       delete: false,
-      notes: "Installation jobs only, can update own status",
+      notes: "Execution checklist",
     },
     designAssignments: {
       component: "designAssignments",
-      create: false,
-      read: false,
-      update: false,
+      create: true,
+      read: true,
+      update: true,
       delete: false,
-      notes: "No access",
+      notes: "Execution-driven",
     },
     reports: {
       component: "reports",
@@ -612,11 +626,141 @@ export const rolePermissions: RolePermissions = {
     },
     locationTracking: {
       component: "locationTracking",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+  },
+  accountant: {
+    hoardings: {
+      component: "hoardings",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    bookings: {
+      component: "bookings",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    bookingTokens: {
+      component: "bookingTokens",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    enquiries: {
+      component: "enquiries",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    contracts: {
+      component: "contracts",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Read-only",
+    },
+    rentRecords: {
+      component: "rentRecords",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Read-only",
+    },
+    vendors: {
+      component: "vendors",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    users: {
+      component: "users",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    roles: {
+      component: "roles",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    tasks: {
+      component: "tasks",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    designAssignments: {
+      component: "designAssignments",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    reports: {
+      component: "reports",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Read-only",
+    },
+    accounting: {
+      component: "accounting",
       create: true,
       read: true,
       update: true,
       delete: false,
-      notes: "Check-in enabled",
+      notes: "Accounting module",
+    },
+    adminSettings: {
+      component: "adminSettings",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    notifications: {
+      component: "notifications",
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+      notes: "Own notifications",
+    },
+    locationTracking: {
+      component: "locationTracking",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
     },
   },
   admin: {
@@ -700,6 +844,13 @@ export const rolePermissions: RolePermissions = {
     },
     reports: {
       component: "reports",
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+    },
+    accounting: {
+      component: "accounting",
       create: true,
       read: true,
       update: true,
@@ -880,7 +1031,7 @@ export function canAssignRoles(role: string): boolean {
 
 export function canViewRent(role: string): boolean {
   const normalizedRole = role?.toLowerCase() || "";
-  return ["owner", "manager", "admin"].includes(normalizedRole);
+  return ["owner", "manager", "accountant", "admin"].includes(normalizedRole);
 }
 
 // Explicit helper for rent create/update (avoids mismatch bugs in pages)
@@ -891,12 +1042,12 @@ export function canEditRent(role: string): boolean {
 
 export function canViewReports(role: string): boolean {
   const normalizedRole = role?.toLowerCase() || "";
-  return ["owner", "manager", "admin"].includes(normalizedRole);
+  return ["owner", "manager", "accountant", "admin"].includes(normalizedRole);
 }
 
 export function canAccessLocationTracking(role: string): boolean {
   const normalizedRole = role?.toLowerCase() || "";
-  return ["owner", "fitter", "admin"].includes(normalizedRole);
+    return ["owner", "supervisor", "admin"].includes(normalizedRole);
 }
 
 export function canAccessAdminSettings(role: string): boolean {
@@ -932,7 +1083,8 @@ export function getRoleLevel(role: string): number {
     manager: 4,
     sales: 3,
     designer: 2,
-    fitter: 2,
+    supervisor: 2,
+    accountant: 3,
     admin: 5,
   };
   return levels[normalizedRole] || 0;

@@ -53,6 +53,7 @@ export default function BookingTokenDetailPage() {
 
   const userRole = useMemo(() => getRoleFromUser(user), [user]);
   const roleLower = String(userRole || "").toLowerCase();
+  const fitterWorkflowEnabled = false;
 
   const canConfirm = useMemo(() => {
     return (
@@ -70,7 +71,7 @@ export default function BookingTokenDetailPage() {
   }, [roleLower]);
 
   const isDesigner = useMemo(() => roleLower === "designer", [roleLower]);
-  const isFitter = useMemo(() => roleLower === "fitter", [roleLower]);
+  const isFitter = false;
 
   const canCancel = useMemo(() => {
     return (
@@ -156,6 +157,7 @@ export default function BookingTokenDetailPage() {
 
   // Live updates for installation (fitter) status
   useEffect(() => {
+    if (!fitterWorkflowEnabled) return;
     const apiBase =
       process.env.NEXT_PUBLIC_API_URL ||
       process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -211,8 +213,32 @@ export default function BookingTokenDetailPage() {
     return raw || "—";
   };
 
+  const legacyExtensionRequestedUntil = useMemo(() => {
+    const apiValue = token?.legacyExtensionRequestedUntil;
+    if (apiValue) {
+      const d = new Date(String(apiValue));
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+    const notes = String(token?.notes || "");
+    const m = notes.match(/\[\[EXT_REQ until=([^\]]+)\]\]/);
+    if (!m || !m[1]) return null;
+    const d = new Date(m[1]);
+    if (Number.isNaN(d.getTime())) return null;
+    return d;
+  }, [token?.legacyExtensionRequestedUntil, token?.notes]);
+
+  const isPhase3Payload = useMemo(() => {
+    if (!token) return false;
+    return (
+      Object.prototype.hasOwnProperty.call(token, "blockedAt") ||
+      Object.prototype.hasOwnProperty.call(token, "extensionRequestedUntil") ||
+      Object.prototype.hasOwnProperty.call(token, "blockDurationHours")
+    );
+  }, [token]);
+
   const tokenStatusLower = String(token?.status || "").toLowerCase();
   const tokenStatusUpper = String(token?.status || "").toUpperCase();
+  const hasLegacyExtensionRequest = !isPhase3Payload && !!legacyExtensionRequestedUntil;
   const isHeadToken =
     typeof token?.queuePosition === "number" ? token.queuePosition === 1 : true;
   const isBlockingToken = ["BLOCKED", "EXTENSION_REQUESTED", "ACTIVE"].includes(
@@ -245,11 +271,15 @@ export default function BookingTokenDetailPage() {
   const canRequestExtension =
     isSalesOwnerOfToken &&
     isHeadToken &&
-    ["BLOCKED", "ACTIVE"].includes(tokenStatusUpper) &&
+    (isPhase3Payload
+      ? ["BLOCKED", "ACTIVE"].includes(tokenStatusUpper)
+      : tokenStatusUpper === "ACTIVE" && !hasLegacyExtensionRequest) &&
     !actionsDisabledByHoardingStatus;
   const canApproveOrRejectExtension =
     canManageExtension &&
-    tokenStatusUpper === "EXTENSION_REQUESTED" &&
+    (isPhase3Payload
+      ? tokenStatusUpper === "EXTENSION_REQUESTED"
+      : hasLegacyExtensionRequest) &&
     !actionsDisabledByHoardingStatus;
   const canReleaseThisToken =
     canRelease && isReleasableToken && !actionsDisabledByHoardingStatus;
@@ -263,6 +293,7 @@ export default function BookingTokenDetailPage() {
     tokenDesignerId &&
     String(tokenDesignerId) === String(user?.id || "");
   const canUpdateFitterStatus =
+    fitterWorkflowEnabled &&
     isFitter &&
     tokenFitterId &&
     String(tokenFitterId) === String(user?.id || "");
@@ -387,6 +418,7 @@ export default function BookingTokenDetailPage() {
 
   // Load fitters for assignment after design is completed
   useEffect(() => {
+    if (!fitterWorkflowEnabled) return;
     const shouldLoad = canConfirm && !!user && isDesignCompleted;
     if (!shouldLoad) return;
 
@@ -793,7 +825,12 @@ export default function BookingTokenDetailPage() {
                 }}
               >
                 <div>
-                  <strong>Status:</strong> {statusLabel(token.status)}
+                  <strong>Status:</strong>{" "}
+                  {statusLabel(
+                    hasLegacyExtensionRequest
+                      ? "extension_requested"
+                      : token.status,
+                  )}
                 </div>
                 <div>
                   <strong>Hoarding Status:</strong>{" "}
@@ -811,20 +848,26 @@ export default function BookingTokenDetailPage() {
                     {new Date(token.expiresAt).toLocaleString()}
                   </div>
                 )}
-                {tokenStatusUpper === "EXTENSION_REQUESTED" &&
-                  token.extensionRequestedUntil && (
-                    <div>
-                      <strong>Requested Until:</strong>{" "}
-                      {new Date(token.extensionRequestedUntil).toLocaleString()}
-                    </div>
-                  )}
+                {((tokenStatusUpper === "EXTENSION_REQUESTED" &&
+                  token.extensionRequestedUntil) ||
+                  hasLegacyExtensionRequest) && (
+                  <div>
+                    <strong>Requested Until:</strong>{" "}
+                    {tokenStatusUpper === "EXTENSION_REQUESTED" &&
+                    token.extensionRequestedUntil
+                      ? new Date(token.extensionRequestedUntil).toLocaleString()
+                      : legacyExtensionRequestedUntil
+                        ? legacyExtensionRequestedUntil.toLocaleString()
+                        : "—"}
+                  </div>
+                )}
                 {isConfirmedLike && (
                   <div>
                     <strong>Design Status:</strong>{" "}
                     {designStatusLabel(normalizedDesignStatus)}
                   </div>
                 )}
-                {isConfirmedLike && tokenFitterId && (
+                {fitterWorkflowEnabled && isConfirmedLike && tokenFitterId && (
                   <div>
                     <strong>Installation Status:</strong>{" "}
                     {fitterStatusLabel(normalizedFitterStatus)}
@@ -853,13 +896,12 @@ export default function BookingTokenDetailPage() {
                     {token.designer?.name || tokenDesignerId}
                   </div>
                 )}
-                {tokenFitterId && (
+                {fitterWorkflowEnabled && tokenFitterId && (
                   <div>
                     <strong>Fitter:</strong>{" "}
                     {token.fitter?.name || tokenFitterId}
                   </div>
                 )}
-                {/* Hide From/To — these are determined when fitter completes installation */}
                 <div>
                   <strong>Duration:</strong>{" "}
                   {token.durationMonths
@@ -979,7 +1021,7 @@ export default function BookingTokenDetailPage() {
                 </div>
               )}
 
-              {isConfirmedLike && isDesignCompleted && (
+              {fitterWorkflowEnabled && isConfirmedLike && isDesignCompleted && (
                 <div style={{ marginTop: 16 }}>
                   <h3 style={{ marginBottom: 8 }}>Fitter Assignment</h3>
                   {canConfirm ? (
@@ -1042,7 +1084,7 @@ export default function BookingTokenDetailPage() {
                 </div>
               )}
 
-              {isConfirmedLike && isDesignCompleted && (
+              {fitterWorkflowEnabled && isConfirmedLike && isDesignCompleted && (
                 <div style={{ marginTop: 16 }}>
                   <h3 style={{ marginBottom: 8 }}>Installation Progress</h3>
                   {canUpdateFitterStatus ? (

@@ -634,6 +634,112 @@ export const dashboardAPI = {
   },
 };
 
+// Supervisor API
+export const supervisorAPI = {
+  listHoardings: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    sizeMatch?: string;
+    condition?: string;
+    materialReceived?: string;
+  }) => {
+    const response = await api.get("/supervisor/hoardings", { params });
+    return response.data;
+  },
+  listDesigners: async () => {
+    const response = await api.get("/supervisor/designers");
+    return response.data;
+  },
+  updateChecklist: async (
+    id: string,
+    data: {
+      isCorrectSize?: boolean;
+      isGoodCondition?: boolean;
+      isFlexReceived?: boolean;
+      isReadyForInstall?: boolean;
+    },
+  ) => {
+    const response = await api.put(`/supervisor/hoardings/${id}/checklist`, data);
+    return response.data;
+  },
+  setExecutionType: async (
+    id: string,
+    data: { executionType: string; designerId?: string },
+  ) => {
+    const response = await api.put(`/supervisor/hoardings/${id}/execution-type`, data);
+    return response.data;
+  },
+  markFit: async (id: string) => {
+    const response = await api.put(`/supervisor/hoardings/${id}/mark-fit`);
+    return response.data;
+  },
+  markLive: async (id: string) => {
+    const response = await api.put(`/supervisor/hoardings/${id}/mark-live`);
+    return response.data;
+  },
+  markRemoval: async (id: string, reason: string) => {
+    const response = await api.put(`/supervisor/hoardings/${id}/mark-removal`, {
+      reason,
+    });
+    return response.data;
+  },
+  getOperationalPdf: async (id: string) => {
+    const response = await api.get(`/supervisor/hoardings/${id}/pdf`, {
+      responseType: "blob",
+    });
+    return response;
+  },
+};
+
+// Accountant API
+export const accountantAPI = {
+  summary: async () => {
+    const response = await api.get("/accountant/summary");
+    return response.data;
+  },
+  listInvoices: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    clientId?: string;
+    contractId?: string;
+    search?: string;
+  }) => {
+    const response = await api.get("/accountant/invoices", { params });
+    return response.data;
+  },
+  createInvoice: async (data: any) => {
+    const response = await api.post("/accountant/invoices", data);
+    return response.data;
+  },
+  updateInvoice: async (id: string, data: any) => {
+    const response = await api.patch(`/accountant/invoices/${id}`, data);
+    return response.data;
+  },
+  recordPayment: async (invoiceId: string, data: any) => {
+    const response = await api.post(`/accountant/invoices/${invoiceId}/payments`, data);
+    return response.data;
+  },
+  listPayments: async (params?: { page?: number; limit?: number; invoiceId?: string }) => {
+    const response = await api.get("/accountant/payments", { params });
+    return response.data;
+  },
+  listPrintingExpenses: async (params?: {
+    page?: number;
+    limit?: number;
+    contractId?: string;
+    clientId?: string;
+  }) => {
+    const response = await api.get("/accountant/printing-expenses", { params });
+    return response.data;
+  },
+  createPrintingExpense: async (data: any) => {
+    const response = await api.post("/accountant/printing-expenses", data);
+    return response.data;
+  },
+};
+
 // Location Tracking API
 export const locationAPI = {
   checkIn: async (data: {

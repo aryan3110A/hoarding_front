@@ -440,6 +440,45 @@ h4 {
   margin-bottom: 24px;
 }
 
+/* Tabs */
+.tab-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: #ffffff;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  min-width: 120px;
+  text-align: center;
+}
+
+.tab-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.tab-button.active {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-hover) 100%
+  );
+  color: var(--glacier-white);
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(31, 92, 169, 0.3);
+}
+
 /* Stat Cards */
 .stat-card {
   background: linear-gradient(135deg, var(--bg-secondary) 0%, #f8fafc 100%);

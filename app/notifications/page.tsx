@@ -27,8 +27,7 @@ export default function Notifications() {
   const roleLower = String(user?.role?.name || user?.role || "")
     .toLowerCase()
     .trim();
-  const canAssignFitterFromNotifications =
-    roleLower === "owner" || roleLower === "manager" || roleLower === "admin";
+  const canAssignFitterFromNotifications = false;
 
   const canMarkBookedFromNotifications =
     roleLower === "owner" ||

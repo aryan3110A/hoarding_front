@@ -53,7 +53,13 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Dashboard",
       href: "/dashboard",
       iconName: "BarChart2",
-      roles: ["owner", "manager", "sales", "admin"],
+      roles: ["owner", "manager", "sales", "accountant", "admin"],
+    },
+    {
+      title: "Accountant",
+      href: "/dashboard/accountant",
+      iconName: "Briefcase",
+      roles: ["accountant", "owner", "manager", "admin"],
     },
     {
       title: "Hoardings",
@@ -77,7 +83,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Contracts",
       href: "/contracts",
       iconName: "FileText",
-      roles: ["owner", "manager", "admin"],
+      roles: ["owner", "manager", "accountant", "admin"],
     },
     {
       title: "Vendors & Rent",
@@ -101,13 +107,13 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Reports",
       href: "/reports",
       iconName: "BarChart2",
-      roles: ["owner", "manager", "admin"],
+      roles: ["owner", "manager", "accountant", "admin"],
     },
     {
       title: "Tasks",
       href: "/tasks",
       iconName: "CheckSquare",
-      roles: ["owner", "manager", "designer", "fitter", "admin"],
+      roles: ["owner", "manager", "designer", "supervisor", "admin"],
     },
     {
       title: "Admin Settings",
@@ -119,14 +125,14 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Notifications",
       href: "/notifications",
       iconName: "Bell",
-      roles: ["owner", "manager", "sales", "designer", "fitter", "admin"],
+      roles: ["owner", "manager", "sales", "designer", "supervisor", "accountant", "admin"],
       badge: unreadCount > 0 ? unreadCount : null,
     },
     // {
     //   title: "Location",
     //   href: "/location",
     //   iconName: "MapPin",
-    //   roles: ["owner", "fitter", "admin"],
+    //   roles: ["owner", "supervisor", "admin"],
     // },
   ];
 

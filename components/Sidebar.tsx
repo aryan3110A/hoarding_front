@@ -45,7 +45,19 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Dashboard",
       href: "/dashboard",
       icon: "📊",
-      roles: ["owner", "manager", "sales", "designer", "fitter", "admin"],
+      roles: ["owner", "manager", "sales", "designer", "supervisor", "accountant", "admin"],
+    },
+    {
+      title: "Supervisor",
+      href: "/dashboard/supervisor",
+      icon: "🛠️",
+      roles: ["supervisor", "owner", "manager", "admin"],
+    },
+    {
+      title: "Accountant",
+      href: "/dashboard/accountant",
+      icon: "💼",
+      roles: ["accountant", "owner", "manager", "admin"],
     },
     {
       title: "Hoardings",
@@ -69,7 +81,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Contracts",
       href: "/contracts",
       icon: "📄",
-      roles: ["owner", "manager", "admin"], // Sales cannot access
+      roles: ["owner", "manager", "accountant", "admin"], // Sales cannot access
     },
     {
       title: "Vendors & Rent",
@@ -93,13 +105,13 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Reports",
       href: "/reports",
       icon: "📈",
-      roles: ["owner", "manager", "admin"], // Sales cannot access reports
+      roles: ["owner", "manager", "accountant", "admin"], // Sales cannot access reports
     },
     {
       title: "Tasks",
       href: "/tasks",
       icon: "✅",
-      roles: ["owner", "manager", "sales", "designer", "fitter", "admin"], // All roles see tasks (filtered by role)
+      roles: ["owner", "manager", "sales", "designer", "supervisor", "admin"], // All roles see tasks (filtered by role)
     },
     {
       title: "Admin Settings",
@@ -111,14 +123,14 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Notifications",
       href: "/notifications",
       icon: "🔔",
-      roles: ["owner", "manager", "sales", "designer", "fitter", "admin"],
+      roles: ["owner", "manager", "sales", "designer", "supervisor", "accountant", "admin"],
       badge: unreadCount > 0 ? unreadCount : null,
     },
     {
       title: "Location",
       href: "/location",
       icon: "📍",
-      roles: ["owner", "sales", "fitter", "admin"], // Only Owner, Sales, Fitter
+      roles: ["owner", "sales", "supervisor", "admin"], // Only Owner, Sales, Supervisor
     },
   ];
 

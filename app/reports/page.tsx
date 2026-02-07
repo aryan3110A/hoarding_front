@@ -142,7 +142,12 @@ export default function Reports() {
   }
 
   const userRole = user?.role?.toLowerCase() || "";
-  if (userRole !== "owner" && userRole !== "manager" && userRole !== "admin") {
+  if (
+    userRole !== "owner" &&
+    userRole !== "manager" &&
+    userRole !== "admin" &&
+    userRole !== "accountant"
+  ) {
     return <AccessDenied />;
   }
 

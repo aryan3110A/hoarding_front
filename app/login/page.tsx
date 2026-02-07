@@ -175,8 +175,11 @@ export default function Login() {
               <strong>Designer:</strong> designer@demo.com
             </div>
             <div style={{ textAlign: "left" }}>
-              <strong>Fitter:</strong> fitter@demo.com
+              <strong>Supervisor:</strong> supervisor@demo.com
             </div>
+              <div style={{ textAlign: "left" }}>
+                <strong>Accountant:</strong> accountant@demo.com
+              </div>
           </div>
         </div> */}
       </div>
