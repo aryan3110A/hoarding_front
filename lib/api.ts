@@ -698,11 +698,17 @@ export const supervisorAPI = {
     return response.data;
   },
   markLive: async (id: string, data?: { liveDate?: string }) => {
-    const response = await api.put(`/supervisor/hoardings/${id}/mark-live`, data || {});
+    const response = await api.put(
+      `/supervisor/hoardings/${id}/mark-live`,
+      data || {},
+    );
     return response.data;
   },
   setLiveDate: async (id: string, data: { plannedLiveDate: string }) => {
-    const response = await api.put(`/supervisor/hoardings/${id}/live-date`, data);
+    const response = await api.put(
+      `/supervisor/hoardings/${id}/live-date`,
+      data,
+    );
     return response.data;
   },
   markRemoval: async (id: string, reason: string) => {

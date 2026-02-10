@@ -48,7 +48,8 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
 
   const userRole = user?.role?.toLowerCase() || "";
 
-  const dashboardHref = userRole === "supervisor" ? "/dashboard/supervisor" : "/dashboard";
+  const dashboardHref =
+    userRole === "supervisor" ? "/dashboard/supervisor" : "/dashboard";
 
   const menuItems = [
     {

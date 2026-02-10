@@ -40,7 +40,8 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
 
   const userRole = user?.role?.toLowerCase() || "";
 
-  const dashboardHref = userRole === "supervisor" ? "/dashboard/supervisor" : "/dashboard";
+  const dashboardHref =
+    userRole === "supervisor" ? "/dashboard/supervisor" : "/dashboard";
 
   const menuItems = [
     {

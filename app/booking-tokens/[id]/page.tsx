@@ -28,7 +28,8 @@ export default function BookingTokenDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [token, setToken] = useState<any>(null);
 
-  const [selectedExecutionType, setSelectedExecutionType] = useState<string>("");
+  const [selectedExecutionType, setSelectedExecutionType] =
+    useState<string>("");
   const [plannedLiveDateDraft, setPlannedLiveDateDraft] = useState<string>("");
 
   const [fitters, setFitters] = useState<any[]>([]);
@@ -1338,7 +1339,9 @@ export default function BookingTokenDetailPage() {
                           className="input"
                           type="date"
                           value={plannedLiveDateDraft}
-                          onChange={(e) => setPlannedLiveDateDraft(e.target.value)}
+                          onChange={(e) =>
+                            setPlannedLiveDateDraft(e.target.value)
+                          }
                           disabled={submitting}
                         />
                       </div>

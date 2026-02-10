@@ -104,7 +104,10 @@ export default function Design() {
     return String(raw || "pending").toLowerCase();
   };
 
-  const updateDesignStatus = async (tokenId: string, next: "in_progress" | "completed") => {
+  const updateDesignStatus = async (
+    tokenId: string,
+    next: "in_progress" | "completed",
+  ) => {
     try {
       setUpdatingId(String(tokenId));
       const resp = await bookingTokensAPI.updateDesignStatus(tokenId, next);
@@ -161,7 +164,7 @@ export default function Design() {
             <h3>
               {
                 designs.filter(
-                  (d) => normalizeStatus(d.designStatus) === "pending"
+                  (d) => normalizeStatus(d.designStatus) === "pending",
                 ).length
               }
             </h3>
@@ -171,7 +174,7 @@ export default function Design() {
             <h3>
               {
                 designs.filter(
-                  (d) => normalizeStatus(d.designStatus) === "in_progress"
+                  (d) => normalizeStatus(d.designStatus) === "in_progress",
                 ).length
               }
             </h3>
@@ -181,7 +184,7 @@ export default function Design() {
             <h3>
               {
                 designs.filter(
-                  (d) => normalizeStatus(d.designStatus) === "completed"
+                  (d) => normalizeStatus(d.designStatus) === "completed",
                 ).length
               }
             </h3>
@@ -226,21 +229,23 @@ export default function Design() {
                           normalizeStatus(t.designStatus) === "completed"
                             ? "badge-success"
                             : normalizeStatus(t.designStatus) === "in_progress"
-                            ? "badge-warning"
-                            : "badge-info"
+                              ? "badge-warning"
+                              : "badge-info"
                         }`}
                       >
                         {normalizeStatus(t.designStatus).replace(/_/g, " ")}
                       </span>
                     </td>
                     <td>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <div
+                        style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+                      >
                         <button
                           className="btn btn-secondary"
                           style={{ padding: "5px 10px", fontSize: "12px" }}
                           onClick={() =>
                             router.push(
-                              `/booking-tokens/${t.id}?from=notification`
+                              `/booking-tokens/${t.id}?from=notification`,
                             )
                           }
                         >
@@ -266,7 +271,8 @@ export default function Design() {
                               style={{ padding: "5px 10px", fontSize: "12px" }}
                               disabled={
                                 updatingId === String(t.id) ||
-                                normalizeStatus(t.designStatus) !== "in_progress"
+                                normalizeStatus(t.designStatus) !==
+                                  "in_progress"
                               }
                               onClick={() =>
                                 updateDesignStatus(String(t.id), "completed")

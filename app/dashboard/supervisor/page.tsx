@@ -57,13 +57,17 @@ export default function SupervisorDashboardPage() {
   const [materialReceived, setMaterialReceived] = useState("");
 
   const [designers, setDesigners] = useState<any[]>([]);
-  const [designerDrafts, setDesignerDrafts] = useState<
-    Record<string, string>
-  >({});
+  const [designerDrafts, setDesignerDrafts] = useState<Record<string, string>>(
+    {},
+  );
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
-  const [settingLiveDateId, setSettingLiveDateId] = useState<string | null>(null);
-  const [liveDateDrafts, setLiveDateDrafts] = useState<Record<string, string>>({});
+  const [settingLiveDateId, setSettingLiveDateId] = useState<string | null>(
+    null,
+  );
+  const [liveDateDrafts, setLiveDateDrafts] = useState<Record<string, string>>(
+    {},
+  );
 
   const canManage = useMemo(() => {
     return ["supervisor", "owner", "manager", "admin"].includes(roleLower);
@@ -222,7 +226,8 @@ export default function SupervisorDashboardPage() {
                     ...(h.supervisorChecklist || {}),
                     isSiteImageUploaded: true,
                     siteImages:
-                      resp?.data?.siteImages || h?.supervisorChecklist?.siteImages,
+                      resp?.data?.siteImages ||
+                      h?.supervisorChecklist?.siteImages,
                   },
                 }
               : h,
@@ -572,7 +577,13 @@ export default function SupervisorDashboardPage() {
                               Assign Designer
                             </button>
                             {!execType && (
-                              <div style={{ marginTop: 4, fontSize: 12, color: "#6b7280" }}>
+                              <div
+                                style={{
+                                  marginTop: 4,
+                                  fontSize: 12,
+                                  color: "#6b7280",
+                                }}
+                              >
                                 Select an execution type to assign a designer.
                               </div>
                             )}
@@ -584,7 +595,8 @@ export default function SupervisorDashboardPage() {
                               color: "#6b7280",
                             }}
                           >
-                            Design status: {designStatusLabel(designStatusLower)}
+                            Design status:{" "}
+                            {designStatusLabel(designStatusLower)}
                           </div>
                         </td>
                         <td>
@@ -686,7 +698,10 @@ export default function SupervisorDashboardPage() {
                               disabled={!canMarkLive}
                               title={markLiveTooltip}
                               onClick={() =>
-                                markLive(h.id, plannedLiveDateValue || undefined)
+                                markLive(
+                                  h.id,
+                                  plannedLiveDateValue || undefined,
+                                )
                               }
                             >
                               Mark Live
@@ -735,8 +750,8 @@ export default function SupervisorDashboardPage() {
                                 color: "#6b7280",
                               }}
                             >
-                              Set the live date first. Duration starts from
-                              that date.
+                              Set the live date first. Duration starts from that
+                              date.
                             </div>
                           )}
                         </td>
