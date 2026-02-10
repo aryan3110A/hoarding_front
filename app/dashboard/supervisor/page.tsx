@@ -7,9 +7,9 @@ import { useUser } from "@/components/AppLayout";
 import { showError, showSuccess } from "@/lib/toast";
 
 const executionTypes = [
-  { value: "CLIENT_CDR", label: "Client CDR" },
-  { value: "IN_HOUSE_DESIGN", label: "In-house Design" },
-  { value: "CLIENT_DIRECT_FLEX", label: "Client Direct Flex" },
+  { value: "CLIENT_DIRECT_FLEX", label: "Direct flex provided by client" },
+  { value: "CLIENT_CDR", label: "Client provides CDR file" },
+  { value: "IN_HOUSE_DESIGN", label: "In-house designing" },
 ];
 
 const statusOptions = [
@@ -29,6 +29,18 @@ const statusBadge = (status?: string) => {
   return { text: status || "—", color: "#6b7280" };
 };
 
+const designStatusLabel = (raw?: string) => {
+  const normalized = String(raw || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_");
+  if (normalized === "completed") return "Completed";
+  if (normalized === "in_progress" || normalized === "inprogress")
+    return "In Progress";
+  if (normalized === "pending") return "Pending";
+  return raw ? String(raw) : "Pending";
+};
+
 export default function SupervisorDashboardPage() {
   const user = useUser();
   const roleLower = String(user?.role || "").toLowerCase();
@@ -45,6 +57,13 @@ export default function SupervisorDashboardPage() {
   const [materialReceived, setMaterialReceived] = useState("");
 
   const [designers, setDesigners] = useState<any[]>([]);
+  const [designerDrafts, setDesignerDrafts] = useState<
+    Record<string, string>
+  >({});
+  const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [settingLiveDateId, setSettingLiveDateId] = useState<string | null>(null);
+  const [liveDateDrafts, setLiveDateDrafts] = useState<Record<string, string>>({});
 
   const canManage = useMemo(() => {
     return ["supervisor", "owner", "manager", "admin"].includes(roleLower);
@@ -102,6 +121,61 @@ export default function SupervisorDashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, status, sizeMatch, condition, materialReceived]);
 
+  // Live updates for design status
+  useEffect(() => {
+    if (!canManage) return;
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "http://localhost:3001";
+    const accessToken =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const query = accessToken
+      ? `?token=${encodeURIComponent(accessToken)}`
+      : "";
+    const url = `${apiBase}/api/events/design-status${query}`;
+    const source = new EventSource(url as any);
+    source.onmessage = (evt) => {
+      try {
+        const payload = JSON.parse(evt.data || "{}") as {
+          hoardingId?: string;
+          designStatus?: string;
+        };
+        if (!payload?.hoardingId) return;
+        setRows((prev) =>
+          (prev || []).map((h) =>
+            String(h.id) === String(payload.hoardingId)
+              ? { ...h, latestDesignStatus: payload.designStatus }
+              : h,
+          ),
+        );
+      } catch (_) {}
+    };
+    source.onerror = () => {
+      // ignore; browser reconnects
+    };
+    return () => {
+      try {
+        source.close();
+      } catch (_) {}
+    };
+  }, [canManage]);
+
+  useEffect(() => {
+    setDesignerDrafts((prev) => {
+      const next = { ...prev };
+      (rows || []).forEach((h: any) => {
+        const id = String(h?.id || "");
+        if (!id) return;
+        const current = h?.designerId ? String(h.designerId) : "";
+        if (!next[id] || next[id] !== current) {
+          next[id] = current;
+        }
+      });
+      return next;
+    });
+  }, [rows]);
+
   const updateChecklist = async (id: string, patch: any) => {
     // Optimistic local update to avoid full refresh
     setRows((prev) =>
@@ -126,6 +200,41 @@ export default function SupervisorDashboardPage() {
       }
     } catch (e: any) {
       showError(e?.response?.data?.message || "Failed to update checklist");
+    }
+  };
+
+  const uploadChecklistImage = async (id: string, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    try {
+      setUploadingId(String(id));
+      const resp = await supervisorAPI.uploadChecklistImage(
+        id,
+        Array.from(files),
+      );
+      if (resp?.success) {
+        showSuccess("Image uploaded");
+        setRows((prev) =>
+          (prev || []).map((h) =>
+            String(h.id) === String(id)
+              ? {
+                  ...h,
+                  supervisorChecklist: {
+                    ...(h.supervisorChecklist || {}),
+                    isSiteImageUploaded: true,
+                    siteImages:
+                      resp?.data?.siteImages || h?.supervisorChecklist?.siteImages,
+                  },
+                }
+              : h,
+          ),
+        );
+      } else {
+        showError(resp?.message || "Failed to upload image");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to upload image");
+    } finally {
+      setUploadingId(null);
     }
   };
 
@@ -160,24 +269,37 @@ export default function SupervisorDashboardPage() {
     }
   };
 
-  const markFit = async (id: string) => {
-    if (!confirm("Mark hoarding as Under Process?")) return;
+  const assignDesigner = async (id: string, designerId: string) => {
+    if (!designerId) {
+      showError("Please select a designer");
+      return;
+    }
+    const row = (rows || []).find((r) => String(r.id) === String(id));
+    const execType = String(row?.executionType || "");
+    if (!execType) {
+      showError("Please select an execution type first");
+      return;
+    }
     try {
-      const resp = await supervisorAPI.markFit(id);
+      setAssigningId(String(id));
+      const resp = await supervisorAPI.setExecutionType(id, {
+        executionType: execType,
+        designerId,
+      });
       if (resp?.success) {
-        showSuccess("Marked as Under Process");
+        showSuccess("Designer assigned");
         fetchRows();
       } else {
-        showError(resp?.message || "Failed to mark as Under Process");
+        showError(resp?.message || "Failed to assign designer");
       }
     } catch (e: any) {
-      showError(
-        e?.response?.data?.message || "Failed to mark as Under Process",
-      );
+      showError(e?.response?.data?.message || "Failed to assign designer");
+    } finally {
+      setAssigningId(null);
     }
   };
 
-  const markLive = async (id: string) => {
+  const markLive = async (id: string, liveDate?: string) => {
     if (!confirm("Mark hoarding as Live?")) return;
     try {
       // Optimistic local update
@@ -186,7 +308,10 @@ export default function SupervisorDashboardPage() {
           String(h.id) === String(id) ? { ...h, status: "live" } : h,
         ),
       );
-      const resp = await supervisorAPI.markLive(id);
+      const resp = await supervisorAPI.markLive(
+        id,
+        liveDate ? { liveDate } : undefined,
+      );
       if (resp?.success) {
         showSuccess("Marked as Live");
       } else {
@@ -194,6 +319,38 @@ export default function SupervisorDashboardPage() {
       }
     } catch (e: any) {
       showError(e?.response?.data?.message || "Failed to mark as Live");
+    }
+  };
+
+  const setPlannedLiveDate = async (id: string, plannedLiveDate: string) => {
+    if (!plannedLiveDate) {
+      showError("Please select a date");
+      return;
+    }
+    try {
+      setSettingLiveDateId(String(id));
+      const resp = await supervisorAPI.setLiveDate(id, { plannedLiveDate });
+      if (resp?.success) {
+        showSuccess("Live date saved");
+        setRows((prev) =>
+          (prev || []).map((h) =>
+            String(h.id) === String(id)
+              ? { ...h, plannedLiveDate: plannedLiveDate }
+              : h,
+          ),
+        );
+        setLiveDateDrafts((prev) => {
+          const next = { ...prev };
+          delete next[String(id)];
+          return next;
+        });
+      } else {
+        showError(resp?.message || "Failed to save live date");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to save live date");
+    } finally {
+      setSettingLiveDateId(null);
     }
   };
 
@@ -299,31 +456,40 @@ export default function SupervisorDashboardPage() {
                       checklist.isCorrectSize &&
                       checklist.isGoodCondition &&
                       checklist.isFlexReceived &&
-                      checklist.isReadyForInstall;
+                      checklist.isReadyForInstall &&
+                      checklist.isSiteImageUploaded;
                     const execType = h.executionType || "";
                     const needsDesigner = execType === "IN_HOUSE_DESIGN";
                     const statusLower = String(h.status || "").toLowerCase();
-                    const canMarkFit =
-                      statusLower === "booked" && isComplete && !!execType;
                     const designStatusLower = String(
                       h.latestDesignStatus || "",
                     ).toLowerCase();
                     const needsDesignComplete = execType === "IN_HOUSE_DESIGN";
                     const isDesignCompleted =
                       !needsDesignComplete || designStatusLower === "completed";
+                    const plannedLiveDateRaw = h?.plannedLiveDate;
+                    const plannedLiveDateObj = plannedLiveDateRaw
+                      ? new Date(String(plannedLiveDateRaw))
+                      : null;
+                    const plannedLiveDateValue =
+                      plannedLiveDateObj && !isNaN(plannedLiveDateObj.getTime())
+                        ? plannedLiveDateObj.toISOString().slice(0, 10)
+                        : "";
+                    const liveDateDraft = liveDateDrafts[String(h.id)] || "";
+                    const liveDateValue = plannedLiveDateValue || liveDateDraft;
                     const canMarkLive =
                       statusLower !== "live" &&
                       !!checklist.isReadyForInstall &&
-                      isDesignCompleted;
+                      isDesignCompleted &&
+                      !!plannedLiveDateValue;
                     const canMarkRemoval = statusLower !== "removal_pending";
-                    const markFitTooltip = canMarkFit
-                      ? "Mark Under Process"
-                      : "Requires: status BOOKED, execution type set, checklist complete";
                     const markLiveTooltip = canMarkLive
                       ? "Mark Live"
-                      : needsDesignComplete && !isDesignCompleted
-                        ? "Requires: Design completed"
-                        : "Requires: Ready for Install and not already Live";
+                      : !plannedLiveDateValue
+                        ? "Set live date"
+                        : needsDesignComplete && !isDesignCompleted
+                          ? "Requires: Design completed"
+                          : "Requires: Ready for Install and not already Live";
                     const markRemovalTooltip = canMarkRemoval
                       ? "Mark for Removal"
                       : "Already in Removal Pending";
@@ -367,39 +533,59 @@ export default function SupervisorDashboardPage() {
                               </option>
                             ))}
                           </select>
-                          {needsDesigner && (
-                            <div style={{ marginTop: 8 }}>
-                              <select
-                                value={h.designerId || ""}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  setExecutionType(
-                                    h.id,
-                                    "IN_HOUSE_DESIGN",
-                                    e.target.value,
-                                  );
-                                }}
-                              >
-                                <option value="">Select Designer</option>
-                                {designers.map((d) => (
-                                  <option key={d.id} value={d.id}>
-                                    {d.name || d.email || d.id}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          )}
-                          {needsDesignComplete && (
-                            <div
-                              style={{
-                                marginTop: 6,
-                                fontSize: 12,
-                                color: "#6b7280",
+                          <div style={{ marginTop: 8 }}>
+                            <select
+                              value={designerDrafts[String(h.id)] || ""}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                const val = e.target.value;
+                                setDesignerDrafts((prev) => ({
+                                  ...prev,
+                                  [String(h.id)]: val,
+                                }));
+                              }}
+                              disabled={!execType}
+                            >
+                              <option value="">Select Designer</option>
+                              {designers.map((d) => (
+                                <option key={d.id} value={d.id}>
+                                  {d.name || d.email || d.id}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              className="btn btn-primary"
+                              style={{ marginTop: 8 }}
+                              disabled={
+                                !execType ||
+                                assigningId === String(h.id) ||
+                                !designerDrafts[String(h.id)]
+                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                assignDesigner(
+                                  h.id,
+                                  designerDrafts[String(h.id)] || "",
+                                );
                               }}
                             >
-                              Design status: {designStatusLower || "pending"}
-                            </div>
-                          )}
+                              Assign Designer
+                            </button>
+                            {!execType && (
+                              <div style={{ marginTop: 4, fontSize: 12, color: "#6b7280" }}>
+                                Select an execution type to assign a designer.
+                              </div>
+                            )}
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 6,
+                              fontSize: 12,
+                              color: "#6b7280",
+                            }}
+                          >
+                            Design status: {designStatusLabel(designStatusLower)}
+                          </div>
                         </td>
                         <td>
                           <div style={{ display: "grid", gap: 6 }}>
@@ -455,6 +641,26 @@ export default function SupervisorDashboardPage() {
                               />{" "}
                               Ready for Install
                             </label>
+                            <div>
+                              <label title="Site image uploaded">
+                                <input
+                                  type="checkbox"
+                                  checked={!!checklist.isSiteImageUploaded}
+                                  readOnly
+                                />{" "}
+                                Site Image Uploaded
+                              </label>
+                              <div style={{ marginTop: 6 }}>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) =>
+                                    uploadChecklistImage(h.id, e.target.files)
+                                  }
+                                  disabled={uploadingId === String(h.id)}
+                                />
+                              </div>
+                            </div>
                             <div
                               style={{
                                 fontSize: 12,
@@ -477,20 +683,35 @@ export default function SupervisorDashboardPage() {
                           >
                             <button
                               className="btn btn-secondary"
-                              disabled={!canMarkFit}
-                              title={markFitTooltip}
-                              onClick={() => markFit(h.id)}
-                            >
-                              Mark Fit
-                            </button>
-                            <button
-                              className="btn btn-secondary"
                               disabled={!canMarkLive}
                               title={markLiveTooltip}
-                              onClick={() => markLive(h.id)}
+                              onClick={() =>
+                                markLive(h.id, plannedLiveDateValue || undefined)
+                              }
                             >
                               Mark Live
                             </button>
+                            <input
+                              type="date"
+                              value={liveDateValue}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setLiveDateDrafts((prev) => ({
+                                  ...prev,
+                                  [String(h.id)]: val,
+                                }));
+                                if (val) {
+                                  setPlannedLiveDate(h.id, val);
+                                }
+                              }}
+                              disabled={
+                                !!plannedLiveDateValue ||
+                                settingLiveDateId === String(h.id) ||
+                                statusLower === "live"
+                              }
+                              style={{ maxWidth: 170 }}
+                              title="Live date"
+                            />
                             <button
                               className="btn btn-secondary"
                               disabled={!canMarkRemoval}
@@ -506,7 +727,7 @@ export default function SupervisorDashboardPage() {
                               PDF
                             </button>
                           </div>
-                          {!canMarkFit && (
+                          {!canMarkLive && (
                             <div
                               style={{
                                 marginTop: 6,
@@ -514,8 +735,8 @@ export default function SupervisorDashboardPage() {
                                 color: "#6b7280",
                               }}
                             >
-                              Mark Fit requires: status BOOKED, execution type
-                              selected, checklist complete.
+                              Set the live date first. Duration starts from
+                              that date.
                             </div>
                           )}
                         </td>

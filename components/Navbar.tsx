@@ -48,12 +48,28 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
 
   const userRole = user?.role?.toLowerCase() || "";
 
+  const dashboardHref = userRole === "supervisor" ? "/dashboard/supervisor" : "/dashboard";
+
   const menuItems = [
     {
       title: "Dashboard",
-      href: "/dashboard",
+      href: dashboardHref,
       iconName: "BarChart2",
-      roles: ["owner", "manager", "sales", "accountant", "admin"],
+      roles: [
+        "owner",
+        "manager",
+        "sales",
+        "designer",
+        "supervisor",
+        "accountant",
+        "admin",
+      ],
+    },
+    {
+      title: "Supervisor",
+      href: "/dashboard/supervisor",
+      iconName: "Wrench",
+      roles: ["owner", "manager", "admin"],
     },
     {
       title: "Accountant",

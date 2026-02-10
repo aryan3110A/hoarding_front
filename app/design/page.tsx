@@ -11,12 +11,14 @@ import {
   getRoleFromUser,
 } from "@/lib/rbac";
 import { bookingTokensAPI } from "@/lib/api";
+import { showError, showSuccess } from "@/lib/toast";
 
 export default function Design() {
   const user = useUser();
   const router = useRouter();
   const [designs, setDesigns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -100,6 +102,23 @@ export default function Design() {
     if (s === "IN_PROGRESS") return "in_progress";
     if (s === "COMPLETED") return "completed";
     return String(raw || "pending").toLowerCase();
+  };
+
+  const updateDesignStatus = async (tokenId: string, next: "in_progress" | "completed") => {
+    try {
+      setUpdatingId(String(tokenId));
+      const resp = await bookingTokensAPI.updateDesignStatus(tokenId, next);
+      if (resp?.success) {
+        showSuccess("Design status updated");
+        fetchDesigns();
+      } else {
+        showError(resp?.message || "Failed to update design status");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to update design status");
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   return (
@@ -215,17 +234,49 @@ export default function Design() {
                       </span>
                     </td>
                     <td>
-                      <button
-                        className="btn btn-primary"
-                        style={{ padding: "5px 10px", fontSize: "12px" }}
-                        onClick={() =>
-                          router.push(
-                            `/booking-tokens/${t.id}?from=notification`
-                          )
-                        }
-                      >
-                        View
-                      </button>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button
+                          className="btn btn-secondary"
+                          style={{ padding: "5px 10px", fontSize: "12px" }}
+                          onClick={() =>
+                            router.push(
+                              `/booking-tokens/${t.id}?from=notification`
+                            )
+                          }
+                        >
+                          View
+                        </button>
+                        {userRoleLower === "designer" && canUpdateDesign && (
+                          <>
+                            <button
+                              className="btn btn-primary"
+                              style={{ padding: "5px 10px", fontSize: "12px" }}
+                              disabled={
+                                updatingId === String(t.id) ||
+                                normalizeStatus(t.designStatus) !== "pending"
+                              }
+                              onClick={() =>
+                                updateDesignStatus(String(t.id), "in_progress")
+                              }
+                            >
+                              Mark In Progress
+                            </button>
+                            <button
+                              className="btn btn-primary"
+                              style={{ padding: "5px 10px", fontSize: "12px" }}
+                              disabled={
+                                updatingId === String(t.id) ||
+                                normalizeStatus(t.designStatus) !== "in_progress"
+                              }
+                              onClick={() =>
+                                updateDesignStatus(String(t.id), "completed")
+                              }
+                            >
+                              Mark Completed
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

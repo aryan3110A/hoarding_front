@@ -40,10 +40,12 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
 
   const userRole = user?.role?.toLowerCase() || "";
 
+  const dashboardHref = userRole === "supervisor" ? "/dashboard/supervisor" : "/dashboard";
+
   const menuItems = [
     {
       title: "Dashboard",
-      href: "/dashboard",
+      href: dashboardHref,
       icon: "📊",
       roles: [
         "owner",
@@ -59,7 +61,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Supervisor",
       href: "/dashboard/supervisor",
       icon: "🛠️",
-      roles: ["supervisor", "owner", "manager", "admin"],
+      roles: ["owner", "manager", "admin"],
     },
     {
       title: "Accountant",

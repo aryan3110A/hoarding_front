@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { createPortal } from "react-dom";
 import { clientsAPI, hoardingsAPI, proposalsAPI } from "@/lib/api";
 import AccessDenied from "@/components/AccessDenied";
 import { getRoleFromUser } from "@/lib/rbac";
@@ -102,6 +110,7 @@ const SIZE_PRESETS = [
 
 const AVAILABILITY_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "available", label: "Immediately Available" },
+  { value: "available_free", label: "Available (not blocked by me)" },
   { value: "available_soon", label: "Available Soon" },
   { value: "blocked", label: "Blocked" },
   { value: "booked", label: "Booked" },
@@ -147,13 +156,22 @@ export default function ProposalBuilder({
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
 
+  const clientInputRef = useRef<HTMLInputElement | null>(null);
+  const clientDropdownRef = useRef<HTMLDivElement | null>(null);
+  const [clientDropdownRect, setClientDropdownRect] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
+  const [portalReady, setPortalReady] = useState(false);
+
   const [filters, setFilters] = useState({
     city: "",
     area: "",
     location: "",
     type: "",
     size: "",
-    availability: "available",
+    availability: "",
   });
 
   const [page, setPage] = useState<number>(1);
@@ -224,6 +242,70 @@ export default function ProposalBuilder({
     () => clientInput.trim(),
     [clientInput],
   );
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
+
+  const updateClientDropdownRect = () => {
+    const el = clientInputRef.current;
+    if (!el) {
+      setClientDropdownRect(null);
+      return;
+    }
+    const r = el.getBoundingClientRect();
+    setClientDropdownRect({
+      top: r.bottom + 4,
+      left: r.left,
+      width: r.width,
+    });
+  };
+
+  useLayoutEffect(() => {
+    if (!clientDropdownOpen) return;
+    updateClientDropdownRect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientDropdownOpen, clientInput]);
+
+  useEffect(() => {
+    if (!clientDropdownOpen) return;
+
+    const onScroll = () => updateClientDropdownRect();
+    const onResize = () => updateClientDropdownRect();
+    // Capture scroll events from any scroll container.
+    document.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onResize);
+    return () => {
+      document.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onResize);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientDropdownOpen]);
+
+  useEffect(() => {
+    if (!clientDropdownOpen) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setClientDropdownOpen(false);
+    };
+
+    const onMouseDown = (e: MouseEvent) => {
+      const t = e.target as Node | null;
+      if (!t) return;
+      const inputEl = clientInputRef.current;
+      const dropEl = clientDropdownRef.current;
+      if (inputEl?.contains(t)) return;
+      if (dropEl?.contains(t)) return;
+      setClientDropdownOpen(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("mousedown", onMouseDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("mousedown", onMouseDown);
+    };
+  }, [clientDropdownOpen]);
 
   const totals = useMemo(() => {
     if (mode === "WITHOUT_RATE") {
@@ -307,6 +389,25 @@ export default function ProposalBuilder({
     loadHoardings(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roleName]);
+
+  // Auto-apply filters (debounced)
+  useEffect(() => {
+    if (roleName && roleName !== "sales") return;
+    const t = setTimeout(() => {
+      setPage(1);
+      loadHoardings(1);
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    roleName,
+    filters.city,
+    filters.area,
+    filters.location,
+    filters.type,
+    filters.size,
+    filters.availability,
+  ]);
 
   // Hydrate from return-to flow: /clients/new redirects back with ?clientId=
   useEffect(() => {
@@ -400,7 +501,7 @@ export default function ProposalBuilder({
       location: "",
       type: "",
       size: "",
-      availability: "available",
+      availability: "",
     });
     setPage(1);
     loadHoardings(1);
@@ -607,6 +708,12 @@ export default function ProposalBuilder({
             </div>
           </div>
           <div className="flex gap-2">
+            <Link
+              href="/proposals"
+              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-white/30 bg-white/10 text-white hover:bg-white/15 backdrop-blur"
+            >
+              Proposals
+            </Link>
             <button
               onClick={handleSaveDraft}
               disabled={saving || acting}
@@ -658,7 +765,7 @@ export default function ProposalBuilder({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
             <div className="space-y-6 lg:max-h-[calc(100vh-140px)] lg:overflow-auto lg:pr-1">
-              <div className="bg-white/95 backdrop-blur rounded-2xl border border-white/30 shadow-lg p-4 text-slate-900">
+              <div className="bg-white/95 backdrop-blur rounded-2xl border border-white/30 shadow-lg p-4 text-slate-900 relative z-40 overflow-visible">
                 <h2 className="font-semibold mb-3 text-slate-900">Client</h2>
                 <div className="relative">
                   <input
@@ -670,44 +777,56 @@ export default function ProposalBuilder({
                       setClientDropdownOpen(true);
                     }}
                     onFocus={() => setClientDropdownOpen(true)}
+                    ref={clientInputRef}
                     className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                   />
 
-                  {clientDropdownOpen ? (
-                    <div className="absolute z-20 mt-1 w-full bg-white border rounded shadow-sm max-h-64 overflow-auto">
-                      {clientSearching ? (
-                        <div className="px-3 py-2 text-sm text-gray-600">
-                          Searching...
-                        </div>
-                      ) : null}
-
-                      {!clientSearching &&
-                      clientSuggestions.length === 0 &&
-                      normalizedClientInput ? (
-                        <button
-                          type="button"
-                          onClick={goToCreateClient}
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50"
+                  {portalReady && clientDropdownOpen && clientDropdownRect
+                    ? createPortal(
+                        <div
+                          ref={clientDropdownRef}
+                          className="fixed z-[9999] bg-white border rounded shadow-sm max-h-64 overflow-auto"
+                          style={{
+                            top: clientDropdownRect.top,
+                            left: clientDropdownRect.left,
+                            width: clientDropdownRect.width,
+                          }}
                         >
-                          + Create new client “{normalizedClientInput}”
-                        </button>
-                      ) : null}
+                          {clientSearching ? (
+                            <div className="px-3 py-2 text-sm text-gray-600">
+                              Searching...
+                            </div>
+                          ) : null}
 
-                      {clientSuggestions.map((c) => (
-                        <button
-                          key={c.id}
-                          type="button"
-                          onClick={() => selectClient(c)}
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50"
-                        >
-                          <div className="font-medium">{c.name}</div>
-                          <div className="text-xs text-gray-600">
-                            {c.phone || "—"}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
+                          {!clientSearching &&
+                          clientSuggestions.length === 0 &&
+                          normalizedClientInput ? (
+                            <button
+                              type="button"
+                              onClick={goToCreateClient}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50"
+                            >
+                              + Create new client “{normalizedClientInput}”
+                            </button>
+                          ) : null}
+
+                          {clientSuggestions.map((c) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() => selectClient(c)}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50"
+                            >
+                              <div className="font-medium">{c.name}</div>
+                              <div className="text-xs text-gray-600">
+                                {c.phone || "—"}
+                              </div>
+                            </button>
+                          ))}
+                        </div>,
+                        document.body,
+                      )
+                    : null}
                 </div>
 
                 {selectedClient ? (
@@ -734,7 +853,7 @@ export default function ProposalBuilder({
                 ) : null}
               </div>
 
-              <div className="bg-white/95 backdrop-blur rounded-2xl border border-white/30 shadow-lg p-4 text-slate-900">
+              <div className="bg-white/95 backdrop-blur rounded-2xl border border-white/30 shadow-lg p-4 text-slate-900 relative z-10">
                 <h2 className="font-semibold mb-3 text-slate-900">
                   Proposal Settings
                 </h2>

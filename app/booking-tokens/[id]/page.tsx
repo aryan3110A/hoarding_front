@@ -4,10 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { bookingTokensAPI, hoardingsAPI, usersAPI } from "@/lib/api";
+import { bookingTokensAPI, hoardingsAPI } from "@/lib/api";
 import { getRoleFromUser } from "@/lib/rbac";
 import { useUser } from "@/components/AppLayout";
 import { showError, showErrorNoTitle, showSuccess } from "@/lib/toast";
+
+const executionTypeOptions = [
+  { value: "CLIENT_DIRECT_FLEX", label: "Direct flex provided by client" },
+  { value: "CLIENT_CDR", label: "Client provides CDR file" },
+  { value: "IN_HOUSE_DESIGN", label: "In-house designing" },
+];
 
 export default function BookingTokenDetailPage() {
   const params = useParams<{ id: string }>();
@@ -22,9 +28,8 @@ export default function BookingTokenDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [token, setToken] = useState<any>(null);
 
-  const [designers, setDesigners] = useState<any[]>([]);
-  const [loadingDesigners, setLoadingDesigners] = useState(false);
-  const [selectedDesignerId, setSelectedDesignerId] = useState<string>("");
+  const [selectedExecutionType, setSelectedExecutionType] = useState<string>("");
+  const [plannedLiveDateDraft, setPlannedLiveDateDraft] = useState<string>("");
 
   const [fitters, setFitters] = useState<any[]>([]);
   const [loadingFitters, setLoadingFitters] = useState(false);
@@ -57,7 +62,10 @@ export default function BookingTokenDetailPage() {
 
   const canConfirm = useMemo(() => {
     return (
-      roleLower === "owner" || roleLower === "manager" || roleLower === "admin"
+      roleLower === "owner" ||
+      roleLower === "manager" ||
+      roleLower === "admin" ||
+      roleLower === "sales"
     );
   }, [roleLower]);
 
@@ -114,6 +122,15 @@ export default function BookingTokenDetailPage() {
   };
 
   useEffect(() => {
+    const raw = (token as any)?.plannedLiveDate;
+    if (!raw) return;
+    const d = new Date(String(raw));
+    if (isNaN(d.getTime())) return;
+    const next = d.toISOString().slice(0, 10);
+    setPlannedLiveDateDraft((prev) => (prev ? prev : next));
+  }, [token]);
+
+  useEffect(() => {
     fetchToken();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenId]);
@@ -139,7 +156,6 @@ export default function BookingTokenDetailPage() {
         };
         if (!payload?.tokenId) return;
         if (String(payload.tokenId) !== String(tokenId)) return;
-        if (!payload.designStatus) return;
         setToken((prev: any) =>
           prev ? { ...prev, designStatus: payload.designStatus } : prev,
         );
@@ -155,7 +171,7 @@ export default function BookingTokenDetailPage() {
     };
   }, [tokenId]);
 
-  // Live updates for installation (fitter) status
+  // Live updates for fitter status
   useEffect(() => {
     if (!fitterWorkflowEnabled) return;
     const apiBase =
@@ -197,7 +213,7 @@ export default function BookingTokenDetailPage() {
         source.close();
       } catch (_) {}
     };
-  }, [tokenId]);
+  }, [tokenId, fitterWorkflowEnabled]);
 
   const statusLabel = (raw?: string) => {
     const s = String(raw || "").toLowerCase();
@@ -267,8 +283,10 @@ export default function BookingTokenDetailPage() {
     .toLowerCase()
     .trim();
   const actionsDisabledByHoardingStatus =
-    hoardingStatusLower === "under_process";
+    hoardingStatusLower === "under_process" || hoardingStatusLower === "booked";
 
+  const canConfirmThisToken =
+    canConfirm && (roleLower !== "sales" || isSalesOwnerOfToken);
   const canRequestExtension =
     isSalesOwnerOfToken &&
     isHeadToken &&
@@ -330,6 +348,13 @@ export default function BookingTokenDetailPage() {
     return isConfirmedLike && normalizedDesignStatus === "completed";
   }, [isConfirmedLike, normalizedDesignStatus]);
 
+  useEffect(() => {
+    const existing = String(token?.hoarding?.executionType || "");
+    if (existing && existing !== selectedExecutionType) {
+      setSelectedExecutionType(existing);
+    }
+  }, [token?.hoarding?.executionType, selectedExecutionType]);
+
   const fitterStatusLabel = (raw?: string) => {
     const normalized = String(raw || "")
       .trim()
@@ -371,52 +396,6 @@ export default function BookingTokenDetailPage() {
     }
   }, [normalizedFitterStatus]);
 
-  // Load designers for assignment at confirmation time
-  useEffect(() => {
-    const shouldLoad =
-      canConfirm && isActiveToken && !actionsDisabledByHoardingStatus;
-    if (!shouldLoad) return;
-    if (!user) return;
-
-    const run = async () => {
-      try {
-        setLoadingDesigners(true);
-        const resp = await usersAPI.getAll();
-        const rows = Array.isArray(resp?.data)
-          ? resp.data
-          : resp?.data?.users || resp?.data || [];
-        const list = (rows || []).filter((u: any) =>
-          String(u?.role?.name || u?.role || "")
-            .toLowerCase()
-            .includes("designer"),
-        );
-        setDesigners(list);
-        if (list.length === 1) {
-          setSelectedDesignerId(String(list[0]?.id || ""));
-        } else if (
-          list.length > 0 &&
-          (roleLower === "owner" || roleLower === "manager")
-        ) {
-          // Match current UX expectation: default-select a designer for Owner/Manager.
-          // Keep user choice if they've already selected one.
-          setSelectedDesignerId((prev) => prev || String(list[0]?.id || ""));
-        }
-      } catch (e) {
-        setDesigners([]);
-      } finally {
-        setLoadingDesigners(false);
-      }
-    };
-
-    run();
-  }, [
-    canConfirm,
-    isActiveToken,
-    actionsDisabledByHoardingStatus,
-    user,
-    roleLower,
-  ]);
-
   // Load fitters for assignment after design is completed
   useEffect(() => {
     if (!fitterWorkflowEnabled) return;
@@ -444,7 +423,7 @@ export default function BookingTokenDetailPage() {
 
   const handleConfirm = async () => {
     if (!tokenId) return;
-    if (!confirm("Confirm this token?")) return;
+    if (!confirm("Finalize this token?")) return;
 
     // Pre-check (best-effort). Backend still enforces atomicity.
     if (hoardingStatusLower === "under_process") {
@@ -454,22 +433,27 @@ export default function BookingTokenDetailPage() {
 
     try {
       setSubmitting(true);
-      if (designers.length > 1 && !selectedDesignerId) {
-        showError("Please select a designer to assign");
+      if (!selectedExecutionType) {
+        showError("Please select an execution type");
         return;
       }
-      const payload = selectedDesignerId
-        ? { designerId: selectedDesignerId }
-        : undefined;
+      if (!plannedLiveDateDraft) {
+        showError("Please select a live date");
+        return;
+      }
+      const payload = {
+        executionType: selectedExecutionType,
+        plannedLiveDate: plannedLiveDateDraft,
+      };
       const resp = await bookingTokensAPI.confirm(tokenId, payload);
       if (resp?.success) {
-        showSuccess("Token confirmed");
+        showSuccess("Token finalized");
         await fetchToken();
       } else {
-        showError(resp?.message || "Failed to confirm");
+        showError(resp?.message || "Failed to finalize");
       }
     } catch (e: any) {
-      const msg = String(e?.response?.data?.message || "Failed to confirm");
+      const msg = String(e?.response?.data?.message || "Failed to finalize");
       const lower = msg.toLowerCase();
       if (lower.includes("already") && lower.includes("under process")) {
         if (roleLower === "manager") {
@@ -1303,7 +1287,7 @@ export default function BookingTokenDetailPage() {
                     Cancel Token
                   </button>
                 )}
-                {canConfirm &&
+                {canConfirmThisToken &&
                   isActiveToken &&
                   !actionsDisabledByHoardingStatus && (
                     <div
@@ -1314,7 +1298,7 @@ export default function BookingTokenDetailPage() {
                         flexWrap: "wrap",
                       }}
                     >
-                      <div style={{ minWidth: 220 }}>
+                      <div style={{ minWidth: 260 }}>
                         <label
                           style={{
                             display: "block",
@@ -1322,34 +1306,52 @@ export default function BookingTokenDetailPage() {
                             marginBottom: 4,
                           }}
                         >
-                          Assign Designer
+                          Execution Type
                         </label>
                         <select
                           className="input"
-                          value={selectedDesignerId}
+                          value={selectedExecutionType}
                           onChange={(e) =>
-                            setSelectedDesignerId(e.target.value)
+                            setSelectedExecutionType(e.target.value)
                           }
-                          disabled={submitting || loadingDesigners}
+                          disabled={submitting}
                         >
-                          <option value="">
-                            {loadingDesigners
-                              ? "Loading..."
-                              : "Select designer"}
-                          </option>
-                          {designers.map((d: any) => (
-                            <option key={String(d.id)} value={String(d.id)}>
-                              {d.name}
+                          <option value="">Select execution type</option>
+                          {executionTypeOptions.map((t) => (
+                            <option key={t.value} value={t.value}>
+                              {t.label}
                             </option>
                           ))}
                         </select>
                       </div>
+                      <div style={{ minWidth: 200 }}>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Live Date
+                        </label>
+                        <input
+                          className="input"
+                          type="date"
+                          value={plannedLiveDateDraft}
+                          onChange={(e) => setPlannedLiveDateDraft(e.target.value)}
+                          disabled={submitting}
+                        />
+                      </div>
                       <button
                         className="btn btn-primary"
                         onClick={handleConfirm}
-                        disabled={submitting}
+                        disabled={
+                          submitting ||
+                          !selectedExecutionType ||
+                          !plannedLiveDateDraft
+                        }
                       >
-                        Confirm Token
+                        Finalize
                       </button>
                     </div>
                   )}

@@ -529,7 +529,10 @@ export const bookingTokensAPI = {
     const response = await api.get(`/booking-tokens/${id}`);
     return response.data;
   },
-  confirm: async (id: string, data?: { designerId?: string }) => {
+  confirm: async (
+    id: string,
+    data?: { executionType?: string; plannedLiveDate?: string },
+  ) => {
     const response = await api.post(
       `/booking-tokens/${id}/confirm`,
       data || {},
@@ -576,6 +579,10 @@ export const bookingTokensAPI = {
   },
   fitters: async () => {
     const response = await api.get("/booking-tokens/fitters");
+    return response.data;
+  },
+  designers: async () => {
+    const response = await api.get("/booking-tokens/designers");
     return response.data;
   },
   assignFitter: async (id: string, data?: { fitterId?: string }) => {
@@ -676,12 +683,26 @@ export const supervisorAPI = {
     );
     return response.data;
   },
+  uploadChecklistImage: async (id: string, files: File[]) => {
+    const form = new FormData();
+    (files || []).forEach((f) => form.append("images", f));
+    const response = await api.post(
+      `/supervisor/hoardings/${id}/checklist-image`,
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return response.data;
+  },
   markFit: async (id: string) => {
     const response = await api.put(`/supervisor/hoardings/${id}/mark-fit`);
     return response.data;
   },
-  markLive: async (id: string) => {
-    const response = await api.put(`/supervisor/hoardings/${id}/mark-live`);
+  markLive: async (id: string, data?: { liveDate?: string }) => {
+    const response = await api.put(`/supervisor/hoardings/${id}/mark-live`, data || {});
+    return response.data;
+  },
+  setLiveDate: async (id: string, data: { plannedLiveDate: string }) => {
+    const response = await api.put(`/supervisor/hoardings/${id}/live-date`, data);
     return response.data;
   },
   markRemoval: async (id: string, reason: string) => {

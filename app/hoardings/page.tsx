@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
 import CustomSelect from "@/components/CustomSelect";
-import { bookingTokensAPI, hoardingsAPI } from "@/lib/api";
+import { bookingTokensAPI, hoardingsAPI, proposalsAPI } from "@/lib/api";
 import { showSuccess, showError } from "@/lib/toast";
 import {
   canCreate,
@@ -36,6 +36,7 @@ export default function Hoardings() {
   );
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [tokenizingIds, setTokenizingIds] = useState<Set<string>>(new Set());
+  const [finalizingIds, setFinalizingIds] = useState<Set<string>>(new Set());
 
   const PAGE_SIZE = 50;
 
@@ -226,6 +227,31 @@ export default function Hoardings() {
     const id = String(hoardingId);
     if (!id) return;
     router.push(`/hoardings/${id}/token`);
+  };
+
+  const finalizeFromDraft = async (proposalId: string, hoardingId: string) => {
+    const pid = String(proposalId || "");
+    const hid = String(hoardingId || "");
+    if (!pid || !hid) return;
+    if (!confirm("Finalize this hoarding now?")) return;
+    setFinalizingIds((prev) => new Set(prev).add(hid));
+    try {
+      const resp = await proposalsAPI.finalize(pid, { hoardingIds: [hid] });
+      if (resp?.success) {
+        showSuccess("Hoarding finalized");
+        await fetchHoardings(1, true);
+      } else {
+        showError(resp?.message || "Failed to finalize");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to finalize");
+    } finally {
+      setFinalizingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(hid);
+        return next;
+      });
+    }
   };
 
   const formatRemaining = (expiresAt: any) => {
@@ -541,6 +567,55 @@ export default function Hoardings() {
                                     >
                                       View Token
                                     </Link>
+                                  );
+                                })()}
+                                {(() => {
+                                  const id = String(h.id);
+                                  const draftProposalId = h.myDraftProposalId
+                                    ? String(h.myDraftProposalId)
+                                    : "";
+                                  const isFinalizing = finalizingIds.has(id);
+                                  const isUnderProcess =
+                                    String(rawStatus || "")
+                                      .toLowerCase()
+                                      .trim() === "under_process";
+                                  const isBooked =
+                                    String(rawStatus || "")
+                                      .toLowerCase()
+                                      .trim() === "booked";
+                                  const isLive =
+                                    String(rawStatus || "")
+                                      .toLowerCase()
+                                      .trim() === "live";
+                                  const canFinalizeDraft =
+                                    isSalesRole &&
+                                    !!draftProposalId &&
+                                    !isUnderProcess &&
+                                    !isBooked &&
+                                    !isLive;
+                                  if (!canFinalizeDraft) return null;
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        finalizeFromDraft(draftProposalId, id)
+                                      }
+                                      disabled={isFinalizing}
+                                      className="btn btn-success"
+                                      style={{
+                                        padding: "6px 10px",
+                                        fontSize: "12px",
+                                        width: "100%",
+                                        opacity: isFinalizing ? 0.7 : 1,
+                                        cursor: isFinalizing
+                                          ? "not-allowed"
+                                          : "pointer",
+                                      }}
+                                    >
+                                      {isFinalizing
+                                        ? "Finalizing..."
+                                        : "Finalize"}
+                                    </button>
                                   );
                                 })()}
                                 {(() => {
