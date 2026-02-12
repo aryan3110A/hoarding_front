@@ -262,6 +262,9 @@ export default function HoardingDetailPage() {
                   <strong>Type:</strong> {hoarding.type || "N/A"}
                 </div>
                 <div>
+                  <strong>Category:</strong> {hoarding?.category?.name || "N/A"}
+                </div>
+                <div>
                   <strong>Ownership:</strong> {hoarding.ownership || "N/A"}
                 </div>
                 <div>
@@ -282,9 +285,15 @@ export default function HoardingDetailPage() {
                   </span>
                 </div>
                 <div>
-                  <strong>Base Rate:</strong>{" "}
-                  {hoarding.baseRate
-                    ? `₹${Number(hoarding.baseRate).toLocaleString()}`
+                  <strong>Standard Rate:</strong>{" "}
+                  {hoarding.standardRate ?? hoarding.baseRate
+                    ? `₹${Number(hoarding.standardRate ?? hoarding.baseRate).toLocaleString()}`
+                    : "N/A"}
+                </div>
+                <div>
+                  <strong>Minimum Rate:</strong>{" "}
+                  {hoarding.minimumRate != null
+                    ? `₹${Number(hoarding.minimumRate).toLocaleString()}`
                     : "N/A"}
                 </div>
                 {hoarding.lat && hoarding.lng && (

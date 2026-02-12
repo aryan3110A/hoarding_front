@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
 import CustomSelect from "@/components/CustomSelect";
-import { bookingTokensAPI, hoardingsAPI, proposalsAPI } from "@/lib/api";
+import { bookingTokensAPI, categoriesAPI, hoardingsAPI, proposalsAPI } from "@/lib/api";
 import { showSuccess, showError } from "@/lib/toast";
 import {
   canCreate,
@@ -26,7 +26,8 @@ export default function Hoardings() {
   const [hasMore, setHasMore] = useState(true);
   const userFromContext = useUser();
   const [user, setUser] = useState<any>(null);
-  const [filters, setFilters] = useState({ city: "", area: "", status: "" });
+  const [filters, setFilters] = useState({ city: "", area: "", status: "", categoryId: "" });
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const [landlordSearch, setLandlordSearch] = useState("");
   const [landlordFilters, setLandlordFilters] = useState<
     Map<string, { city: string; area: string; status: string }>
@@ -66,6 +67,18 @@ export default function Hoardings() {
       setUser(userFromContext);
     }
   }, [userFromContext, user]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await categoriesAPI.list();
+        setCategories(Array.isArray(res?.data) ? res.data : []);
+      } catch {
+        setCategories([]);
+      }
+    };
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     // Reset when filters change
@@ -338,7 +351,7 @@ export default function Hoardings() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
                 gap: "12px",
               }}
             >
@@ -369,6 +382,28 @@ export default function Hoardings() {
                   placeholder="Enter area"
                   style={{ width: "100%" }}
                 />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ display: "block", marginBottom: "6px" }}>
+                  Category
+                </label>
+                <select
+                  value={filters.categoryId}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      categoryId: e.target.value,
+                    }))
+                  }
+                  style={{ width: "100%" }}
+                >
+                  <option value="">All</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label style={{ display: "block", marginBottom: "6px" }}>

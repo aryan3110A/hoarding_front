@@ -15,6 +15,9 @@ export default function NewClientPage() {
   const prefillPhone = searchParams?.get("prefillPhone") || "";
 
   const [submitting, setSubmitting] = useState(false);
+  const [phoneError, setPhoneError] = useState(""
+  );
+  const [checkingPhone, setCheckingPhone] = useState(false);
   const [form, setForm] = useState({
     name: prefillName,
     phone: prefillPhone,
@@ -23,12 +26,51 @@ export default function NewClientPage() {
   });
 
   const canSubmit = useMemo(() => {
-    return form.name.trim().length > 0 && form.phone.trim().length >= 6;
-  }, [form.name, form.phone]);
+    return (
+      form.name.trim().length > 0 &&
+      form.phone.trim().length === 10 &&
+      !phoneError
+    );
+  }, [form.name, form.phone, phoneError]);
+
+  const normalizeDigits = (value: string) =>
+    String(value || "").replace(/\D/g, "").slice(0, 10);
+
+  React.useEffect(() => {
+    const phone = normalizeDigits(form.phone);
+    if (!phone) {
+      setPhoneError("");
+      return;
+    }
+    if (phone.length > 10) {
+      setPhoneError("Mobile number must be at most 10 digits");
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setCheckingPhone(true);
+        const res = await clientsAPI.byPhone(phone);
+        const existing = res?.data || null;
+        if (existing?.id) {
+          setPhoneError("A client with this phone number already exists.");
+          return;
+        }
+        setPhoneError("");
+      } catch (e) {
+        setPhoneError("");
+      } finally {
+        setCheckingPhone(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.phone]);
 
   const submit = async () => {
     if (!canSubmit) {
-      showError("Client name and phone are required");
+      showError(phoneError || "Client name and 10-digit phone are required");
       return;
     }
     setSubmitting(true);
@@ -112,14 +154,25 @@ export default function NewClientPage() {
                 <input
                   value={form.phone}
                   onChange={(e) =>
-                    setForm((p) => ({ ...p, phone: e.target.value }))
+                    setForm((p) => ({
+                      ...p,
+                      phone: normalizeDigits(e.target.value),
+                    }))
                   }
+                  inputMode="numeric"
+                  maxLength={10}
                   className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                   placeholder="e.g. 9876543210"
                 />
-                <div className="mt-1 text-[11px] text-slate-500">
-                  Phone is required to create a client.
-                </div>
+                {phoneError ? (
+                  <div className="mt-1 text-[11px] text-rose-600">
+                    {phoneError}
+                  </div>
+                ) : (
+                  <div className="mt-1 text-[11px] text-slate-500">
+                    {checkingPhone ? "Checking phone..." : "Phone is required to create a client."}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -157,7 +210,7 @@ export default function NewClientPage() {
                 <button
                   type="button"
                   onClick={submit}
-                  disabled={submitting}
+                  disabled={submitting || !canSubmit}
                   className={`inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 transition ${
                     !canSubmit ? "opacity-80" : ""
                   } ${submitting ? "opacity-60" : ""}`}

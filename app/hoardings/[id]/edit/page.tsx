@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
-import { hoardingsAPI } from "@/lib/api";
+import { categoriesAPI, hoardingsAPI } from "@/lib/api";
 import { showSuccess, showError } from "@/lib/toast";
 import AccessDenied from "@/components/AccessDenied";
 
@@ -26,6 +26,7 @@ export default function EditHoarding() {
     propertyGroupId: "",
     city: "",
     area: "",
+    categoryId: "",
     landmark: "",
     roadName: "",
     side: "",
@@ -34,7 +35,8 @@ export default function EditHoarding() {
     type: "",
     ownership: "Private",
     status: "available",
-    baseRate: "",
+    standardRate: "",
+    minimumRate: "",
     lat: "",
     lng: "",
     landlord: "",
@@ -45,6 +47,7 @@ export default function EditHoarding() {
   const [fetching, setFetching] = useState(true);
   const [groupHoardings, setGroupHoardings] = useState<any[]>([]);
   const [groupLoading, setGroupLoading] = useState(false);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadType, setUploadType] = useState<
@@ -117,6 +120,17 @@ export default function EditHoarding() {
   };
 
   useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await categoriesAPI.list();
+        setCategories(Array.isArray(res?.data) ? res.data : []);
+      } catch {
+        setCategories([]);
+      }
+    };
+
+    loadCategories();
+
     const fetchHoarding = async () => {
       try {
         const response = await hoardingsAPI.getById(id);
@@ -127,6 +141,7 @@ export default function EditHoarding() {
             propertyGroupId: h.propertyGroupId || "",
             city: h.city || "",
             area: h.area || "",
+            categoryId: h.categoryId || "",
             landmark: h.landmark || "",
             roadName: h.roadName || "",
             side: h.side || "",
@@ -135,7 +150,12 @@ export default function EditHoarding() {
             type: h.type || "",
             ownership: h.ownership || "Private",
             status: h.status || "available",
-            baseRate: h.baseRate ? h.baseRate.toString() : "",
+            standardRate: (h.standardRate ?? h.baseRate)
+              ? String(h.standardRate ?? h.baseRate)
+              : "",
+            minimumRate: (h.minimumRate ?? h.standardRate ?? h.baseRate)
+              ? String(h.minimumRate ?? h.standardRate ?? h.baseRate)
+              : "",
             lat: h.lat ? h.lat.toString() : "",
             lng: h.lng ? h.lng.toString() : "",
             landlord: (h.rateHistory && h.rateHistory.landlord) || "",
@@ -211,6 +231,18 @@ export default function EditHoarding() {
     setLoading(true);
 
     try {
+      const standardRate = formData.standardRate
+        ? parseFloat(formData.standardRate)
+        : 0;
+      const minimumRate = formData.minimumRate
+        ? parseFloat(formData.minimumRate)
+        : standardRate;
+      if (minimumRate > standardRate) {
+        setError("Minimum rate cannot be greater than standard rate");
+        setLoading(false);
+        return;
+      }
+
       // Convert width and height from feet to cm (1 ft = 30.48 cm)
       const widthCm = formData.width
         ? parseFloat(formData.width) * 30.48
@@ -229,6 +261,7 @@ export default function EditHoarding() {
         code: formData.code,
         city: formData.city,
         area: formData.area,
+        categoryId: formData.categoryId || null,
         landmark: formData.landmark,
         roadName: formData.roadName,
         widthCm: widthCm ? Math.round(widthCm) : undefined,
@@ -236,6 +269,8 @@ export default function EditHoarding() {
         type: formData.type || undefined,
         ownership: formData.ownership,
         status: formData.status,
+        standardRate,
+        minimumRate,
         lat: formData.lat ? parseFloat(formData.lat) : undefined,
         lng: formData.lng ? parseFloat(formData.lng) : undefined,
       };
@@ -244,9 +279,6 @@ export default function EditHoarding() {
       if (formData.side) updatePayload.side = formData.side;
       if (formData.propertyGroupId)
         updatePayload.propertyGroupId = formData.propertyGroupId;
-      if (formData.baseRate)
-        updatePayload.baseRate = parseFloat(formData.baseRate);
-
       if (Object.keys(mergedRateHistory).length > 0) {
         updatePayload.rateHistory = mergedRateHistory;
       }
@@ -394,6 +426,22 @@ export default function EditHoarding() {
               />
             </div>
             <div className="form-group">
+              <label>Category</label>
+              <select
+                value={formData.categoryId}
+                onChange={(e) =>
+                  setFormData({ ...formData, categoryId: e.target.value })
+                }
+              >
+                <option value="">Select category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
               <label>Landmark</label>
               <input
                 type="text"
@@ -498,14 +546,29 @@ export default function EditHoarding() {
               </select>
             </div>
             <div className="form-group">
-              <label>Base Rate (₹/month)</label>
+              <label>Standard Rate (₹/month) *</label>
               <input
                 type="number"
                 step="0.01"
-                value={formData.baseRate}
+                min="0"
+                value={formData.standardRate}
                 onChange={(e) =>
-                  setFormData({ ...formData, baseRate: e.target.value })
+                  setFormData({ ...formData, standardRate: e.target.value })
                 }
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Minimum Rate (₹/month) *</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.minimumRate}
+                onChange={(e) =>
+                  setFormData({ ...formData, minimumRate: e.target.value })
+                }
+                required
               />
             </div>
             <div className="form-group">

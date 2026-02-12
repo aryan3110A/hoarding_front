@@ -10,11 +10,14 @@ import React, {
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
-import { clientsAPI, hoardingsAPI, proposalsAPI } from "@/lib/api";
+import { categoriesAPI, clientsAPI, hoardingsAPI, proposalsAPI } from "@/lib/api";
 import AccessDenied from "@/components/AccessDenied";
 import { getRoleFromUser } from "@/lib/rbac";
+import LocationAutocomplete from "@/components/LocationAutocomplete";
+import { showError, showInfo, showSuccess } from "@/lib/toast";
 
 type ProposalMode = "WITH_RATE" | "WITHOUT_RATE";
+type ProposalDiscountType = "FLAT" | "PERCENT";
 
 type ClientRow = {
   id: string;
@@ -37,6 +40,8 @@ type HoardingRow = {
   heightCm?: number | null;
   type?: string | null;
   status?: string | null;
+  standardRate?: string | number | null;
+  minimumRate?: string | number | null;
   baseRate?: string | number | null;
   illumination?: boolean | null;
   illuminationCost?: string | number | null;
@@ -46,6 +51,7 @@ type SelectedHoarding = {
   hoardingId: string;
   hoardingCode?: string | null;
   baseRate: number;
+  minimumRate: number;
   city?: string | null;
   area?: string | null;
   location?: string | null;
@@ -68,6 +74,12 @@ const toMoney = (v: unknown) => {
   return n;
 };
 
+const standardRateOf = (h: Partial<HoardingRow>) =>
+  Math.max(0, toMoney(h.standardRate ?? h.baseRate));
+
+const minimumRateOf = (h: Partial<HoardingRow>) =>
+  Math.max(0, toMoney(h.minimumRate ?? 0));
+
 const clampPctLocal = (v: unknown) => {
   const n = typeof v === "number" ? v : Number(v);
   if (!Number.isFinite(n)) return 0;
@@ -84,17 +96,56 @@ const locationLabel = (h: HoardingRow) => {
   );
 };
 
+const isSelectionDisabledStatus = (status?: string | null) => {
+  const s = String(status || "")
+    .toLowerCase()
+    .trim();
+  return s === "booked" || s === "blocked" || s === "live";
+};
+
 // Must match backend computeLineFinalRate() exactly.
 const computeFinalRate = (args: {
   baseRate: number;
   discountPct: number;
   illuminationCost: number;
-  globalDiscountPct: number;
 }) => {
   const discounted = args.baseRate * (1 - args.discountPct / 100);
-  const beforeGlobal = discounted + args.illuminationCost;
-  const final = beforeGlobal * (1 - args.globalDiscountPct / 100);
-  return final;
+  return discounted + args.illuminationCost;
+};
+
+const computeProposalPricing = (args: {
+  subtotal: number;
+  discountType: ProposalDiscountType;
+  discountValue: number;
+  includeGst: boolean;
+  gstRatePct: number;
+  printingCharges: number;
+  mountingCharges: number;
+}) => {
+  const subtotal = Math.max(0, args.subtotal);
+  const discountValue = Math.max(0, args.discountValue);
+  const discountAmount =
+    args.discountType === "FLAT"
+      ? Math.min(subtotal, discountValue)
+      : subtotal * (Math.min(100, discountValue) / 100);
+  const finalWithoutGst = Math.max(0, subtotal - discountAmount);
+  const preGstWithCharges =
+    finalWithoutGst +
+    Math.max(0, args.printingCharges) +
+    Math.max(0, args.mountingCharges);
+  const gstAmount = args.includeGst
+    ? preGstWithCharges * (clampPctLocal(args.gstRatePct) / 100)
+    : 0;
+  const finalWithGst = preGstWithCharges + gstAmount;
+  const grandTotal = finalWithGst;
+  return {
+    subtotal,
+    discountAmount,
+    finalWithoutGst,
+    gstAmount,
+    finalWithGst,
+    grandTotal,
+  };
 };
 
 const SIZE_PRESETS = [
@@ -140,7 +191,13 @@ export default function ProposalBuilder({
   }, []);
 
   const [mode, setMode] = useState<ProposalMode>("WITH_RATE");
+  const [proposalDate, setProposalDate] = useState<string>("");
+  const [discountType, setDiscountType] =
+    useState<ProposalDiscountType>("PERCENT");
+  const [discountValue, setDiscountValue] = useState<number>(0);
   const [globalDiscountPct, setGlobalDiscountPct] = useState<number>(0);
+  const [printingCharges, setPrintingCharges] = useState<number>(0);
+  const [mountingCharges, setMountingCharges] = useState<number>(0);
   const [includeGst, setIncludeGst] = useState<boolean>(false);
   const [gstRatePct, setGstRatePct] = useState<number>(18);
 
@@ -168,11 +225,13 @@ export default function ProposalBuilder({
   const [filters, setFilters] = useState({
     city: "",
     area: "",
+    categoryId: "",
     location: "",
     type: "",
     size: "",
     availability: "",
   });
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
 
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(20);
@@ -191,7 +250,12 @@ export default function ProposalBuilder({
       const payload = {
         v: 1,
         mode,
+        proposalDate,
+        discountType,
+        discountValue,
         globalDiscountPct,
+        printingCharges,
+        mountingCharges,
         includeGst,
         gstRatePct,
         filters,
@@ -213,8 +277,19 @@ export default function ProposalBuilder({
       const parsed = JSON.parse(raw);
       if (!parsed || parsed.v !== 1) return;
       if (parsed.mode) setMode(parsed.mode);
+      if (typeof parsed.proposalDate === "string")
+        setProposalDate(parsed.proposalDate);
+      if (parsed.discountType === "FLAT" || parsed.discountType === "PERCENT") {
+        setDiscountType(parsed.discountType);
+      }
+      if (typeof parsed.discountValue === "number")
+        setDiscountValue(parsed.discountValue);
       if (typeof parsed.globalDiscountPct === "number")
         setGlobalDiscountPct(parsed.globalDiscountPct);
+      if (typeof parsed.printingCharges === "number")
+        setPrintingCharges(parsed.printingCharges);
+      if (typeof parsed.mountingCharges === "number")
+        setMountingCharges(parsed.mountingCharges);
       if (typeof parsed.includeGst === "boolean")
         setIncludeGst(parsed.includeGst);
       if (typeof parsed.gstRatePct === "number")
@@ -246,6 +321,15 @@ export default function ProposalBuilder({
   useEffect(() => {
     setPortalReady(true);
   }, []);
+
+  useEffect(() => {
+    if (proposalDate) return;
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    setProposalDate(`${yyyy}-${mm}-${dd}`);
+  }, [proposalDate]);
 
   const updateClientDropdownRect = () => {
     const el = clientInputRef.current;
@@ -309,10 +393,15 @@ export default function ProposalBuilder({
 
   const totals = useMemo(() => {
     if (mode === "WITHOUT_RATE") {
-      return { subtotal: 0, gst: 0, grandTotal: 0 };
+      return {
+        subtotal: 0,
+        discountAmount: 0,
+        finalWithoutGst: 0,
+        gstAmount: 0,
+        finalWithGst: 0,
+        grandTotal: Math.max(0, printingCharges) + Math.max(0, mountingCharges),
+      };
     }
-    const globalPct = clampPctLocal(globalDiscountPct);
-    const gstPct = clampPctLocal(gstRatePct);
 
     let subtotal = 0;
     for (const s of selected) {
@@ -320,15 +409,29 @@ export default function ProposalBuilder({
         baseRate: s.baseRate,
         discountPct: clampPctLocal(s.discountPct),
         illuminationCost: s.illumination ? Math.max(0, s.illuminationCost) : 0,
-        globalDiscountPct: globalPct,
       });
       subtotal += Math.max(0, final);
     }
 
-    const gst = includeGst ? subtotal * (gstPct / 100) : 0;
-    const grandTotal = subtotal + gst;
-    return { subtotal, gst, grandTotal };
-  }, [selected, mode, globalDiscountPct, includeGst, gstRatePct]);
+    return computeProposalPricing({
+      subtotal,
+      discountType,
+      discountValue,
+      includeGst,
+      gstRatePct,
+      printingCharges,
+      mountingCharges,
+    });
+  }, [
+    selected,
+    mode,
+    discountType,
+    discountValue,
+    includeGst,
+    gstRatePct,
+    printingCharges,
+    mountingCharges,
+  ]);
 
   // Debounced client search
   useEffect(() => {
@@ -367,6 +470,7 @@ export default function ProposalBuilder({
         limit,
         city: filters.city || undefined,
         area: filters.area || undefined,
+        categoryId: filters.categoryId || undefined,
         location: filters.location || undefined,
         type: filters.type || undefined,
         size: filters.size || undefined,
@@ -390,6 +494,18 @@ export default function ProposalBuilder({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roleName]);
 
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await categoriesAPI.list();
+        setCategories(Array.isArray(res?.data) ? res.data : []);
+      } catch {
+        setCategories([]);
+      }
+    };
+    loadCategories();
+  }, []);
+
   // Auto-apply filters (debounced)
   useEffect(() => {
     if (roleName && roleName !== "sales") return;
@@ -403,6 +519,7 @@ export default function ProposalBuilder({
     roleName,
     filters.city,
     filters.area,
+    filters.categoryId,
     filters.location,
     filters.type,
     filters.size,
@@ -452,7 +569,21 @@ export default function ProposalBuilder({
         if (!p || cancelled) return;
         setActiveProposalId(String(p.id || proposalId));
         setMode((p.mode as ProposalMode) || "WITH_RATE");
+        if (p.proposalDate) {
+          const d = new Date(p.proposalDate);
+          if (!Number.isNaN(d.getTime())) {
+            setProposalDate(d.toISOString().slice(0, 10));
+          }
+        }
+        setDiscountType(
+          String(p.discountType || "PERCENT").toUpperCase() === "FLAT"
+            ? "FLAT"
+            : "PERCENT",
+        );
+        setDiscountValue(toMoney(p.discountValue ?? 0));
         setGlobalDiscountPct(Number(p.globalDiscountPct ?? 0));
+        setPrintingCharges(toMoney(p.printingCharges ?? 0));
+        setMountingCharges(toMoney(p.mountingCharges ?? 0));
         setIncludeGst(!!p.includeGst);
         setGstRatePct(Number(p.gstRatePct ?? 18));
         if (p.client?.id) {
@@ -473,7 +604,8 @@ export default function ProposalBuilder({
             .map((h: any) => ({
               hoardingId: String(h.hoardingId),
               hoardingCode: h.hoardingCode ?? null,
-              baseRate: toMoney(h.baseRate),
+              baseRate: Math.max(0, toMoney(h.baseRate)),
+              minimumRate: 0,
               city: h.city ?? null,
               area: h.area ?? null,
               location: h.location ?? null,
@@ -498,6 +630,7 @@ export default function ProposalBuilder({
     setFilters({
       city: "",
       area: "",
+      categoryId: "",
       location: "",
       type: "",
       size: "",
@@ -505,6 +638,34 @@ export default function ProposalBuilder({
     });
     setPage(1);
     loadHoardings(1);
+  };
+
+  const selectAllVisibleImmediatelyAvailable = () => {
+    if (filters.availability !== "available") return;
+    setSelected((prev) => {
+      const byId = new Map(prev.map((x) => [x.hoardingId, x]));
+      for (const h of hoardings) {
+        if (!h?.id || isSelectionDisabledStatus(h.status)) continue;
+        if (!byId.has(h.id)) {
+          byId.set(h.id, {
+            hoardingId: h.id,
+            hoardingCode: h.code,
+            baseRate: standardRateOf(h),
+            minimumRate: minimumRateOf(h),
+            city: h.city ?? null,
+            area: h.area ?? null,
+            location: locationLabel(h),
+            sizeLabel: toFtLabel(h.widthCm, h.heightCm),
+            type: h.type ?? null,
+            status: h.status ?? null,
+            discountPct: 0,
+            illumination: false,
+            illuminationCost: 0,
+          });
+        }
+      }
+      return Array.from(byId.values());
+    });
   };
 
   const selectClient = (c: ClientRow) => {
@@ -534,7 +695,9 @@ export default function ProposalBuilder({
   };
 
   const toggleSelect = (h: HoardingRow) => {
-    const baseRate = Math.max(0, toMoney(h.baseRate));
+    if (isSelectionDisabledStatus(h.status)) return;
+    const baseRate = standardRateOf(h);
+    const minimumRate = minimumRateOf(h);
     setSelected((prev) => {
       const exists = prev.find((p) => p.hoardingId === h.id);
       if (exists) return prev.filter((p) => p.hoardingId !== h.id);
@@ -544,6 +707,7 @@ export default function ProposalBuilder({
           hoardingId: h.id,
           hoardingCode: h.code,
           baseRate,
+          minimumRate,
           city: h.city ?? null,
           area: h.area ?? null,
           location: locationLabel(h),
@@ -573,16 +737,17 @@ export default function ProposalBuilder({
   };
 
   const validatePricing = (): string | null => {
-    const globalPct = clampPctLocal(globalDiscountPct);
-    for (const s of selected) {
-      const lineFinal = computeFinalRate({
-        baseRate: s.baseRate,
-        discountPct: clampPctLocal(s.discountPct),
-        illuminationCost: s.illumination ? Math.max(0, s.illuminationCost) : 0,
-        globalDiscountPct: globalPct,
-      });
-      if (lineFinal + 1e-9 < s.baseRate) {
-        return "Final rate cannot be lower than the base rate.";
+    if (!proposalDate) return "Select proposal date";
+    if (mode === "WITH_RATE") {
+      for (const s of selected) {
+        const line = computeFinalRate({
+          baseRate: Math.max(0, s.baseRate),
+          discountPct: clampPctLocal(s.discountPct),
+          illuminationCost: s.illumination ? Math.max(0, s.illuminationCost) : 0,
+        });
+        if (line < Math.max(0, s.minimumRate || 0)) {
+          return `Final rate for ${s.hoardingCode || "selected hoarding"} cannot be below minimum rate`;
+        }
       }
     }
     return null;
@@ -620,8 +785,13 @@ export default function ProposalBuilder({
     try {
       const payload = {
         client,
+        proposalDate,
         mode,
+        discountType,
+        discountValue: Math.max(0, toMoney(discountValue)),
         globalDiscountPct: clampPctLocal(globalDiscountPct),
+        printingCharges: Math.max(0, toMoney(printingCharges)),
+        mountingCharges: Math.max(0, toMoney(mountingCharges)),
         includeGst,
         gstRatePct: clampPctLocal(gstRatePct),
         hoardings: selected.map((s) => ({
@@ -665,8 +835,42 @@ export default function ProposalBuilder({
       const id = await createOrUpdateDraft();
       if (!id) return;
 
+      const selectedBeforeGenerate = [...selected];
+
       // Generate + store PDF but keep proposal as DRAFT (not SENT)
       await proposalsAPI.generatePdf(String(id));
+
+      // Re-fetch proposal to detect rows excluded by booked/blocked re-validation.
+      const fresh = await proposalsAPI.getById(String(id));
+      const latestRows = Array.isArray(fresh?.data?.hoardings)
+        ? fresh.data.hoardings
+        : [];
+      const keptIds = new Set(
+        latestRows.map((r: any) => String(r?.hoardingId || "")).filter(Boolean),
+      );
+      const excluded = selectedBeforeGenerate.filter(
+        (s) => !keptIds.has(String(s.hoardingId || "")),
+      );
+
+      if (excluded.length > 0) {
+        const sampleCodes = excluded
+          .map((x) => x.hoardingCode)
+          .filter(Boolean)
+          .slice(0, 3)
+          .join(", ");
+        const suffix =
+          excluded.length > 3 ? ` and ${excluded.length - 3} more` : "";
+        showInfo(
+          `${excluded.length} hoarding(s) were excluded because they are booked/blocked.${sampleCodes ? ` (${sampleCodes}${suffix})` : ""}`,
+        );
+      } else {
+        showSuccess("PDF generated. All selected hoardings are available.");
+      }
+
+      // Keep UI selection in sync with what remains in proposal after re-validation.
+      setSelected((prev) =>
+        prev.filter((s) => keptIds.has(String(s.hoardingId))),
+      );
 
       // Download (will serve stored PDF)
       const resp = await proposalsAPI.downloadPdf(String(id));
@@ -682,7 +886,7 @@ export default function ProposalBuilder({
 
       setPdfReadyProposalId(String(id));
     } catch (e: any) {
-      alert(e?.response?.data?.message || "Failed to generate PDF");
+      showError(e?.response?.data?.message || "Failed to generate PDF");
     } finally {
       setActing(false);
     }
@@ -716,14 +920,14 @@ export default function ProposalBuilder({
             </Link>
             <button
               onClick={handleSaveDraft}
-              disabled={saving || acting}
+              disabled={saving || acting || !proposalDate}
               className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-white/30 bg-white/10 text-white hover:bg-white/15 backdrop-blur disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save Draft"}
             </button>
             <button
               onClick={handleGeneratePdf}
-              disabled={saving || acting}
+              disabled={saving || acting || !proposalDate}
               className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 transition disabled:opacity-50"
             >
               {acting ? "Generating..." : "Generate PDF"}
@@ -858,6 +1062,17 @@ export default function ProposalBuilder({
                   Proposal Settings
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Proposal Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={proposalDate}
+                      onChange={(e) => setProposalDate(e.target.value)}
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                    />
+                  </div>
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">
                       Mode
@@ -873,15 +1088,64 @@ export default function ProposalBuilder({
                   </div>
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">
-                      Global Discount %
+                      Discount Type
+                    </label>
+                    <select
+                      value={discountType}
+                      onChange={(e) =>
+                        setDiscountType(
+                          e.target.value === "FLAT" ? "FLAT" : "PERCENT",
+                        )
+                      }
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                    >
+                      <option value="PERCENT">Percentage (%)</option>
+                      <option value="FLAT">Flat (₹)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Discount Value
                     </label>
                     <input
                       type="number"
                       min={0}
-                      max={100}
-                      value={globalDiscountPct}
+                      max={discountType === "PERCENT" ? 100 : undefined}
+                      value={discountValue}
                       onChange={(e) =>
-                        setGlobalDiscountPct(clampPctLocal(e.target.value))
+                        setDiscountValue(
+                          discountType === "PERCENT"
+                            ? clampPctLocal(e.target.value)
+                            : Math.max(0, toMoney(e.target.value)),
+                        )
+                      }
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Printing Charges
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={printingCharges}
+                      onChange={(e) =>
+                        setPrintingCharges(Math.max(0, toMoney(e.target.value)))
+                      }
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Mounting Charges
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={mountingCharges}
+                      onChange={(e) =>
+                        setMountingCharges(Math.max(0, toMoney(e.target.value)))
                       }
                       className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                     />
@@ -918,12 +1182,28 @@ export default function ProposalBuilder({
                       <span className="text-gray-600">Subtotal</span>
                       <span>{totals.subtotal.toFixed(2)}</span>
                     </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-gray-600">Discount</span>
+                      <span>{totals.discountAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-gray-600">Final Without GST</span>
+                      <span>{totals.finalWithoutGst.toFixed(2)}</span>
+                    </div>
                     {includeGst ? (
                       <div className="flex justify-between mt-1">
                         <span className="text-gray-600">GST</span>
-                        <span>{totals.gst.toFixed(2)}</span>
+                        <span>{totals.gstAmount.toFixed(2)}</span>
                       </div>
                     ) : null}
+                    <div className="flex justify-between mt-1">
+                      <span className="text-gray-600">Printing</span>
+                      <span>{Math.max(0, printingCharges).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-gray-600">Mounting</span>
+                      <span>{Math.max(0, mountingCharges).toFixed(2)}</span>
+                    </div>
                     <div className="flex justify-between mt-1 font-semibold">
                       <span>Grand Total</span>
                       <span>{totals.grandTotal.toFixed(2)}</span>
@@ -947,23 +1227,31 @@ export default function ProposalBuilder({
                     Hoarding Filters
                   </h2>
                   <div className="text-xs text-gray-600">
-                    Only matching hoardings are shown. Pagination is mandatory.
+                    Only matching hoardings are shown.
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => loadHoardings(1)}
                     disabled={loading}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 text-sm disabled:opacity-50"
+                    className="px-4 py-0 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 text-sm disabled:opacity-50"
                   >
                     {loading ? "Searching..." : "Search"}
                   </button>
                   <button
                     onClick={resetFilters}
-                    className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm"
+                    className="px-4 py-0 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm"
                   >
                     Reset
                   </button>
+                  {filters.availability === "available" ? (
+                    <button
+                      onClick={selectAllVisibleImmediatelyAvailable}
+                      className="px-4 py-2 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-sm text-blue-700"
+                    >
+                      Select All
+                    </button>
+                  ) : null}
                 </div>
               </div>
 
@@ -994,12 +1282,32 @@ export default function ProposalBuilder({
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={filters.categoryId}
+                    onChange={(e) =>
+                      setFilters((p) => ({ ...p, categoryId: e.target.value }))
+                    }
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                  >
+                    <option value="">All</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">
                     Location
                   </label>
-                  <input
+                  <LocationAutocomplete
                     value={filters.location}
-                    onChange={(e) =>
-                      setFilters((p) => ({ ...p, location: e.target.value }))
+                    onChange={(value) =>
+                      setFilters((p) => ({ ...p, location: value }))
                     }
                     className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                   />
@@ -1094,38 +1402,64 @@ export default function ProposalBuilder({
                       <th className="text-left p-2">Size</th>
                       <th className="text-left p-2">Type</th>
                       <th className="text-left p-2">Status</th>
-                      <th className="text-right p-2">Base Rate</th>
+                      <th className="text-right p-2">Standard Rate</th>
+                      <th className="text-right p-2">Minimum Rate</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {hoardings.map((h) => (
-                      <tr key={h.id} className="border-t hover:bg-slate-50/60">
-                        <td className="p-2">
-                          <input
-                            type="checkbox"
-                            checked={selectedSet.has(h.id)}
-                            onChange={() => toggleSelect(h)}
-                            className="accent-blue-600"
-                          />
-                        </td>
-                        <td className="p-2">{h.code || "—"}</td>
-                        <td className="p-2">{h.city || "—"}</td>
-                        <td className="p-2">{locationLabel(h)}</td>
-                        <td className="p-2">
-                          {toFtLabel(h.widthCm, h.heightCm)}
-                        </td>
-                        <td className="p-2">{h.type || "—"}</td>
-                        <td className="p-2">{String(h.status || "—")}</td>
-                        <td className="p-2 text-right">
-                          {toMoney(h.baseRate).toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
+                    {hoardings.map((h) => {
+                      const unavailable = isSelectionDisabledStatus(h.status);
+                      const st = String(h.status || "").toLowerCase();
+                      return (
+                        <tr
+                          key={h.id}
+                          className={`border-t ${unavailable ? "bg-slate-100 text-slate-500" : "hover:bg-slate-50/60"}`}
+                        >
+                          <td className="p-2">
+                            <input
+                              type="checkbox"
+                              checked={selectedSet.has(h.id)}
+                              onChange={() => toggleSelect(h)}
+                              disabled={unavailable}
+                              className="accent-blue-600"
+                            />
+                          </td>
+                          <td className="p-2">{h.code || "—"}</td>
+                          <td className="p-2">{h.city || "—"}</td>
+                          <td className="p-2">{locationLabel(h)}</td>
+                          <td className="p-2">
+                            {toFtLabel(h.widthCm, h.heightCm)}
+                          </td>
+                          <td className="p-2">{h.type || "—"}</td>
+                          <td className="p-2">
+                            {unavailable ? (
+                              <span className="inline-flex items-center rounded-full bg-slate-300 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                                {st === "booked"
+                                  ? "Booked"
+                                  : st === "blocked"
+                                    ? "Blocked"
+                                    : st === "live"
+                                      ? "Live"
+                                      : String(h.status || "—")}
+                              </span>
+                            ) : (
+                              String(h.status || "—")
+                            )}
+                          </td>
+                          <td className="p-2 text-right">
+                            {standardRateOf(h).toFixed(2)}
+                          </td>
+                          <td className="p-2 text-right">
+                            {minimumRateOf(h).toFixed(2)}
+                          </td>
+                        </tr>
+                      );
+                    })}
                     {hoardings.length === 0 && !loading ? (
                       <tr>
                         <td
                           className="p-4 text-center text-gray-500"
-                          colSpan={8}
+                          colSpan={9}
                         >
                           No hoardings match the current filters.
                         </td>
@@ -1167,7 +1501,7 @@ export default function ProposalBuilder({
                   Selected Hoardings
                 </h2>
                 <div className="text-xs text-gray-600">
-                  {selected.length} selected
+                  Number of Proposal: {selected.length}
                 </div>
               </div>
 
@@ -1181,6 +1515,7 @@ export default function ProposalBuilder({
                       {mode === "WITH_RATE" ? (
                         <>
                           <th className="text-right p-2">Base</th>
+                          <th className="text-right p-2">Min</th>
                           <th className="text-right p-2">Discount %</th>
                           <th className="text-center p-2">Illum</th>
                           <th className="text-right p-2">Illum Cost</th>
@@ -1199,7 +1534,6 @@ export default function ProposalBuilder({
                   </thead>
                   <tbody>
                     {selected.map((s) => {
-                      const globalPct = clampPctLocal(globalDiscountPct);
                       const discPct = clampPctLocal(s.discountPct);
                       const illumCost = s.illumination
                         ? Math.max(0, s.illuminationCost)
@@ -1208,9 +1542,7 @@ export default function ProposalBuilder({
                         baseRate: s.baseRate,
                         discountPct: discPct,
                         illuminationCost: illumCost,
-                        globalDiscountPct: globalPct,
                       });
-                      const invalid = final + 1e-9 < s.baseRate;
                       const gstAmt = includeGst
                         ? Math.max(0, final) * (clampPctLocal(gstRatePct) / 100)
                         : 0;
@@ -1218,7 +1550,7 @@ export default function ProposalBuilder({
                       return (
                         <tr
                           key={s.hoardingId}
-                          className={`border-t hover:bg-slate-50/60 ${invalid ? "bg-red-50" : ""}`}
+                          className="border-t hover:bg-slate-50/60"
                         >
                           <td className="p-2">{s.hoardingCode || "—"}</td>
                           <td className="p-2">{s.location || "—"}</td>
@@ -1227,6 +1559,9 @@ export default function ProposalBuilder({
                             <>
                               <td className="p-2 text-right">
                                 {s.baseRate.toFixed(2)}
+                              </td>
+                              <td className="p-2 text-right">
+                                {Math.max(0, s.minimumRate || 0).toFixed(2)}
                               </td>
                               <td className="p-2 text-right">
                                 <input
@@ -1273,15 +1608,8 @@ export default function ProposalBuilder({
                                   className="w-28 border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 disabled:opacity-60"
                                 />
                               </td>
-                              <td
-                                className={`p-2 text-right ${invalid ? "text-red-700 font-semibold" : ""}`}
-                              >
+                              <td className="p-2 text-right">
                                 {Math.max(0, final).toFixed(2)}
-                                {invalid ? (
-                                  <div className="text-[11px] text-red-700">
-                                    Final &lt; base
-                                  </div>
-                                ) : null}
                               </td>
                               {includeGst ? (
                                 <td className="p-2 text-right">
@@ -1328,7 +1656,7 @@ export default function ProposalBuilder({
                       <tr>
                         <td
                           colSpan={
-                            mode === "WITH_RATE" ? (includeGst ? 10 : 9) : 5
+                            mode === "WITH_RATE" ? (includeGst ? 11 : 10) : 5
                           }
                           className="p-4 text-center text-gray-500"
                         >
@@ -1342,8 +1670,8 @@ export default function ProposalBuilder({
 
               {mode === "WITH_RATE" ? (
                 <div className="mt-3 text-xs text-gray-600">
-                  Pricing discipline enforced: base rate is locked; final rate
-                  must not go below base.
+                  PDF includes standard rate, GST, discount, final rate, printing,
+                  mounting, and grand total.
                 </div>
               ) : (
                 <div className="mt-3 text-xs text-gray-600">

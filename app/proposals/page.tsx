@@ -102,7 +102,7 @@ export default function ProposalsListPage() {
                   <tr className="text-left text-xs font-semibold text-slate-600">
                     <th className="px-4 py-3">Proposal</th>
                     <th className="px-4 py-3">Client</th>
-                    <th className="px-4 py-3">Hoardings</th>
+                    <th className="px-4 py-3">Number of Proposal</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Mode</th>
                     <th className="px-4 py-3">Created</th>
@@ -128,7 +128,9 @@ export default function ProposalsListPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-semibold">
-                          {(p.hoardings || []).length}
+                          {typeof p?._count?.hoardings === "number"
+                            ? p._count.hoardings
+                            : (p.hoardings || []).length}
                         </div>
                       </td>
                       <td className="px-4 py-3">

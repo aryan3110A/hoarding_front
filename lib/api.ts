@@ -85,6 +85,7 @@ export const hoardingsAPI = {
     limit?: number;
     city?: string;
     area?: string;
+    categoryId?: string;
     location?: string;
     type?: string;
     size?: string;
@@ -136,11 +137,31 @@ export const hoardingsAPI = {
 
   finalizeStatus: async (
     id: string,
-    status: "live" | "booked" | "LIVE" | "BOOKED",
+    status:
+      | "live"
+      | "booked"
+      | "blocked"
+      | "available"
+      | "LIVE"
+      | "BOOKED"
+      | "BLOCKED"
+      | "AVAILABLE",
   ) => {
     const response = await api.post(`/hoardings/${id}/finalize-status`, {
       status,
     });
+    return response.data;
+  },
+};
+
+// Categories API
+export const categoriesAPI = {
+  list: async () => {
+    const response = await api.get('/categories');
+    return response.data;
+  },
+  create: async (data: { name: string }) => {
+    const response = await api.post('/categories', data);
     return response.data;
   },
 };
@@ -216,6 +237,14 @@ export const remindersAPI = {
   },
 };
 
+// Locations API
+export const locationsAPI = {
+  suggestions: async (q: string) => {
+    const response = await api.get("/locations/suggestions", { params: { q } });
+    return response.data;
+  },
+};
+
 // Proposals API (Phase 2)
 export const proposalsAPI = {
   list: async () => {
@@ -248,7 +277,10 @@ export const proposalsAPI = {
     return response.data;
   },
 
-  finalize: async (id: string, payload?: { hoardingIds?: string[] }) => {
+  finalize: async (
+    id: string,
+    payload?: { hoardingIds?: string[]; finalRates?: Record<string, number> },
+  ) => {
     const response = await api.post(`/proposals/${id}/finalize`, payload || {});
     return response.data;
   },
@@ -333,6 +365,11 @@ export const contractsAPI = {
 export const clientsAPI = {
   getAll: async () => {
     const response = await api.get("/clients");
+    return response.data;
+  },
+
+  byPhone: async (phone: string) => {
+    const response = await api.get("/clients/by-phone", { params: { phone } });
     return response.data;
   },
 
@@ -431,6 +468,9 @@ export const enquiriesAPI = {
     city?: string;
     area?: string;
     location?: string;
+    categoryId?: string;
+    assignedSalesId?: string;
+    assignedToMe?: boolean;
     status?: "OPEN" | "LOCKED" | "CLOSED" | string;
     createdByRole?: "owner" | "sales" | string;
   }) => {
@@ -452,6 +492,16 @@ export const enquiriesAPI = {
     area: string;
     location: string;
     purpose?: string;
+    source:
+      | "WALK_IN"
+      | "SELF_GENERATED"
+      | "VIA_TELEPHONIC"
+      | "VIA_WHATSAPP"
+      | "REFERENCE"
+      | "OTHERS"
+      | string;
+    assignedSalesId?: string;
+    categoryId?: string;
   }) => {
     const response = await api.post("/inquiries", data);
     return response.data;
@@ -467,10 +517,24 @@ export const enquiriesAPI = {
       area: string;
       location: string;
       purpose: string | null;
+      assignedSalesId: string | null;
+      categoryId: string | null;
       status: "OPEN" | "LOCKED" | "CLOSED";
     }>,
   ) => {
     const response = await api.put(`/inquiries/${id}`, data);
+    return response.data;
+  },
+
+  assignSales: async (id: string, assignedSalesId?: string | null) => {
+    const response = await api.put(`/inquiries/${id}/assign-sales`, {
+      assignedSalesId: assignedSalesId ?? null,
+    });
+    return response.data;
+  },
+
+  listSalesUsers: async () => {
+    const response = await api.get('/inquiries/sales-users');
     return response.data;
   },
 };

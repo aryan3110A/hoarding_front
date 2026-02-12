@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useUser } from "@/components/AppLayout";
 import { canCreate, canUpdate, getRoleFromUser } from "@/lib/rbac";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { enquiriesAPI } from "@/lib/api";
+import { categoriesAPI, clientsAPI, enquiriesAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
 function StatusDropdown({
@@ -14,12 +14,18 @@ function StatusDropdown({
   placeholder,
   options,
   disabled,
+  buttonClassName,
+  matchButtonWidth,
+  menuWidth,
 }: {
   value: string;
   onChange: (next: string) => void;
   placeholder: string;
   options: Array<{ value: string; label: string }>;
   disabled?: boolean;
+  buttonClassName?: string;
+  matchButtonWidth?: boolean;
+  menuWidth?: number;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -61,14 +67,18 @@ function StatusDropdown({
     const el = buttonRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const menuWidth = 200;
+    const desiredWidth = matchButtonWidth
+      ? rect.width
+      : typeof menuWidth === "number"
+        ? menuWidth
+        : 200;
     const margin = 8;
     const left = Math.min(
       Math.max(margin, rect.left),
-      Math.max(margin, window.innerWidth - menuWidth - margin),
+      Math.max(margin, window.innerWidth - desiredWidth - margin),
     );
     const top = rect.bottom + 8;
-    setPos({ top, left, width: menuWidth });
+    setPos({ top, left, width: desiredWidth });
   };
 
   useEffect(() => {
@@ -94,7 +104,7 @@ function StatusDropdown({
         ref={buttonRef}
         disabled={!!disabled}
         onClick={() => !disabled && setOpen((s) => !s)}
-        className={`h-10 w-[150px] rounded-md border bg-white px-3 text-left text-sm shadow-sm transition\n          ${disabled ? "cursor-not-allowed opacity-60" : "hover:bg-slate-50"}\n          ${open ? "border-sky-500 ring-2 ring-sky-500/30" : "border-slate-300"}`}
+        className={`h-10 rounded-md border bg-white px-3 text-left text-sm shadow-sm transition\n          ${buttonClassName || "w-[150px]"}\n          ${disabled ? "cursor-not-allowed opacity-60" : "hover:bg-slate-50"}\n          ${open ? "border-sky-500 ring-2 ring-sky-500/30" : "border-slate-300"}`}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
@@ -156,6 +166,9 @@ export default function Enquiries() {
     area: "",
     location: "",
     status: "",
+    categoryId: "",
+    assignedSalesId: "",
+    assignedToMe: false,
   });
 
   const [formData, setFormData] = useState({
@@ -166,7 +179,28 @@ export default function Enquiries() {
     area: "",
     location: "",
     purpose: "",
+    source: "WALK_IN",
+    categoryId: "",
+    assignedSalesId: "",
   });
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [salesUsers, setSalesUsers] = useState<Array<{ id: string; name: string }>>([]);
+
+  const [phoneConflictMessage, setPhoneConflictMessage] = useState("");
+
+  const extractListRows = (payload: any): Array<{ id: string; name: string }> => {
+    if (Array.isArray(payload)) return payload as Array<{ id: string; name: string }>;
+    if (Array.isArray(payload?.data)) return payload.data as Array<{ id: string; name: string }>;
+    if (Array.isArray(payload?.data?.rows)) {
+      return payload.data.rows as Array<{ id: string; name: string }>;
+    }
+    if (Array.isArray(payload?.data?.categories)) {
+      return payload.data.categories as Array<{ id: string; name: string }>;
+    }
+    return [];
+  };
+
+  const normalizeName = (value: string) => String(value || "").trim().toLowerCase();
 
   useEffect(() => {
     if (user) {
@@ -183,6 +217,28 @@ export default function Enquiries() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, user]);
 
+  useEffect(() => {
+    const loadMeta = async () => {
+      try {
+        const catRes = await categoriesAPI.list();
+        setCategories(extractListRows(catRes));
+      } catch {
+        setCategories([]);
+      }
+
+      const roleName = String(getRoleFromUser(user) || "").toLowerCase();
+      if (["owner", "manager", "admin"].includes(roleName)) {
+        try {
+          const salesRes = await enquiriesAPI.listSalesUsers();
+          setSalesUsers(extractListRows(salesRes));
+        } catch {
+          setSalesUsers([]);
+        }
+      }
+    };
+    if (user) loadMeta();
+  }, [user]);
+
   const fetchData = async (pageToLoad: number, reset: boolean) => {
     try {
       setLoading(true);
@@ -194,6 +250,9 @@ export default function Enquiries() {
         area: filters.area || undefined,
         location: filters.location || undefined,
         status: filters.status || undefined,
+        categoryId: filters.categoryId || undefined,
+        assignedSalesId: filters.assignedSalesId || undefined,
+        assignedToMe: filters.assignedToMe || undefined,
       });
 
       const payload = res?.data || {};
@@ -214,6 +273,10 @@ export default function Enquiries() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      if (phoneConflictMessage) {
+        showError(phoneConflictMessage);
+        return;
+      }
       const payload = {
         clientName: formData.clientName,
         phone: formData.phone,
@@ -222,6 +285,9 @@ export default function Enquiries() {
         area: formData.area,
         location: formData.location,
         purpose: formData.purpose || undefined,
+        source: formData.source,
+        categoryId: formData.categoryId || undefined,
+        assignedSalesId: formData.assignedSalesId || undefined,
       };
 
       const res = await enquiriesAPI.create(payload as any);
@@ -234,6 +300,9 @@ export default function Enquiries() {
         area: "",
         location: "",
         purpose: "",
+        source: "WALK_IN",
+        categoryId: "",
+        assignedSalesId: "",
       });
       // If backend returns existing inquiry (owner), it returns 200 with message.
       const msg = res?.message || "Inquiry saved";
@@ -248,6 +317,38 @@ export default function Enquiries() {
       showError(msg);
     }
   };
+
+  useEffect(() => {
+    const rawPhone = String(formData.phone || "").trim();
+    const rawName = String(formData.clientName || "").trim();
+
+    if (!rawPhone) {
+      setPhoneConflictMessage("");
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await clientsAPI.byPhone(rawPhone);
+        const client = res?.data || null;
+        if (client && client?.name) {
+          const existingName = normalizeName(client.name);
+          const enteredName = normalizeName(rawName);
+          if (enteredName && existingName && existingName !== enteredName) {
+            setPhoneConflictMessage(
+              `A client named '${client.name}' is already registered with this phone number. Please use the existing client name or enter a different phone number.`,
+            );
+            return;
+          }
+        }
+        setPhoneConflictMessage("");
+      } catch (error) {
+        setPhoneConflictMessage("");
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [formData.phone, formData.clientName]);
 
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
@@ -303,6 +404,22 @@ export default function Enquiries() {
   const canCreateInquiry = canCreate(userRole, "enquiries");
   const canUpdateInquiry = canUpdate(userRole, "enquiries");
   const isSalesRole = (userRole || "").toLowerCase() === "sales";
+  const isOwnerOrManager = ["owner", "manager", "admin"].includes(
+    String(userRole || "").toLowerCase(),
+  );
+
+  const assignSales = async (inquiryId: string, assignedSalesId: string) => {
+    try {
+      const res = await enquiriesAPI.assignSales(inquiryId, assignedSalesId || null);
+      const updated = res?.data;
+      setInquiries((prev) =>
+        (prev || []).map((r) => (r?.id === inquiryId ? { ...r, ...updated } : r)),
+      );
+      showSuccess("Sales person assigned");
+    } catch (error: any) {
+      showError(error?.response?.data?.message || "Failed to assign sales person");
+    }
+  };
 
   const statusOptions = useMemo(
     () => [
@@ -312,6 +429,23 @@ export default function Enquiries() {
       { value: "CLOSED", label: "CLOSED" },
     ],
     [],
+  );
+
+  const sourceOptions = useMemo(
+    () => [
+      { value: "WALK_IN", label: "Walk-in" },
+      { value: "SELF_GENERATED", label: "Self Generated" },
+      { value: "VIA_TELEPHONIC", label: "Via Telephonic" },
+      { value: "VIA_WHATSAPP", label: "Via WhatsApp" },
+      { value: "REFERENCE", label: "Reference" },
+      { value: "OTHERS", label: "Others" },
+    ],
+    [],
+  );
+
+  const categoryOptions = useMemo(
+    () => categories.map((c) => ({ value: String(c.id), label: String(c.name) })),
+    [categories],
   );
 
   // Don't show loading spinner - show content immediately with empty state if needed
@@ -366,11 +500,61 @@ export default function Enquiries() {
                     type="text"
                     value={formData.phone}
                     onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
+                      setFormData({
+                        ...formData,
+                        phone: e.target.value.replace(/\D/g, "").slice(0, 10),
+                      })
                     }
+                    inputMode="numeric"
+                    maxLength={10}
                     required
                   />
+                  {phoneConflictMessage ? (
+                    <div style={{ color: "#b91c1c", fontSize: "12px", marginTop: "6px" }}>
+                      {phoneConflictMessage}
+                    </div>
+                  ) : null}
                 </div>
+                <div className="form-group">
+                  <label>Source *</label>
+                  <StatusDropdown
+                    value={formData.source}
+                    onChange={(v) => setFormData({ ...formData, source: v })}
+                    placeholder="Select Source"
+                    options={sourceOptions}
+                    buttonClassName="w-full"
+                    matchButtonWidth
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Category</label>
+                  <StatusDropdown
+                    value={formData.categoryId}
+                    onChange={(v) => setFormData({ ...formData, categoryId: v })}
+                    placeholder="Select category"
+                    options={categoryOptions}
+                    buttonClassName="w-full"
+                    matchButtonWidth
+                  />
+                </div>
+                {isOwnerOrManager ? (
+                  <div className="form-group">
+                    <label>Assign Sales Person</label>
+                    <select
+                      value={formData.assignedSalesId}
+                      onChange={(e) =>
+                        setFormData({ ...formData, assignedSalesId: e.target.value })
+                      }
+                    >
+                      <option value="">Unassigned</option>
+                      {salesUsers.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
                 <div className="form-group">
                   <label>Email</label>
                   <input
@@ -433,7 +617,11 @@ export default function Enquiries() {
                   />
                 </div>
               </div>
-              <button type="submit" className="btn btn-primary">
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={!!phoneConflictMessage}
+              >
                 Save Inquiry
               </button>
             </form>
@@ -454,7 +642,7 @@ export default function Enquiries() {
             <div className="flex flex-wrap gap-2">
               <input
                 type="text"
-                placeholder="Search client name"
+                placeholder="Search client name or phone"
                 value={filters.q}
                 onChange={(e) => setFilters({ ...filters, q: e.target.value })}
                 className="h-10 w-[240px] rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
@@ -492,6 +680,41 @@ export default function Enquiries() {
                 placeholder="All Status"
                 options={statusOptions}
               />
+              <StatusDropdown
+                value={filters.categoryId}
+                onChange={(v) => setFilters({ ...filters, categoryId: v })}
+                placeholder="All Categories"
+                options={[{ value: "", label: "All Categories" }, ...categoryOptions]}
+                buttonClassName="w-[170px]"
+              />
+              {isOwnerOrManager ? (
+                <select
+                  value={filters.assignedSalesId}
+                  onChange={(e) =>
+                    setFilters({ ...filters, assignedSalesId: e.target.value })
+                  }
+                className="h-10 w-[180px] rounded-md border border-slate-300 bg-white px-3 text-sm"
+                >
+                  <option value="">All Sales</option>
+                  {salesUsers.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
+              {isSalesRole ? (
+                <label className="h-10 inline-flex items-center gap-2 px-3 rounded-md border border-slate-300 bg-white text-sm">
+                  <input
+                    type="checkbox"
+                    checked={!!filters.assignedToMe}
+                    onChange={(e) =>
+                      setFilters({ ...filters, assignedToMe: e.target.checked })
+                    }
+                  />
+                  Assigned to me
+                </label>
+              ) : null}
             </div>
           </div>
 
@@ -506,6 +729,8 @@ export default function Enquiries() {
                   <th>City</th>
                   <th>Area</th>
                   <th>Location</th>
+                  <th>Category</th>
+                  <th>Assigned Sales</th>
                   <th>Status</th>
                   <th>Created By</th>
                   <th>Created</th>
@@ -517,13 +742,11 @@ export default function Enquiries() {
                   const createdByRole = String(
                     inquiry?.createdBy?.role?.name || "",
                   ).toLowerCase();
-                  const isMine =
-                    String(inquiry?.createdById || "") ===
-                    String((user as any)?.id || "");
                   const salesCanEdit =
                     isSalesRole &&
                     canUpdateInquiry &&
-                    (isMine || createdByRole === "owner");
+                    String(inquiry?.assignedSalesId || "") ===
+                      String((user as any)?.id || "");
                   return (
                     <tr key={inquiry.id}>
                       <td>{inquiry.clientName}</td>
@@ -531,6 +754,26 @@ export default function Enquiries() {
                       <td>{inquiry.city}</td>
                       <td>{inquiry.area}</td>
                       <td>{inquiry.location}</td>
+                      <td>{inquiry?.category?.name || "-"}</td>
+                      <td>
+                        {isOwnerOrManager ? (
+                          <select
+                            value={String(inquiry?.assignedSalesId || "")}
+                            onChange={(e) =>
+                              assignSales(String(inquiry.id), e.target.value)
+                            }
+                          >
+                            <option value="">Unassigned</option>
+                            {salesUsers.map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          inquiry?.assignedSales?.name || "Unassigned"
+                        )}
+                      </td>
                       <td>{inquiry.status}</td>
                       <td>
                         {inquiry?.createdBy?.name || "-"}

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 // AppLayout is provided at the root; do not wrap pages again.
-import { hoardingsAPI } from "@/lib/api";
+import { categoriesAPI, hoardingsAPI } from "@/lib/api";
 
 export default function NewHoarding() {
   const [formData, setFormData] = useState({
@@ -11,6 +11,7 @@ export default function NewHoarding() {
     propertyGroupId: "", // NEW: groups multiple hoardings under one property
     city: "",
     area: "",
+    categoryId: "",
     landmark: "",
     roadName: "",
     side: "",
@@ -19,13 +20,28 @@ export default function NewHoarding() {
     type: "",
     ownership: "Private",
     status: "available",
-    baseRate: "",
+    standardRate: "",
+    minimumRate: "",
     lat: "",
     lng: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const router = useRouter();
+
+  const loadCategories = async () => {
+    try {
+      const res = await categoriesAPI.list();
+      setCategories(Array.isArray(res?.data) ? res.data : []);
+    } catch {
+      setCategories([]);
+    }
+  };
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +49,18 @@ export default function NewHoarding() {
     setLoading(true);
 
     try {
+      const standardRate = formData.standardRate
+        ? parseFloat(formData.standardRate)
+        : 0;
+      const minimumRate = formData.minimumRate
+        ? parseFloat(formData.minimumRate)
+        : standardRate;
+      if (minimumRate > standardRate) {
+        setError("Minimum rate cannot be greater than standard rate");
+        setLoading(false);
+        return;
+      }
+
       // Convert width and height from feet to cm (1 ft = 30.48 cm)
       const widthCm = formData.width
         ? parseFloat(formData.width) * 30.48
@@ -46,6 +74,7 @@ export default function NewHoarding() {
         propertyGroupId: formData.propertyGroupId || null,
         city: formData.city,
         area: formData.area,
+        categoryId: formData.categoryId || null,
         landmark: formData.landmark,
         roadName: formData.roadName,
         side: formData.side || null,
@@ -54,7 +83,8 @@ export default function NewHoarding() {
         type: formData.type || null,
         ownership: formData.ownership,
         status: formData.status,
-        baseRate: formData.baseRate ? parseFloat(formData.baseRate) : null,
+        standardRate,
+        minimumRate,
         lat: formData.lat ? parseFloat(formData.lat) : null,
         lng: formData.lng ? parseFloat(formData.lng) : null,
       });
@@ -146,6 +176,22 @@ export default function NewHoarding() {
                   setFormData({ ...formData, area: e.target.value })
                 }
               />
+            </div>
+            <div className="form-group">
+              <label>Category</label>
+              <select
+                value={formData.categoryId}
+                onChange={(e) =>
+                  setFormData({ ...formData, categoryId: e.target.value })
+                }
+              >
+                <option value="">Select category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-group">
               <label>Landmark</label>
@@ -241,14 +287,29 @@ export default function NewHoarding() {
               </select>
             </div>
             <div className="form-group">
-              <label>Base Rate (₹/month)</label>
+              <label>Standard Rate (₹/month) *</label>
               <input
                 type="number"
                 step="0.01"
-                value={formData.baseRate}
+                min="0"
+                value={formData.standardRate}
                 onChange={(e) =>
-                  setFormData({ ...formData, baseRate: e.target.value })
+                  setFormData({ ...formData, standardRate: e.target.value })
                 }
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Minimum Rate (₹/month) *</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.minimumRate}
+                onChange={(e) =>
+                  setFormData({ ...formData, minimumRate: e.target.value })
+                }
+                required
               />
             </div>
             <div className="form-group">
