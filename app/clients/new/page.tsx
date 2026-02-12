@@ -15,8 +15,7 @@ export default function NewClientPage() {
   const prefillPhone = searchParams?.get("prefillPhone") || "";
 
   const [submitting, setSubmitting] = useState(false);
-  const [phoneError, setPhoneError] = useState(""
-  );
+  const [phoneError, setPhoneError] = useState("");
   const [checkingPhone, setCheckingPhone] = useState(false);
   const [form, setForm] = useState({
     name: prefillName,
@@ -34,7 +33,9 @@ export default function NewClientPage() {
   }, [form.name, form.phone, phoneError]);
 
   const normalizeDigits = (value: string) =>
-    String(value || "").replace(/\D/g, "").slice(0, 10);
+    String(value || "")
+      .replace(/\D/g, "")
+      .slice(0, 10);
 
   React.useEffect(() => {
     const phone = normalizeDigits(form.phone);
@@ -170,7 +171,9 @@ export default function NewClientPage() {
                   </div>
                 ) : (
                   <div className="mt-1 text-[11px] text-slate-500">
-                    {checkingPhone ? "Checking phone..." : "Phone is required to create a client."}
+                    {checkingPhone
+                      ? "Checking phone..."
+                      : "Phone is required to create a client."}
                   </div>
                 )}
               </div>

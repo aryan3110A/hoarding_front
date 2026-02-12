@@ -88,7 +88,7 @@ export default function HoardingDetailPage() {
     } catch (error: any) {
       alert(
         "Error deleting hoarding: " +
-          (error.response?.data?.message || "Unknown error")
+          (error.response?.data?.message || "Unknown error"),
       );
     }
   };
@@ -254,7 +254,7 @@ export default function HoardingDetailPage() {
                   <strong>Size:</strong>{" "}
                   {hoarding.widthCm && hoarding.heightCm
                     ? `${Math.round(hoarding.widthCm / 30.48)}ft x ${Math.round(
-                        hoarding.heightCm / 30.48
+                        hoarding.heightCm / 30.48,
                       )}ft`
                     : "N/A"}
                 </div>
@@ -275,10 +275,10 @@ export default function HoardingDetailPage() {
                       "available"
                         ? "badge-success"
                         : ["on_rent", "booked"].includes(
-                            String(hoarding.status || "").toLowerCase()
-                          )
-                        ? "badge-danger"
-                        : "badge-warning"
+                              String(hoarding.status || "").toLowerCase(),
+                            )
+                          ? "badge-danger"
+                          : "badge-warning"
                     }`}
                   >
                     {statusLabel(hoarding.status)}
@@ -286,7 +286,7 @@ export default function HoardingDetailPage() {
                 </div>
                 <div>
                   <strong>Standard Rate:</strong>{" "}
-                  {hoarding.standardRate ?? hoarding.baseRate
+                  {(hoarding.standardRate ?? hoarding.baseRate)
                     ? `₹${Number(hoarding.standardRate ?? hoarding.baseRate).toLocaleString()}`
                     : "N/A"}
                 </div>
@@ -360,7 +360,7 @@ export default function HoardingDetailPage() {
                   ["under_process", "tokenized"].includes(
                     String(hoarding.status || "")
                       .toLowerCase()
-                      .trim()
+                      .trim(),
                   )
                 ) && (
                   <Link

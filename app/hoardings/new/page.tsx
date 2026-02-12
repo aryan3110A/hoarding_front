@@ -27,7 +27,9 @@ export default function NewHoarding() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const router = useRouter();
 
   const loadCategories = async () => {
@@ -93,7 +95,7 @@ export default function NewHoarding() {
       setError(
         err.response?.data?.message ||
           err.message ||
-          "Failed to create hoarding"
+          "Failed to create hoarding",
       );
     } finally {
       setLoading(false);

@@ -157,11 +157,11 @@ export const hoardingsAPI = {
 // Categories API
 export const categoriesAPI = {
   list: async () => {
-    const response = await api.get('/categories');
+    const response = await api.get("/categories");
     return response.data;
   },
   create: async (data: { name: string }) => {
-    const response = await api.post('/categories', data);
+    const response = await api.post("/categories", data);
     return response.data;
   },
 };
@@ -534,7 +534,7 @@ export const enquiriesAPI = {
   },
 
   listSalesUsers: async () => {
-    const response = await api.get('/inquiries/sales-users');
+    const response = await api.get("/inquiries/sales-users");
     return response.data;
   },
 };

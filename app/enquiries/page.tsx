@@ -183,14 +183,22 @@ export default function Enquiries() {
     categoryId: "",
     assignedSalesId: "",
   });
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
-  const [salesUsers, setSalesUsers] = useState<Array<{ id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [salesUsers, setSalesUsers] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
 
   const [phoneConflictMessage, setPhoneConflictMessage] = useState("");
 
-  const extractListRows = (payload: any): Array<{ id: string; name: string }> => {
-    if (Array.isArray(payload)) return payload as Array<{ id: string; name: string }>;
-    if (Array.isArray(payload?.data)) return payload.data as Array<{ id: string; name: string }>;
+  const extractListRows = (
+    payload: any,
+  ): Array<{ id: string; name: string }> => {
+    if (Array.isArray(payload))
+      return payload as Array<{ id: string; name: string }>;
+    if (Array.isArray(payload?.data))
+      return payload.data as Array<{ id: string; name: string }>;
     if (Array.isArray(payload?.data?.rows)) {
       return payload.data.rows as Array<{ id: string; name: string }>;
     }
@@ -200,7 +208,10 @@ export default function Enquiries() {
     return [];
   };
 
-  const normalizeName = (value: string) => String(value || "").trim().toLowerCase();
+  const normalizeName = (value: string) =>
+    String(value || "")
+      .trim()
+      .toLowerCase();
 
   useEffect(() => {
     if (user) {
@@ -410,14 +421,21 @@ export default function Enquiries() {
 
   const assignSales = async (inquiryId: string, assignedSalesId: string) => {
     try {
-      const res = await enquiriesAPI.assignSales(inquiryId, assignedSalesId || null);
+      const res = await enquiriesAPI.assignSales(
+        inquiryId,
+        assignedSalesId || null,
+      );
       const updated = res?.data;
       setInquiries((prev) =>
-        (prev || []).map((r) => (r?.id === inquiryId ? { ...r, ...updated } : r)),
+        (prev || []).map((r) =>
+          r?.id === inquiryId ? { ...r, ...updated } : r,
+        ),
       );
       showSuccess("Sales person assigned");
     } catch (error: any) {
-      showError(error?.response?.data?.message || "Failed to assign sales person");
+      showError(
+        error?.response?.data?.message || "Failed to assign sales person",
+      );
     }
   };
 
@@ -444,7 +462,8 @@ export default function Enquiries() {
   );
 
   const categoryOptions = useMemo(
-    () => categories.map((c) => ({ value: String(c.id), label: String(c.name) })),
+    () =>
+      categories.map((c) => ({ value: String(c.id), label: String(c.name) })),
     [categories],
   );
 
@@ -510,7 +529,13 @@ export default function Enquiries() {
                     required
                   />
                   {phoneConflictMessage ? (
-                    <div style={{ color: "#b91c1c", fontSize: "12px", marginTop: "6px" }}>
+                    <div
+                      style={{
+                        color: "#b91c1c",
+                        fontSize: "12px",
+                        marginTop: "6px",
+                      }}
+                    >
                       {phoneConflictMessage}
                     </div>
                   ) : null}
@@ -530,7 +555,9 @@ export default function Enquiries() {
                   <label>Category</label>
                   <StatusDropdown
                     value={formData.categoryId}
-                    onChange={(v) => setFormData({ ...formData, categoryId: v })}
+                    onChange={(v) =>
+                      setFormData({ ...formData, categoryId: v })
+                    }
                     placeholder="Select category"
                     options={categoryOptions}
                     buttonClassName="w-full"
@@ -543,7 +570,10 @@ export default function Enquiries() {
                     <select
                       value={formData.assignedSalesId}
                       onChange={(e) =>
-                        setFormData({ ...formData, assignedSalesId: e.target.value })
+                        setFormData({
+                          ...formData,
+                          assignedSalesId: e.target.value,
+                        })
                       }
                     >
                       <option value="">Unassigned</option>
@@ -684,7 +714,10 @@ export default function Enquiries() {
                 value={filters.categoryId}
                 onChange={(v) => setFilters({ ...filters, categoryId: v })}
                 placeholder="All Categories"
-                options={[{ value: "", label: "All Categories" }, ...categoryOptions]}
+                options={[
+                  { value: "", label: "All Categories" },
+                  ...categoryOptions,
+                ]}
                 buttonClassName="w-[170px]"
               />
               {isOwnerOrManager ? (
@@ -693,7 +726,7 @@ export default function Enquiries() {
                   onChange={(e) =>
                     setFilters({ ...filters, assignedSalesId: e.target.value })
                   }
-                className="h-10 w-[180px] rounded-md border border-slate-300 bg-white px-3 text-sm"
+                  className="h-10 w-[180px] rounded-md border border-slate-300 bg-white px-3 text-sm"
                 >
                   <option value="">All Sales</option>
                   {salesUsers.map((s) => (

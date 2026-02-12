@@ -5,7 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
 import CustomSelect from "@/components/CustomSelect";
-import { bookingTokensAPI, categoriesAPI, hoardingsAPI, proposalsAPI } from "@/lib/api";
+import {
+  bookingTokensAPI,
+  categoriesAPI,
+  hoardingsAPI,
+  proposalsAPI,
+} from "@/lib/api";
 import { showSuccess, showError } from "@/lib/toast";
 import {
   canCreate,
@@ -26,8 +31,15 @@ export default function Hoardings() {
   const [hasMore, setHasMore] = useState(true);
   const userFromContext = useUser();
   const [user, setUser] = useState<any>(null);
-  const [filters, setFilters] = useState({ city: "", area: "", status: "", categoryId: "" });
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [filters, setFilters] = useState({
+    city: "",
+    area: "",
+    status: "",
+    categoryId: "",
+  });
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [landlordSearch, setLandlordSearch] = useState("");
   const [landlordFilters, setLandlordFilters] = useState<
     Map<string, { city: string; area: string; status: string }>

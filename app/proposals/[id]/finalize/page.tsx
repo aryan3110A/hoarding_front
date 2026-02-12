@@ -259,7 +259,8 @@ export default function FinalizeProposalPage() {
         return;
       }
       try {
-        if (typeof window !== "undefined") localStorage.removeItem(finalRateDraftKey);
+        if (typeof window !== "undefined")
+          localStorage.removeItem(finalRateDraftKey);
       } catch {
         // ignore
       }
@@ -339,7 +340,9 @@ export default function FinalizeProposalPage() {
                 <tbody>
                   {proposalRows.map((h: any) => {
                     const hid = String(h.hoardingId || "");
-                    const status = String(h?.hoarding?.status || "available").toLowerCase();
+                    const status = String(
+                      h?.hoarding?.status || "available",
+                    ).toLowerCase();
                     const isDisabled = isNonFinalizable(status);
                     const rowBusy = !!rowActionLoading[hid];
                     return (

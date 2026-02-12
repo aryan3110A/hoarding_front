@@ -10,7 +10,12 @@ import React, {
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
-import { categoriesAPI, clientsAPI, hoardingsAPI, proposalsAPI } from "@/lib/api";
+import {
+  categoriesAPI,
+  clientsAPI,
+  hoardingsAPI,
+  proposalsAPI,
+} from "@/lib/api";
 import AccessDenied from "@/components/AccessDenied";
 import { getRoleFromUser } from "@/lib/rbac";
 import LocationAutocomplete from "@/components/LocationAutocomplete";
@@ -231,7 +236,9 @@ export default function ProposalBuilder({
     size: "",
     availability: "",
   });
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
 
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(20);
@@ -743,7 +750,9 @@ export default function ProposalBuilder({
         const line = computeFinalRate({
           baseRate: Math.max(0, s.baseRate),
           discountPct: clampPctLocal(s.discountPct),
-          illuminationCost: s.illumination ? Math.max(0, s.illuminationCost) : 0,
+          illuminationCost: s.illumination
+            ? Math.max(0, s.illuminationCost)
+            : 0,
         });
         if (line < Math.max(0, s.minimumRate || 0)) {
           return `Final rate for ${s.hoardingCode || "selected hoarding"} cannot be below minimum rate`;
@@ -1670,8 +1679,8 @@ export default function ProposalBuilder({
 
               {mode === "WITH_RATE" ? (
                 <div className="mt-3 text-xs text-gray-600">
-                  PDF includes standard rate, GST, discount, final rate, printing,
-                  mounting, and grand total.
+                  PDF includes standard rate, GST, discount, final rate,
+                  printing, mounting, and grand total.
                 </div>
               ) : (
                 <div className="mt-3 text-xs text-gray-600">

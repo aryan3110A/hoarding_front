@@ -47,7 +47,9 @@ export default function EditHoarding() {
   const [fetching, setFetching] = useState(true);
   const [groupHoardings, setGroupHoardings] = useState<any[]>([]);
   const [groupLoading, setGroupLoading] = useState(false);
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadType, setUploadType] = useState<
@@ -90,7 +92,7 @@ export default function EditHoarding() {
   const addFiles = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const images = Array.from(files).filter((f) =>
-      (f.type || "").toLowerCase().startsWith("image/")
+      (f.type || "").toLowerCase().startsWith("image/"),
     );
     if (images.length === 0) return;
 
@@ -150,12 +152,14 @@ export default function EditHoarding() {
             type: h.type || "",
             ownership: h.ownership || "Private",
             status: h.status || "available",
-            standardRate: (h.standardRate ?? h.baseRate)
-              ? String(h.standardRate ?? h.baseRate)
-              : "",
-            minimumRate: (h.minimumRate ?? h.standardRate ?? h.baseRate)
-              ? String(h.minimumRate ?? h.standardRate ?? h.baseRate)
-              : "",
+            standardRate:
+              (h.standardRate ?? h.baseRate)
+                ? String(h.standardRate ?? h.baseRate)
+                : "",
+            minimumRate:
+              (h.minimumRate ?? h.standardRate ?? h.baseRate)
+                ? String(h.minimumRate ?? h.standardRate ?? h.baseRate)
+                : "",
             lat: h.lat ? h.lat.toString() : "",
             lng: h.lng ? h.lng.toString() : "",
             landlord: (h.rateHistory && h.rateHistory.landlord) || "",
@@ -166,7 +170,7 @@ export default function EditHoarding() {
         setError(
           err.response?.data?.message ||
             err.message ||
-            "Failed to fetch hoarding"
+            "Failed to fetch hoarding",
         );
       } finally {
         setFetching(false);
@@ -195,7 +199,7 @@ export default function EditHoarding() {
         let siblings = [];
         if (formData.propertyGroupId) {
           siblings = all.filter(
-            (h: any) => h.propertyGroupId === formData.propertyGroupId
+            (h: any) => h.propertyGroupId === formData.propertyGroupId,
           );
         } else {
           // Fallback: Group by City + Area if propertyGroupId is missing
@@ -203,13 +207,13 @@ export default function EditHoarding() {
             (h: any) =>
               !h.propertyGroupId &&
               h.city === formData.city &&
-              h.area === formData.area
+              h.area === formData.area,
           );
         }
 
         // Sort by code for consistency
         siblings.sort((a: any, b: any) =>
-          (a.code || "").localeCompare(b.code || "")
+          (a.code || "").localeCompare(b.code || ""),
         );
         setGroupHoardings(siblings);
       } catch (e) {
@@ -289,7 +293,7 @@ export default function EditHoarding() {
       setError(
         err.response?.data?.message ||
           err.message ||
-          "Failed to update hoarding"
+          "Failed to update hoarding",
       );
     } finally {
       setLoading(false);
@@ -747,7 +751,7 @@ export default function EditHoarding() {
                         onMouseEnter={() => setHoveredImageId(img.id)}
                         onMouseLeave={() =>
                           setHoveredImageId((cur) =>
-                            cur === img.id ? null : cur
+                            cur === img.id ? null : cur,
                           )
                         }
                         style={{
@@ -836,7 +840,7 @@ export default function EditHoarding() {
                       }
                       // Create placeholder names: image 1, image 2, ...
                       const filenames = selectedImages.map(
-                        (_, idx) => `image ${idx + 1}`
+                        (_, idx) => `image ${idx + 1}`,
                       );
                       const resp = await hoardingsAPI.addImages(id, {
                         type: uploadType,
@@ -847,7 +851,7 @@ export default function EditHoarding() {
                     } catch (e: any) {
                       showError(
                         e?.response?.data?.message ||
-                          "Failed to save image metadata"
+                          "Failed to save image metadata",
                       );
                     }
                   }}
