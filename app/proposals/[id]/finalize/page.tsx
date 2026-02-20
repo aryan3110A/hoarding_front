@@ -29,7 +29,7 @@ export default function FinalizeProposalPage() {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [finalRates, setFinalRates] = useState<Record<string, number>>({});
   const [rowActionLoading, setRowActionLoading] = useState<
-    Record<string, "blocking" | "booking" | undefined>
+    Record<string, "blocking" | undefined>
   >({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -203,36 +203,6 @@ export default function FinalizeProposalPage() {
     }
   };
 
-  const bookSingleHoarding = async (hid: string) => {
-    if (!canFinalize) {
-      showError("Only Sales can finalize");
-      return;
-    }
-    if (!hid || rowActionLoading[hid]) return;
-    setRowActionLoading((prev) => ({ ...prev, [hid]: "booking" }));
-    try {
-      const negotiated = Math.max(0, Number(finalRates[hid] || 0));
-      const resp = await proposalsAPI.finalize(id, {
-        hoardingIds: [hid],
-        finalRates: { [hid]: negotiated },
-      });
-      if (!resp?.success) {
-        showError(resp?.message || "Failed to book hoarding");
-        return;
-      }
-      updateProposalRowStatus(hid, "booked");
-      showSuccess("Hoarding booked");
-    } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to book hoarding");
-    } finally {
-      setRowActionLoading((prev) => {
-        const next = { ...prev };
-        delete next[hid];
-        return next;
-      });
-    }
-  };
-
   const confirm = async () => {
     if (!canFinalize) {
       showError("Only Sales can finalize");
@@ -264,7 +234,7 @@ export default function FinalizeProposalPage() {
       } catch {
         // ignore
       }
-      showSuccess("Hoardings finalized");
+      showSuccess("Selected hoardings blocked");
       router.push("/proposals");
     } catch (e: any) {
       showError(e?.response?.data?.message || "Failed to finalize");
@@ -280,7 +250,7 @@ export default function FinalizeProposalPage() {
           <div>
             <h1 className="text-2xl font-semibold">Finalize Hoardings</h1>
             <div className="text-sm text-gray-600">
-              Select only the hoardings you want to book now.
+              Select only the hoardings you want to block now.
             </div>
           </div>
           <Link
@@ -408,16 +378,6 @@ export default function FinalizeProposalPage() {
                                 : status === "blocked"
                                   ? "Unblock"
                                   : "Block"}
-                            </button>
-                            <button
-                              type="button"
-                              disabled={!hid || isDisabled || rowBusy}
-                              onClick={() => bookSingleHoarding(hid)}
-                              className="px-2.5 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
-                            >
-                              {rowActionLoading[hid] === "booking"
-                                ? "Booking..."
-                                : "Book"}
                             </button>
                           </div>
                         </td>

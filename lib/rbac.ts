@@ -63,6 +63,14 @@ export const rolePermissions: RolePermissions = {
       update: true,
       delete: true,
     },
+    renewalsDue: {
+      component: "renewalsDue",
+      create: false,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Sales contract renewal reminders (15-day window)",
+    },
     rentRecords: {
       component: "rentRecords",
       create: true,
@@ -126,6 +134,14 @@ export const rolePermissions: RolePermissions = {
       update: true,
       delete: true,
     },
+    blockedHoardings: {
+      component: "blockedHoardings",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Client-wise blocked hoardings dashboard",
+    },
     notifications: {
       component: "notifications",
       create: true,
@@ -176,6 +192,14 @@ export const rolePermissions: RolePermissions = {
       read: true,
       update: true,
       delete: true,
+    },
+    renewalsDue: {
+      component: "renewalsDue",
+      create: false,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Sales contract renewal reminders (15-day window)",
     },
     rentRecords: {
       component: "rentRecords",
@@ -242,6 +266,14 @@ export const rolePermissions: RolePermissions = {
       update: false,
       delete: false,
       notes: "No access",
+    },
+    blockedHoardings: {
+      component: "blockedHoardings",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Read-only blocked hoardings dashboard",
     },
     notifications: {
       component: "notifications",
@@ -303,10 +335,18 @@ export const rolePermissions: RolePermissions = {
     contracts: {
       component: "contracts",
       create: false,
-      read: false,
+      read: true,
       update: false,
       delete: false,
-      notes: "No access",
+      notes: "Read own due contracts and send renewal reminders",
+    },
+    renewalsDue: {
+      component: "renewalsDue",
+      create: false,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Can send renewal reminders for own contracts",
     },
     rentRecords: {
       component: "rentRecords",
@@ -371,6 +411,14 @@ export const rolePermissions: RolePermissions = {
       update: false,
       delete: false,
       notes: "No access",
+    },
+    blockedHoardings: {
+      component: "blockedHoardings",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Read-only blocked hoardings dashboard",
     },
     notifications: {
       component: "notifications",
@@ -493,6 +541,14 @@ export const rolePermissions: RolePermissions = {
       update: false,
       delete: false,
       notes: "No access",
+    },
+    blockedHoardings: {
+      component: "blockedHoardings",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Read-only blocked hoardings dashboard",
     },
     notifications: {
       component: "notifications",
@@ -674,6 +730,14 @@ export const rolePermissions: RolePermissions = {
       delete: false,
       notes: "Read-only",
     },
+    renewalsDue: {
+      component: "renewalsDue",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Read-only renewal due view",
+    },
     rentRecords: {
       component: "rentRecords",
       create: false,
@@ -800,6 +864,14 @@ export const rolePermissions: RolePermissions = {
       update: true,
       delete: true,
     },
+    renewalsDue: {
+      component: "renewalsDue",
+      create: false,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Sales contract renewal reminders (15-day window)",
+    },
     rentRecords: {
       component: "rentRecords",
       create: true,
@@ -862,6 +934,14 @@ export const rolePermissions: RolePermissions = {
       read: true,
       update: true,
       delete: true,
+    },
+    blockedHoardings: {
+      component: "blockedHoardings",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Client-wise blocked hoardings dashboard",
     },
     notifications: {
       component: "notifications",

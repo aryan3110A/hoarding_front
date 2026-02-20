@@ -16,11 +16,16 @@ const statusOptions = [
   { value: "booked", label: "Booked" },
   { value: "under_process", label: "Under Process" },
   { value: "live", label: "Live" },
+  { value: "remount_pending", label: "Remount Pending" },
   { value: "removal_pending", label: "Removal Pending" },
 ];
 
-const statusBadge = (status?: string) => {
+const statusBadge = (status?: string, remountStatus?: string | null) => {
   const s = String(status || "").toLowerCase();
+  const remount = String(remountStatus || "").toLowerCase();
+  if (remount === "pending") {
+    return { text: "Live + Remount Pending", color: "#dc2626" };
+  }
   if (s === "booked") return { text: "Booked", color: "#0ea5e9" };
   if (s === "under_process") return { text: "Under Process", color: "#f59e0b" };
   if (s === "live") return { text: "Live", color: "#22c55e" };
@@ -375,6 +380,31 @@ export default function SupervisorDashboardPage() {
     }
   };
 
+  const completeRemount = async (id: string) => {
+    if (!confirm("Mark remount as completed?")) return;
+    try {
+      const resp = await supervisorAPI.completeRemount(id);
+      if (resp?.success) {
+        showSuccess("Remount marked completed");
+        setRows((prev) =>
+          (prev || []).map((h) =>
+            String(h.id) === String(id)
+              ? {
+                  ...h,
+                  remountStatus: "COMPLETED",
+                  remountCompletedAt: new Date().toISOString(),
+                }
+              : h,
+          ),
+        );
+      } else {
+        showError(resp?.message || "Failed to complete remount");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to complete remount");
+    }
+  };
+
   const downloadPdf = async (id: string) => {
     try {
       const resp = await supervisorAPI.getOperationalPdf(id);
@@ -488,6 +518,9 @@ export default function SupervisorDashboardPage() {
                       isDesignCompleted &&
                       !!plannedLiveDateValue;
                     const canMarkRemoval = statusLower !== "removal_pending";
+                    const canCompleteRemount =
+                      String(h?.remountStatus || "").toLowerCase() ===
+                      "pending";
                     const markLiveTooltip = canMarkLive
                       ? "Mark Live"
                       : !plannedLiveDateValue
@@ -503,7 +536,7 @@ export default function SupervisorDashboardPage() {
                         <td>{h.code || h.id}</td>
                         <td>
                           {(() => {
-                            const b = statusBadge(h.status);
+                            const b = statusBadge(h.status, h.remountStatus);
                             return (
                               <span
                                 style={{
@@ -734,6 +767,18 @@ export default function SupervisorDashboardPage() {
                               onClick={() => markRemoval(h.id)}
                             >
                               Mark Removal
+                            </button>
+                            <button
+                              className="btn btn-secondary"
+                              disabled={!canCompleteRemount}
+                              title={
+                                canCompleteRemount
+                                  ? "Complete remount"
+                                  : "No pending remount"
+                              }
+                              onClick={() => completeRemount(h.id)}
+                            >
+                              Complete Remount
                             </button>
                             <button
                               className="btn btn-secondary"

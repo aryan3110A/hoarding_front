@@ -524,6 +524,10 @@ export default function Hoardings() {
                         const activeTokenStatus = String(
                           activeToken?.status || "",
                         ).toUpperCase();
+                        const remountPending =
+                          String(
+                            (h as any).remountStatus || "",
+                          ).toUpperCase() === "PENDING";
                         const displayStatus =
                           h.hasActiveToken === true || rawStatus === "tokenized"
                             ? "tokenized"
@@ -560,6 +564,17 @@ export default function Hoardings() {
                                 }}
                               >
                                 <div>{displayStatus}</div>
+                                {remountPending ? (
+                                  <div
+                                    style={{
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      color: "#b91c1c",
+                                    }}
+                                  >
+                                    REMOUNT PENDING
+                                  </div>
+                                ) : null}
                                 {h.hasActiveToken === true && remaining ? (
                                   <div style={{ fontSize: 12, opacity: 0.9 }}>
                                     {activeTokenStatus === "EXTENSION_REQUESTED"
@@ -591,6 +606,21 @@ export default function Hoardings() {
                                 >
                                   Info
                                 </Link>
+                                {String(rawStatus || "")
+                                  .toLowerCase()
+                                  .trim() === "live" && (
+                                  <Link
+                                    href={`/sales/remount-renew?tab=renew&hoardingId=${encodeURIComponent(String(h.id || ""))}`}
+                                    className="btn btn-secondary"
+                                    style={{
+                                      padding: "6px 10px",
+                                      fontSize: "12px",
+                                      width: "100%",
+                                    }}
+                                  >
+                                    Extend / Renew
+                                  </Link>
+                                )}
                                 {(() => {
                                   const myTokenId = h.myActiveTokenId
                                     ? String(h.myActiveTokenId)

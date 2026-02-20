@@ -152,6 +152,34 @@ export const hoardingsAPI = {
     });
     return response.data;
   },
+
+  listRemountRenew: async () => {
+    const response = await api.get("/hoardings/remount-renew/list");
+    return response.data;
+  },
+
+  requestRemount: async (id: string) => {
+    const response = await api.post(`/hoardings/${id}/remount-request`);
+    return response.data;
+  },
+
+  completeRemount: async (id: string) => {
+    const response = await api.post(`/hoardings/${id}/remount-complete`);
+    return response.data;
+  },
+
+  renew: async (
+    id: string,
+    data: { tenure: number; newAmount: number; remountRequired: boolean },
+  ) => {
+    const response = await api.post(`/hoardings/${id}/renew`, data);
+    return response.data;
+  },
+
+  getRenewalHistory: async (id: string) => {
+    const response = await api.get(`/hoardings/${id}/renewal-history`);
+    return response.data;
+  },
 };
 
 // Categories API
@@ -359,6 +387,16 @@ export const contractsAPI = {
     const response = await api.get(`/contracts/${id}`);
     return response.data;
   },
+  getRenewalsDue: async (days: number = 15) => {
+    const response = await api.get("/contracts/renewals-due", {
+      params: { days },
+    });
+    return response.data;
+  },
+  sendRenewalReminder: async (id: string) => {
+    const response = await api.post(`/contracts/${id}/send-renewal-reminder`);
+    return response.data;
+  },
 };
 
 // Clients API
@@ -486,12 +524,16 @@ export const enquiriesAPI = {
 
   create: async (data: {
     clientName: string;
+    companyName?: string;
     phone: string;
     email?: string;
     city: string;
     area: string;
     location: string;
     purpose?: string;
+    firstContactDate?: string;
+    nextFollowupDate?: string;
+    followupStatus?: "PENDING" | "DONE";
     source:
       | "WALK_IN"
       | "SELF_GENERATED"
@@ -511,18 +553,27 @@ export const enquiriesAPI = {
     id: string,
     data: Partial<{
       clientName: string;
+      companyName: string | null;
       phone: string;
       email: string | null;
       city: string;
       area: string;
       location: string;
       purpose: string | null;
+      firstContactDate: string | null;
+      nextFollowupDate: string | null;
+      followupStatus: "PENDING" | "DONE";
       assignedSalesId: string | null;
       categoryId: string | null;
       status: "OPEN" | "LOCKED" | "CLOSED";
     }>,
   ) => {
     const response = await api.put(`/inquiries/${id}`, data);
+    return response.data;
+  },
+
+  getReminders: async (params?: { range?: "today" | "next7" | "all" }) => {
+    const response = await api.get("/inquiries/reminders", { params });
     return response.data;
   },
 
@@ -677,6 +728,14 @@ export const bookingTokensAPI = {
   },
 };
 
+// Blocked Hoardings Dashboard API
+export const blockedHoardingsAPI = {
+  byClient: async (params?: { q?: string }) => {
+    const response = await api.get("/blocked-hoardings/by-client", { params });
+    return response.data;
+  },
+};
+
 // Dashboard API
 export const dashboardAPI = {
   getOwnerDashboard: async () => {
@@ -786,6 +845,11 @@ export const supervisorAPI = {
       responseType: "blob",
     });
     return response;
+  },
+
+  completeRemount: async (id: string) => {
+    const response = await api.post(`/hoardings/${id}/remount-complete`);
+    return response.data;
   },
 };
 

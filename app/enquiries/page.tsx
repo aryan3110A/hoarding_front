@@ -173,12 +173,15 @@ export default function Enquiries() {
 
   const [formData, setFormData] = useState({
     clientName: "",
+    companyName: "",
     phone: "",
     email: "",
     city: "",
     area: "",
     location: "",
     purpose: "",
+    firstContactDate: "",
+    nextFollowupDate: "",
     source: "WALK_IN",
     categoryId: "",
     assignedSalesId: "",
@@ -212,6 +215,13 @@ export default function Enquiries() {
     String(value || "")
       .trim()
       .toLowerCase();
+
+  const todayInput = () => {
+    const now = new Date();
+    const month = `${now.getMonth() + 1}`.padStart(2, "0");
+    const day = `${now.getDate()}`.padStart(2, "0");
+    return `${now.getFullYear()}-${month}-${day}`;
+  };
 
   useEffect(() => {
     if (user) {
@@ -290,27 +300,41 @@ export default function Enquiries() {
       }
       const payload = {
         clientName: formData.clientName,
+        companyName: formData.companyName || undefined,
         phone: formData.phone,
         email: formData.email || undefined,
         city: formData.city,
         area: formData.area,
         location: formData.location,
         purpose: formData.purpose || undefined,
+        firstContactDate: formData.firstContactDate || undefined,
+        nextFollowupDate: formData.nextFollowupDate || undefined,
         source: formData.source,
         categoryId: formData.categoryId || undefined,
         assignedSalesId: formData.assignedSalesId || undefined,
       };
 
+      if (
+        formData.nextFollowupDate &&
+        formData.nextFollowupDate < todayInput()
+      ) {
+        showError("Next follow-up date cannot be in the past");
+        return;
+      }
+
       const res = await enquiriesAPI.create(payload as any);
       setShowForm(false);
       setFormData({
         clientName: "",
+        companyName: "",
         phone: "",
         email: "",
         city: "",
         area: "",
         location: "",
         purpose: "",
+        firstContactDate: "",
+        nextFollowupDate: "",
         source: "WALK_IN",
         categoryId: "",
         assignedSalesId: "",
@@ -495,24 +519,7 @@ export default function Enquiries() {
           <div className="card">
             <h3>Create New Inquiry</h3>
             <form onSubmit={handleSubmit}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: "15px",
-                }}
-              >
-                <div className="form-group">
-                  <label>Client Name *</label>
-                  <input
-                    type="text"
-                    value={formData.clientName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, clientName: e.target.value })
-                    }
-                    required
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
                   <label>Phone *</label>
                   <input
@@ -539,6 +546,28 @@ export default function Enquiries() {
                       {phoneConflictMessage}
                     </div>
                   ) : null}
+                </div>
+                <div className="form-group">
+                  <label>Client Name *</label>
+                  <input
+                    type="text"
+                    value={formData.clientName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clientName: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Company Name</label>
+                  <input
+                    type="text"
+                    value={formData.companyName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, companyName: e.target.value })
+                    }
+                    placeholder="optional"
+                  />
                 </div>
                 <div className="form-group">
                   <label>Source *</label>
@@ -595,6 +624,49 @@ export default function Enquiries() {
                     }
                     placeholder="optional"
                   />
+                </div>
+                <div className="form-group">
+                  <label>First Contact Date</label>
+                  <input
+                    type="date"
+                    value={formData.firstContactDate}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        firstContactDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Remind When to Contact Next</label>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        const next = new Date();
+                        next.setDate(next.getDate() + 7);
+                        setFormData({
+                          ...formData,
+                          nextFollowupDate: next.toISOString().slice(0, 10),
+                        });
+                      }}
+                    >
+                      Remind in 7 Days
+                    </button>
+                    <input
+                      type="date"
+                      min={todayInput()}
+                      value={formData.nextFollowupDate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          nextFollowupDate: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
                 <div className="form-group">
                   <label>City *</label>
@@ -663,19 +735,19 @@ export default function Enquiries() {
             style={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center",
+              alignItems: "flex-start",
               gap: "12px",
               flexWrap: "wrap",
             }}
           >
             <h3 style={{ margin: 0 }}>All Inquiries</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 w-full">
               <input
                 type="text"
-                placeholder="Search client name or phone"
+                placeholder="Search client, company or phone"
                 value={filters.q}
                 onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-                className="h-10 w-[240px] rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
+                className="h-10 w-[280px] max-w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
               />
               <input
                 type="text"
@@ -754,72 +826,120 @@ export default function Enquiries() {
           {loading ? (
             <div style={{ padding: "16px" }}>Loading...</div>
           ) : inquiries.length > 0 ? (
-            <table className="table" style={{ marginTop: "16px" }}>
-              <thead>
-                <tr>
-                  <th>Client Name</th>
-                  <th>Phone</th>
-                  <th>City</th>
-                  <th>Area</th>
-                  <th>Location</th>
-                  <th>Category</th>
-                  <th>Assigned Sales</th>
-                  <th>Status</th>
-                  <th>Created By</th>
-                  <th>Created</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inquiries.map((inquiry) => {
-                  const createdByRole = String(
-                    inquiry?.createdBy?.role?.name || "",
-                  ).toLowerCase();
-                  const salesCanEdit =
-                    isSalesRole &&
-                    canUpdateInquiry &&
-                    String(inquiry?.assignedSalesId || "") ===
-                      String((user as any)?.id || "");
-                  return (
-                    <tr key={inquiry.id}>
-                      <td>{inquiry.clientName}</td>
-                      <td>{inquiry.phone}</td>
-                      <td>{inquiry.city}</td>
-                      <td>{inquiry.area}</td>
-                      <td>{inquiry.location}</td>
-                      <td>{inquiry?.category?.name || "-"}</td>
-                      <td>
-                        {isOwnerOrManager ? (
-                          <select
-                            value={String(inquiry?.assignedSalesId || "")}
-                            onChange={(e) =>
-                              assignSales(String(inquiry.id), e.target.value)
-                            }
-                          >
-                            <option value="">Unassigned</option>
-                            {salesUsers.map((s) => (
-                              <option key={s.id} value={s.id}>
-                                {s.name}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          inquiry?.assignedSales?.name || "Unassigned"
-                        )}
-                      </td>
-                      <td>{inquiry.status}</td>
-                      <td>
-                        {inquiry?.createdBy?.name || "-"}
-                        {createdByRole ? ` (${createdByRole})` : ""}
-                      </td>
-                      <td>
-                        {inquiry.createdAt
-                          ? new Date(inquiry.createdAt).toLocaleDateString()
-                          : "-"}
-                      </td>
-                      <td>
-                        {isSalesRole ? (
-                          salesCanEdit ? (
+            <div
+              style={{ marginTop: "16px", overflowX: "auto", width: "100%" }}
+            >
+              <table
+                className="table"
+                style={{ marginTop: 0, minWidth: "1900px" }}
+              >
+                <thead>
+                  <tr>
+                    <th>Phone</th>
+                    <th>Client Name</th>
+                    <th>Company Name</th>
+                    <th>City</th>
+                    <th>Area</th>
+                    <th>Location</th>
+                    <th>First Contact</th>
+                    <th>Next Follow-up</th>
+                    <th>Follow-up</th>
+                    <th>Category</th>
+                    <th>Assigned Sales</th>
+                    <th>Status</th>
+                    <th>Created By</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inquiries.map((inquiry) => {
+                    const createdByRole = String(
+                      inquiry?.createdBy?.role?.name || "",
+                    ).toLowerCase();
+                    const salesCanEdit =
+                      isSalesRole &&
+                      canUpdateInquiry &&
+                      String(inquiry?.assignedSalesId || "") ===
+                        String((user as any)?.id || "");
+                    return (
+                      <tr key={inquiry.id}>
+                        <td>{inquiry.phone}</td>
+                        <td>{inquiry.clientName}</td>
+                        <td>{inquiry.companyName || "-"}</td>
+                        <td>{inquiry.city}</td>
+                        <td>{inquiry.area}</td>
+                        <td>{inquiry.location}</td>
+                        <td>
+                          {inquiry.firstContactDate
+                            ? new Date(
+                                inquiry.firstContactDate,
+                              ).toLocaleDateString()
+                            : "-"}
+                        </td>
+                        <td>
+                          {inquiry.nextFollowupDate
+                            ? new Date(
+                                inquiry.nextFollowupDate,
+                              ).toLocaleDateString()
+                            : "-"}
+                        </td>
+                        <td>{inquiry.followupStatus || "PENDING"}</td>
+                        <td>{inquiry?.category?.name || "-"}</td>
+                        <td>
+                          {isOwnerOrManager ? (
+                            <select
+                              value={String(inquiry?.assignedSalesId || "")}
+                              onChange={(e) =>
+                                assignSales(String(inquiry.id), e.target.value)
+                              }
+                            >
+                              <option value="">Unassigned</option>
+                              {salesUsers.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                  {s.name}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            inquiry?.assignedSales?.name || "Unassigned"
+                          )}
+                        </td>
+                        <td>{inquiry.status}</td>
+                        <td>
+                          {inquiry?.createdBy?.name || "-"}
+                          {createdByRole ? ` (${createdByRole})` : ""}
+                        </td>
+                        <td>
+                          {inquiry.createdAt
+                            ? new Date(inquiry.createdAt).toLocaleDateString()
+                            : "-"}
+                        </td>
+                        <td>
+                          {isSalesRole ? (
+                            salesCanEdit ? (
+                              <StatusDropdown
+                                value={String(inquiry.status || "")}
+                                onChange={(v) =>
+                                  handleUpdateStatus(inquiry.id, v)
+                                }
+                                placeholder={String(inquiry.status || "Status")}
+                                options={statusOptions.filter(
+                                  (o) => o.value !== "",
+                                )}
+                              />
+                            ) : (
+                              <StatusDropdown
+                                value={String(inquiry.status || "")}
+                                onChange={() => {}}
+                                placeholder={String(inquiry.status || "Status")}
+                                options={statusOptions.filter(
+                                  (o) => o.value !== "",
+                                )}
+                                disabled
+                              />
+                            )
+                          ) : canUpdateInquiry ? (
                             <StatusDropdown
                               value={String(inquiry.status || "")}
                               onChange={(v) =>
@@ -831,34 +951,15 @@ export default function Enquiries() {
                               )}
                             />
                           ) : (
-                            <StatusDropdown
-                              value={String(inquiry.status || "")}
-                              onChange={() => {}}
-                              placeholder={String(inquiry.status || "Status")}
-                              options={statusOptions.filter(
-                                (o) => o.value !== "",
-                              )}
-                              disabled
-                            />
-                          )
-                        ) : canUpdateInquiry ? (
-                          <StatusDropdown
-                            value={String(inquiry.status || "")}
-                            onChange={(v) => handleUpdateStatus(inquiry.id, v)}
-                            placeholder={String(inquiry.status || "Status")}
-                            options={statusOptions.filter(
-                              (o) => o.value !== "",
-                            )}
-                          />
-                        ) : (
-                          <span>{inquiry.status}</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                            <span>{inquiry.status}</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <div
               style={{

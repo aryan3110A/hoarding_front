@@ -97,10 +97,34 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       roles: ["owner", "manager", "sales", "admin"],
     },
     {
+      title: "Enquiry Reminders",
+      href: "/sales/enquiry-reminders",
+      iconName: "AlarmClock",
+      roles: ["owner", "manager", "sales", "admin"],
+    },
+    {
+      title: "Blocked Hoardings",
+      href: "/blocked-hoardings",
+      iconName: "ShieldAlert",
+      roles: ["owner", "manager", "sales", "supervisor", "admin"],
+    },
+    {
       title: "Contracts",
       href: "/contracts",
       iconName: "FileText",
       roles: ["owner", "manager", "accountant", "admin"],
+    },
+    {
+      title: "Renewals Due (15 Days)",
+      href: "/sales/renewals-due",
+      iconName: "MessageCircleWarning",
+      roles: ["owner", "manager", "sales", "accountant", "admin"],
+    },
+    {
+      title: "Remount / Renew",
+      href: "/sales/remount-renew",
+      iconName: "RefreshCcw",
+      roles: ["owner", "manager", "sales", "supervisor", "admin"],
     },
     {
       title: "Vendors & Rent",

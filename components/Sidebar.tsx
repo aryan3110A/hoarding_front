@@ -89,10 +89,34 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       roles: ["owner", "manager", "sales", "admin"],
     },
     {
+      title: "Enquiry Reminders",
+      href: "/sales/enquiry-reminders",
+      icon: "⏰",
+      roles: ["owner", "manager", "sales", "admin"],
+    },
+    {
+      title: "Blocked Hoardings",
+      href: "/blocked-hoardings",
+      icon: "🛡️",
+      roles: ["owner", "manager", "sales", "supervisor", "admin"],
+    },
+    {
       title: "Contracts",
       href: "/contracts",
       icon: "📄",
       roles: ["owner", "manager", "accountant", "admin"], // Sales cannot access
+    },
+    {
+      title: "Renewals Due (15 Days)",
+      href: "/sales/renewals-due",
+      icon: "💬",
+      roles: ["owner", "manager", "sales", "accountant", "admin"],
+    },
+    {
+      title: "Remount / Renew",
+      href: "/sales/remount-renew",
+      icon: "🔁",
+      roles: ["owner", "manager", "sales", "supervisor", "admin"],
     },
     {
       title: "Vendors & Rent",
