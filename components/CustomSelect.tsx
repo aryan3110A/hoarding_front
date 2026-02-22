@@ -13,6 +13,7 @@ interface CustomSelectProps {
   options: Option[];
   placeholder?: string;
   className?: string;
+  openDirection?: "down" | "up";
 }
 
 export default function CustomSelect({
@@ -21,6 +22,7 @@ export default function CustomSelect({
   options,
   placeholder = "Select",
   className = "",
+  openDirection = "down",
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -66,7 +68,11 @@ export default function CustomSelect({
       </button>
 
       {open && (
-        <ul role="listbox" tabIndex={-1} className="cool-dropdown-list">
+        <ul
+          role="listbox"
+          tabIndex={-1}
+          className={`cool-dropdown-list ${openDirection === "up" ? "cool-dropdown-list-up" : ""}`}
+        >
           {options.map((opt) => {
             const isSelected = String(opt.value) === String(value);
             return (

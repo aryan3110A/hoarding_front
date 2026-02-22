@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import CustomSelect from "@/components/CustomSelect";
 import { bookingTokensAPI, hoardingsAPI } from "@/lib/api";
 import { getRoleFromUser } from "@/lib/rbac";
 import { useUser } from "@/components/AppLayout";
@@ -765,6 +766,13 @@ export default function BookingTokenDetailPage() {
   };
 
   const hoardingId = String(token?.hoardingId || token?.hoarding?.id || "");
+  const sectionStyle: React.CSSProperties = {
+    marginTop: 16,
+    padding: 14,
+    border: "1px solid #e2e8f0",
+    borderRadius: 10,
+    background: "#f8fafc",
+  };
 
   return (
     <ProtectedRoute component="bookingTokens">
@@ -780,9 +788,6 @@ export default function BookingTokenDetailPage() {
           <button className="btn btn-secondary" onClick={() => router.back()}>
             ← Back
           </button>
-          <Link href="/notifications" className="btn btn-secondary">
-            Notifications
-          </Link>
           {hoardingId && (
             <Link
               href={`/hoardings/${hoardingId}?from=notification`}
@@ -794,7 +799,10 @@ export default function BookingTokenDetailPage() {
         </div>
 
         <div className="card">
-          <h2 style={{ marginBottom: 12 }}>Token Details</h2>
+          <h2 style={{ marginBottom: 4 }}>Booking Token Details</h2>
+          <p style={{ color: "var(--text-secondary)", marginBottom: 12 }}>
+            Review token information and proceed with execution flow.
+          </p>
 
           {loading ? (
             <div>Loading...</div>
@@ -802,67 +810,73 @@ export default function BookingTokenDetailPage() {
             <div>Token not found</div>
           ) : (
             <>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 12,
-                  flexWrap: "wrap",
-                  marginBottom: 16,
-                }}
-              >
-                <div>
-                  <strong>Status:</strong>{" "}
-                  {statusLabel(
-                    hasLegacyExtensionRequest
-                      ? "extension_requested"
-                      : token.status,
+              <div style={sectionStyle}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div>
+                    <strong>Status:</strong>{" "}
+                    {statusLabel(
+                      hasLegacyExtensionRequest
+                        ? "extension_requested"
+                        : token.status,
+                    )}
+                  </div>
+                  <div>
+                    <strong>Hoarding Status:</strong>{" "}
+                    {String(token?.hoarding?.status || "").replace(/_/g, " ") ||
+                      "—"}
+                  </div>
+                  {typeof token.queuePosition === "number" && (
+                    <div>
+                      <strong>Queue:</strong> #{token.queuePosition}
+                    </div>
                   )}
+                  {token.expiresAt && (
+                    <div>
+                      <strong>Expires:</strong>{" "}
+                      {new Date(token.expiresAt).toLocaleString()}
+                    </div>
+                  )}
+                  {((tokenStatusUpper === "EXTENSION_REQUESTED" &&
+                    token.extensionRequestedUntil) ||
+                    hasLegacyExtensionRequest) && (
+                    <div>
+                      <strong>Requested Until:</strong>{" "}
+                      {tokenStatusUpper === "EXTENSION_REQUESTED" &&
+                      token.extensionRequestedUntil
+                        ? new Date(
+                            token.extensionRequestedUntil,
+                          ).toLocaleString()
+                        : legacyExtensionRequestedUntil
+                          ? legacyExtensionRequestedUntil.toLocaleString()
+                          : "—"}
+                    </div>
+                  )}
+                  {isConfirmedLike && (
+                    <div>
+                      <strong>Design Status:</strong>{" "}
+                      {designStatusLabel(normalizedDesignStatus)}
+                    </div>
+                  )}
+                  {fitterWorkflowEnabled &&
+                    isConfirmedLike &&
+                    tokenFitterId && (
+                      <div>
+                        <strong>Installation Status:</strong>{" "}
+                        {fitterStatusLabel(normalizedFitterStatus)}
+                      </div>
+                    )}
                 </div>
-                <div>
-                  <strong>Hoarding Status:</strong>{" "}
-                  {String(token?.hoarding?.status || "").replace(/_/g, " ") ||
-                    "—"}
-                </div>
-                {typeof token.queuePosition === "number" && (
-                  <div>
-                    <strong>Queue:</strong> #{token.queuePosition}
-                  </div>
-                )}
-                {token.expiresAt && (
-                  <div>
-                    <strong>Expires:</strong>{" "}
-                    {new Date(token.expiresAt).toLocaleString()}
-                  </div>
-                )}
-                {((tokenStatusUpper === "EXTENSION_REQUESTED" &&
-                  token.extensionRequestedUntil) ||
-                  hasLegacyExtensionRequest) && (
-                  <div>
-                    <strong>Requested Until:</strong>{" "}
-                    {tokenStatusUpper === "EXTENSION_REQUESTED" &&
-                    token.extensionRequestedUntil
-                      ? new Date(token.extensionRequestedUntil).toLocaleString()
-                      : legacyExtensionRequestedUntil
-                        ? legacyExtensionRequestedUntil.toLocaleString()
-                        : "—"}
-                  </div>
-                )}
-                {isConfirmedLike && (
-                  <div>
-                    <strong>Design Status:</strong>{" "}
-                    {designStatusLabel(normalizedDesignStatus)}
-                  </div>
-                )}
-                {fitterWorkflowEnabled && isConfirmedLike && tokenFitterId && (
-                  <div>
-                    <strong>Installation Status:</strong>{" "}
-                    {fitterStatusLabel(normalizedFitterStatus)}
-                  </div>
-                )}
               </div>
 
               <div
                 style={{
+                  ...sectionStyle,
                   display: "grid",
                   gridTemplateColumns: "repeat(2, 1fr)",
                   gap: 16,
@@ -899,7 +913,7 @@ export default function BookingTokenDetailPage() {
                 </div>
               </div>
 
-              <div style={{ marginTop: 16 }}>
+              <div style={sectionStyle}>
                 <h3 style={{ marginBottom: 8 }}>Hoarding Details</h3>
                 <div
                   style={{
@@ -1210,7 +1224,7 @@ export default function BookingTokenDetailPage() {
                 </div>
               )}
 
-              <div style={{ marginTop: 16 }}>
+              <div style={sectionStyle}>
                 <h3 style={{ marginBottom: 8 }}>Client</h3>
                 <div
                   style={{
@@ -1245,7 +1259,7 @@ export default function BookingTokenDetailPage() {
               >
                 {canRequestExtension && (
                   <button
-                    className="btn btn-secondary"
+                    className="btn btn-secondary btn-compact"
                     onClick={handleRequestExtension}
                     disabled={submitting}
                   >
@@ -1272,7 +1286,7 @@ export default function BookingTokenDetailPage() {
                 )}
                 {canReleaseThisToken && (
                   <button
-                    className="btn btn-secondary"
+                    className="btn btn-secondary btn-compact"
                     onClick={handleRelease}
                     disabled={submitting}
                   >
@@ -1309,21 +1323,16 @@ export default function BookingTokenDetailPage() {
                         >
                           Execution Type
                         </label>
-                        <select
-                          className="input"
+                        <CustomSelect
                           value={selectedExecutionType}
-                          onChange={(e) =>
-                            setSelectedExecutionType(e.target.value)
+                          onChange={setSelectedExecutionType}
+                          options={executionTypeOptions}
+                          placeholder="Select execution type"
+                          openDirection="up"
+                          className={
+                            submitting ? "opacity-60 pointer-events-none" : ""
                           }
-                          disabled={submitting}
-                        >
-                          <option value="">Select execution type</option>
-                          {executionTypeOptions.map((t) => (
-                            <option key={t.value} value={t.value}>
-                              {t.label}
-                            </option>
-                          ))}
-                        </select>
+                        />
                       </div>
                       <div style={{ minWidth: 200 }}>
                         <label

@@ -163,6 +163,11 @@ export const hoardingsAPI = {
     return response.data;
   },
 
+  sendSupervisorNotification: async (id: string) => {
+    const response = await api.post(`/hoardings/${id}/notify-supervisor`);
+    return response.data;
+  },
+
   completeRemount: async (id: string) => {
     const response = await api.post(`/hoardings/${id}/remount-complete`);
     return response.data;

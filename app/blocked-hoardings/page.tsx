@@ -6,6 +6,7 @@ import { blockedHoardingsAPI } from "@/lib/api";
 import { showError } from "@/lib/toast";
 
 type BlockedHoardingItem = {
+  tokenId: string;
   hoardingId: string;
   code: string;
   location: string;
@@ -210,12 +211,28 @@ export default function BlockedHoardingsPage() {
                                           </span>
                                         </td>
                                         <td>
-                                          <Link
-                                            href={`/hoardings/${h.hoardingId}`}
-                                            className="btn btn-secondary"
+                                          <div
+                                            style={{
+                                              display: "flex",
+                                              gap: 8,
+                                              flexWrap: "wrap",
+                                            }}
                                           >
-                                            View Details
-                                          </Link>
+                                            <Link
+                                              href={`/hoardings/${h.hoardingId}`}
+                                              className="btn btn-secondary"
+                                            >
+                                              View Details
+                                            </Link>
+                                            {h.tokenId ? (
+                                              <Link
+                                                href={`/booking-tokens/${encodeURIComponent(h.tokenId)}`}
+                                                className="btn btn-primary"
+                                              >
+                                                Book
+                                              </Link>
+                                            ) : null}
+                                          </div>
                                         </td>
                                       </tr>
                                     ))}

@@ -181,18 +181,22 @@ export default function HoardingDetailPage() {
               const isUnderProcess = hoardingStatus === "under_process";
               const isLive = hoardingStatus === "live";
               const isBooked = hoardingStatus === "booked";
+              const isBlocked = hoardingStatus === "blocked";
               const isTokenized = hoardingStatus === "tokenized";
               const hideOwnerBookButton =
-                isOwner && (isUnderProcess || isTokenized);
+                isOwner && (isUnderProcess || isTokenized || isBlocked);
               const hideManagerBookButton = isManager && openedFromNotification;
+              const hideBlockedButton = isBlocked;
 
-              const tokenizeDisabled = isUnderProcess || isLive || isBooked;
+              const tokenizeDisabled =
+                isUnderProcess || isLive || isBooked || isBlocked;
               const tokenizeLabel = isBooked ? "Booked" : "Block Hoarding";
               return (
                 <div
                   style={{ display: "flex", gap: "12px", marginBottom: "16px" }}
                 >
-                  {hideOwnerBookButton ||
+                  {hideBlockedButton ||
+                  hideOwnerBookButton ||
                   hideManagerBookButton ? null : isUnderProcess ? (
                     <button className="btn btn-primary" disabled>
                       {tokenizeLabel}

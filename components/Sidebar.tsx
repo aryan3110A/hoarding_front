@@ -107,7 +107,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       roles: ["owner", "manager", "accountant", "admin"], // Sales cannot access
     },
     {
-      title: "Renewals Due (15 Days)",
+      title: "Status",
       href: "/sales/renewals-due",
       icon: "💬",
       roles: ["owner", "manager", "sales", "accountant", "admin"],

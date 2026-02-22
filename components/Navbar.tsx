@@ -115,7 +115,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       roles: ["owner", "manager", "accountant", "admin"],
     },
     {
-      title: "Renewals Due (15 Days)",
+      title: "Status",
       href: "/sales/renewals-due",
       iconName: "MessageCircleWarning",
       roles: ["owner", "manager", "sales", "accountant", "admin"],

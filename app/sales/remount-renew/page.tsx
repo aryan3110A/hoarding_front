@@ -78,7 +78,9 @@ export default function SalesRemountRenewPage() {
       setRows(Array.isArray(payload) ? payload : []);
     } catch (e: any) {
       setRows([]);
-      showError(e?.response?.data?.message || "Failed to load remount/renew data");
+      showError(
+        e?.response?.data?.message || "Failed to load remount/renew data",
+      );
     } finally {
       setLoading(false);
     }
@@ -99,7 +101,10 @@ export default function SalesRemountRenewPage() {
     const id = String(searchParams?.get("hoardingId") || "").trim();
     if (!id || !rows.length) return;
     const match = rows.find((r) => String(r.id) === id);
-    if (match && String(searchParams?.get("tab") || "").toLowerCase() === "renew") {
+    if (
+      match &&
+      String(searchParams?.get("tab") || "").toLowerCase() === "renew"
+    ) {
       setSelected(match);
       setTenure(1);
       setNewAmount("");
@@ -109,12 +114,22 @@ export default function SalesRemountRenewPage() {
   }, [rows, searchParams]);
 
   const remountRows = useMemo(
-    () => rows.filter((r) => ["live", "booked", "under_process"].includes(String(r.currentStatus || "").toLowerCase())),
+    () =>
+      rows.filter((r) =>
+        ["live", "booked", "under_process"].includes(
+          String(r.currentStatus || "").toLowerCase(),
+        ),
+      ),
     [rows],
   );
 
   const renewRows = useMemo(
-    () => rows.filter((r) => ["live", "booked"].includes(String(r.currentStatus || "").toLowerCase())),
+    () =>
+      rows.filter((r) =>
+        ["live", "booked"].includes(
+          String(r.currentStatus || "").toLowerCase(),
+        ),
+      ),
     [rows],
   );
 
@@ -201,13 +216,17 @@ export default function SalesRemountRenewPage() {
                 remountRequestedAt: remountRequired
                   ? new Date().toISOString()
                   : r.remountRequestedAt,
-                statusTag: remountRequired ? "LIVE + REMOUNT PENDING" : "LIVE (Renewed)",
+                statusTag: remountRequired
+                  ? "LIVE + REMOUNT PENDING"
+                  : "LIVE (Renewed)",
               }
             : r,
         ),
       );
       setModalOpen(false);
-      showSuccess(remountRequired ? "Renewed and remount requested" : "Hoarding renewed");
+      showSuccess(
+        remountRequired ? "Renewed and remount requested" : "Hoarding renewed",
+      );
       await loadHistory(selected.id);
     } catch (e: any) {
       showError(e?.response?.data?.message || "Failed to renew hoarding");
@@ -216,25 +235,31 @@ export default function SalesRemountRenewPage() {
     }
   };
 
-  if (!user) return <div style={{ textAlign: "center", padding: 24 }}>Loading...</div>;
+  if (!user)
+    return <div style={{ textAlign: "center", padding: 24 }}>Loading...</div>;
   if (!ALLOWED.includes(role)) return <AccessDenied />;
 
   return (
     <div>
       <h1 style={{ marginBottom: 8 }}>Sales → Remount / Renew</h1>
       <p style={{ color: "var(--text-secondary)", marginBottom: 16 }}>
-        Operational extension of Live hoarding flow with remount and renewal actions.
+        Operational extension of Live hoarding flow with remount and renewal
+        actions.
       </p>
 
       <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
         <button
-          className={tab === "remount" ? "btn btn-primary" : "btn btn-secondary"}
+          className={
+            tab === "remount" ? "btn btn-primary" : "btn btn-tab-inactive"
+          }
           onClick={() => setTab("remount")}
         >
           Remount Requests
         </button>
         <button
-          className={tab === "renew" ? "btn btn-primary" : "btn btn-secondary"}
+          className={
+            tab === "renew" ? "btn btn-primary" : "btn btn-tab-inactive"
+          }
           onClick={() => setTab("renew")}
         >
           Extend / Renew Hoarding
@@ -274,10 +299,14 @@ export default function SalesRemountRenewPage() {
                     <td>
                       <button
                         className="btn btn-secondary"
-                        disabled={busyId === row.id || row.remountStatus === "PENDING"}
+                        disabled={
+                          busyId === row.id || row.remountStatus === "PENDING"
+                        }
                         onClick={() => markRemount(row)}
                       >
-                        {row.remountStatus === "PENDING" ? "Pending" : "Mark for Remount"}
+                        {row.remountStatus === "PENDING"
+                          ? "Pending"
+                          : "Mark for Remount"}
                       </button>
                     </td>
                   </tr>
@@ -285,7 +314,9 @@ export default function SalesRemountRenewPage() {
               </tbody>
             </table>
             {remountRows.length === 0 && (
-              <div style={{ textAlign: "center", padding: 20 }}>No eligible hoardings found.</div>
+              <div style={{ textAlign: "center", padding: 20 }}>
+                No eligible hoardings found.
+              </div>
             )}
           </div>
         ) : (
@@ -314,7 +345,9 @@ export default function SalesRemountRenewPage() {
                     <td>{row.finalRate ? `₹${Number(row.finalRate)}` : "—"}</td>
                     <td>{fmtDate(row.expiryDate)}</td>
                     <td>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <div
+                        style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+                      >
                         <button
                           className="btn btn-primary"
                           onClick={() => openRenewModal(row)}
@@ -329,11 +362,17 @@ export default function SalesRemountRenewPage() {
                         </button>
                       </div>
                       {historyByHoarding[row.id]?.length ? (
-                        <div style={{ marginTop: 8, fontSize: 12, color: "#475569" }}>
+                        <div
+                          style={{
+                            marginTop: 8,
+                            fontSize: 12,
+                            color: "#475569",
+                          }}
+                        >
                           {historyByHoarding[row.id].slice(0, 3).map((h) => (
                             <div key={h.id}>
-                              {fmtDate(h.renewedAt)} • ₹{Number(h.newAmount)} • {h.tenure}m •{" "}
-                              {h.renewedByName || "—"}
+                              {fmtDate(h.renewedAt)} • ₹{Number(h.newAmount)} •{" "}
+                              {h.tenure}m • {h.renewedByName || "—"}
                               {h.remountRequired ? " • Remount" : ""}
                             </div>
                           ))}
@@ -345,7 +384,9 @@ export default function SalesRemountRenewPage() {
               </tbody>
             </table>
             {renewRows.length === 0 && (
-              <div style={{ textAlign: "center", padding: 20 }}>No live hoardings found for renewal.</div>
+              <div style={{ textAlign: "center", padding: 20 }}>
+                No live hoardings found for renewal.
+              </div>
             )}
           </div>
         )}
@@ -401,8 +442,13 @@ export default function SalesRemountRenewPage() {
                 Remount Required?
               </label>
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-              <button className="btn btn-secondary" onClick={() => setModalOpen(false)}>
+            <div
+              style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}
+            >
+              <button
+                className="btn btn-secondary"
+                onClick={() => setModalOpen(false)}
+              >
                 Cancel
               </button>
               <button
