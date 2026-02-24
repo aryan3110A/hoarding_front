@@ -17,6 +17,7 @@ import {
   proposalsAPI,
 } from "@/lib/api";
 import AccessDenied from "@/components/AccessDenied";
+import CustomSelect from "@/components/CustomSelect";
 import { getRoleFromUser } from "@/lib/rbac";
 import LocationAutocomplete from "@/components/LocationAutocomplete";
 import { showError, showInfo, showSuccess } from "@/lib/toast";
@@ -907,9 +908,34 @@ export default function ProposalBuilder({
 
   const totalPages = Math.max(1, Math.ceil(total / Math.max(1, limit)));
 
+  const modeOptions = [
+    { value: "WITH_RATE", label: "With Rate" },
+    { value: "WITHOUT_RATE", label: "Without Rate" },
+  ];
+
+  const discountTypeOptions = [
+    { value: "PERCENT", label: "Percentage (%)" },
+    { value: "FLAT", label: "Flat (₹)" },
+  ];
+
+  const categoryOptions = [
+    { value: "", label: "All" },
+    ...categories.map((c) => ({ value: c.id, label: c.name })),
+  ];
+
+  const sizeOptions = [
+    { value: "", label: "Any" },
+    ...SIZE_PRESETS.map((s) => ({ value: s, label: s })),
+  ];
+
+  const pageSizeOptions = [10, 20, 50].map((n) => ({
+    value: String(n),
+    label: String(n),
+  }));
+
   return (
-    <div className="px-4 sm:px-6 py-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="px-0 sm:px-2 py-2 pb-0">
+      <div className="max-w-[1440px] mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-white">
@@ -923,21 +949,21 @@ export default function ProposalBuilder({
           <div className="flex gap-2">
             <Link
               href="/proposals"
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-white/30 bg-white/10 text-white hover:bg-white/15 backdrop-blur"
+              className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl border border-white/30 bg-white/10 text-white hover:bg-white/15 backdrop-blur"
             >
               Proposals
             </Link>
             <button
               onClick={handleSaveDraft}
               disabled={saving || acting || !proposalDate}
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-white/30 bg-white/10 text-white hover:bg-white/15 backdrop-blur disabled:opacity-50"
+              className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl border border-white/30 bg-white/10 text-white hover:bg-white/15 backdrop-blur disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save Draft"}
             </button>
             <button
               onClick={handleGeneratePdf}
               disabled={saving || acting || !proposalDate}
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 transition disabled:opacity-50"
+              className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 transition disabled:opacity-50"
             >
               {acting ? "Generating..." : "Generate PDF"}
             </button>
@@ -975,10 +1001,10 @@ export default function ProposalBuilder({
           </div>
         ) : null}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="md:col-span-4 md:sticky md:top-24 md:self-start">
             <div className="space-y-6 lg:max-h-[calc(100vh-140px)] lg:overflow-auto lg:pr-1">
-              <div className="bg-white/95 backdrop-blur rounded-2xl border border-white/30 shadow-lg p-4 text-slate-900 relative z-40 overflow-visible">
+              <div className="mb-2 bg-white/95 backdrop-blur rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(15,23,42,0.12)] p-5 text-slate-900 relative z-40 overflow-visible">
                 <h2 className="font-semibold mb-3 text-slate-900">Client</h2>
                 <div className="relative">
                   <input
@@ -1066,8 +1092,16 @@ export default function ProposalBuilder({
                 ) : null}
               </div>
 
-              <div className="bg-white/95 backdrop-blur rounded-2xl border border-white/30 shadow-lg p-4 text-slate-900 relative z-10">
-                <h2 className="font-semibold mb-3 text-slate-900">
+              {/* <div className="flex items-center gap-3 px-1">
+                <span className="h-px flex-1 bg-slate-300/70" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  
+                </span>
+                <span className="h-px flex-1 bg-slate-300/70" />
+              </div> */}
+
+              <div className="bg-white/95  backdrop-blur rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(15,23,42,0.12)] p-4 text-slate-900 relative z-10">
+                <h2 className="font-semibold mb-1 text-slate-900">
                   Proposal Settings
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
@@ -1086,31 +1120,23 @@ export default function ProposalBuilder({
                     <label className="block text-xs text-gray-600 mb-1">
                       Mode
                     </label>
-                    <select
+                    <CustomSelect
                       value={mode}
-                      onChange={(e) => setMode(e.target.value as ProposalMode)}
-                      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
-                    >
-                      <option value="WITH_RATE">With Rate</option>
-                      <option value="WITHOUT_RATE">Without Rate</option>
-                    </select>
+                      onChange={(value) => setMode(value as ProposalMode)}
+                      options={modeOptions}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">
                       Discount Type
                     </label>
-                    <select
+                    <CustomSelect
                       value={discountType}
-                      onChange={(e) =>
-                        setDiscountType(
-                          e.target.value === "FLAT" ? "FLAT" : "PERCENT",
-                        )
+                      onChange={(value) =>
+                        setDiscountType(value === "FLAT" ? "FLAT" : "PERCENT")
                       }
-                      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
-                    >
-                      <option value="PERCENT">Percentage (%)</option>
-                      <option value="FLAT">Flat (₹)</option>
-                    </select>
+                      options={discountTypeOptions}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">
@@ -1228,8 +1254,8 @@ export default function ProposalBuilder({
             </div>
           </div>
 
-          <div className="lg:col-span-8 space-y-6">
-            <div className="bg-white/95 backdrop-blur rounded-2xl border border-white/30 shadow-lg p-4 text-slate-900">
+          <div className="lg:col-span-8 space-y-6 lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto lg:pr-1">
+            <div className="bg-white/95 backdrop-blur rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(15,23,42,0.12)] p-4 text-slate-900 h-[calc(100vh-180px)] min-h-[560px] flex flex-col">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="font-semibold text-slate-900">
@@ -1239,17 +1265,17 @@ export default function ProposalBuilder({
                     Only matching hoardings are shown.
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => loadHoardings(1)}
                     disabled={loading}
-                    className="px-4 py-0 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 text-sm disabled:opacity-50"
+                    className="inline-flex items-center justify-center h-9 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 text-sm leading-5 disabled:opacity-50"
                   >
                     {loading ? "Searching..." : "Search"}
                   </button>
                   <button
                     onClick={resetFilters}
-                    className="px-4 py-0 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm"
+                    className="inline-flex items-center justify-center h-9 px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-sm leading-5"
                   >
                     Reset
                   </button>
@@ -1293,20 +1319,13 @@ export default function ProposalBuilder({
                   <label className="block text-xs text-gray-600 mb-1">
                     Category
                   </label>
-                  <select
+                  <CustomSelect
                     value={filters.categoryId}
-                    onChange={(e) =>
-                      setFilters((p) => ({ ...p, categoryId: e.target.value }))
+                    onChange={(value) =>
+                      setFilters((p) => ({ ...p, categoryId: value }))
                     }
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
-                  >
-                    <option value="">All</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                    options={categoryOptions}
+                  />
                 </div>
 
                 <div>
@@ -1337,41 +1356,28 @@ export default function ProposalBuilder({
                   <label className="block text-xs text-gray-600 mb-1">
                     Size
                   </label>
-                  <select
+                  <CustomSelect
                     value={filters.size}
-                    onChange={(e) =>
-                      setFilters((p) => ({ ...p, size: e.target.value }))
+                    onChange={(value) =>
+                      setFilters((p) => ({ ...p, size: value }))
                     }
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
-                  >
-                    <option value="">Any</option>
-                    {SIZE_PRESETS.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
+                    options={sizeOptions}
+                  />
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">
                     Availability
                   </label>
-                  <select
+                  <CustomSelect
                     value={filters.availability}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setFilters((p) => ({
                         ...p,
-                        availability: e.target.value,
+                        availability: value,
                       }))
                     }
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
-                  >
-                    {AVAILABILITY_OPTIONS.map((o) => (
-                      <option key={o.value || "__all"} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
+                    options={AVAILABILITY_OPTIONS}
+                  />
                 </div>
               </div>
 
@@ -1381,101 +1387,98 @@ export default function ProposalBuilder({
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-gray-600">Page size</label>
-                  <select
-                    value={limit}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
+                  <CustomSelect
+                    value={String(limit)}
+                    onChange={(value) => {
+                      const v = Number(value);
                       setLimit(v);
                       setPage(1);
                       loadHoardings(1);
                     }}
-                    className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
-                  >
-                    {[10, 20, 50].map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                  </select>
+                    options={pageSizeOptions}
+                    className="min-w-[84px]"
+                  />
                 </div>
               </div>
 
-              <div className="mt-3 overflow-auto border border-slate-200 rounded-2xl">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-50 sticky top-0 z-10">
-                    <tr>
-                      <th className="text-left p-2">Select</th>
-                      <th className="text-left p-2">Code</th>
-                      <th className="text-left p-2">City</th>
-                      <th className="text-left p-2">Location / Area</th>
-                      <th className="text-left p-2">Size</th>
-                      <th className="text-left p-2">Type</th>
-                      <th className="text-left p-2">Status</th>
-                      <th className="text-right p-2">Standard Rate</th>
-                      <th className="text-right p-2">Minimum Rate</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {hoardings.map((h) => {
-                      const unavailable = isSelectionDisabledStatus(h.status);
-                      const st = String(h.status || "").toLowerCase();
-                      return (
-                        <tr
-                          key={h.id}
-                          className={`border-t ${unavailable ? "bg-slate-100 text-slate-500" : "hover:bg-slate-50/60"}`}
-                        >
-                          <td className="p-2">
-                            <input
-                              type="checkbox"
-                              checked={selectedSet.has(h.id)}
-                              onChange={() => toggleSelect(h)}
-                              disabled={unavailable}
-                              className="accent-blue-600"
-                            />
-                          </td>
-                          <td className="p-2">{h.code || "—"}</td>
-                          <td className="p-2">{h.city || "—"}</td>
-                          <td className="p-2">{locationLabel(h)}</td>
-                          <td className="p-2">
-                            {toFtLabel(h.widthCm, h.heightCm)}
-                          </td>
-                          <td className="p-2">{h.type || "—"}</td>
-                          <td className="p-2">
-                            {unavailable ? (
-                              <span className="inline-flex items-center rounded-full bg-slate-300 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                                {st === "booked"
-                                  ? "Booked"
-                                  : st === "blocked"
-                                    ? "Blocked"
-                                    : st === "live"
-                                      ? "Live"
-                                      : String(h.status || "—")}
-                              </span>
-                            ) : (
-                              String(h.status || "—")
-                            )}
-                          </td>
-                          <td className="p-2 text-right">
-                            {standardRateOf(h).toFixed(2)}
-                          </td>
-                          <td className="p-2 text-right">
-                            {minimumRateOf(h).toFixed(2)}
+              <div className="mt-3 flex-1 min-h-0 border border-slate-200 rounded-2xl overflow-hidden">
+                <div className="h-full overflow-x-auto overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 sticky top-0 z-10">
+                      <tr>
+                        <th className="text-left p-2">Select</th>
+                        <th className="text-left p-2">Code</th>
+                        <th className="text-left p-2">City</th>
+                        <th className="text-left p-2">Location / Area</th>
+                        <th className="text-left p-2">Size</th>
+                        <th className="text-left p-2">Type</th>
+                        <th className="text-left p-2">Status</th>
+                        <th className="text-right p-2">Standard Rate</th>
+                        <th className="text-right p-2">Minimum Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {hoardings.map((h) => {
+                        const unavailable = isSelectionDisabledStatus(h.status);
+                        const st = String(h.status || "").toLowerCase();
+                        return (
+                          <tr
+                            key={h.id}
+                            className={`border-t ${unavailable ? "bg-slate-100 text-slate-500" : "hover:bg-slate-50/60"}`}
+                          >
+                            <td className="p-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedSet.has(h.id)}
+                                onChange={() => toggleSelect(h)}
+                                disabled={unavailable}
+                                className="accent-blue-600"
+                              />
+                            </td>
+                            <td className="p-2">{h.code || "—"}</td>
+                            <td className="p-2">{h.city || "—"}</td>
+                            <td className="p-2">{locationLabel(h)}</td>
+                            <td className="p-2">
+                              {toFtLabel(h.widthCm, h.heightCm)}
+                            </td>
+                            <td className="p-2">{h.type || "—"}</td>
+                            <td className="p-2">
+                              {unavailable ? (
+                                <span className="inline-flex items-center rounded-full bg-slate-300 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                                  {st === "booked"
+                                    ? "Booked"
+                                    : st === "blocked"
+                                      ? "Blocked"
+                                      : st === "live"
+                                        ? "Live"
+                                        : String(h.status || "—")}
+                                </span>
+                              ) : (
+                                String(h.status || "—")
+                              )}
+                            </td>
+                            <td className="p-2 text-right">
+                              {standardRateOf(h).toFixed(2)}
+                            </td>
+                            <td className="p-2 text-right">
+                              {minimumRateOf(h).toFixed(2)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {hoardings.length === 0 && !loading ? (
+                        <tr>
+                          <td
+                            className="p-4 text-center text-gray-500"
+                            colSpan={9}
+                          >
+                            No hoardings match the current filters.
                           </td>
                         </tr>
-                      );
-                    })}
-                    {hoardings.length === 0 && !loading ? (
-                      <tr>
-                        <td
-                          className="p-4 text-center text-gray-500"
-                          colSpan={9}
-                        >
-                          No hoardings match the current filters.
-                        </td>
-                      </tr>
-                    ) : null}
-                  </tbody>
-                </table>
+                      ) : null}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               <div className="flex items-center justify-between mt-3">
@@ -1504,8 +1507,8 @@ export default function ProposalBuilder({
               </div>
             </div>
 
-            <div className="bg-white/95 backdrop-blur rounded-2xl border border-white/30 shadow-lg p-4 text-slate-900">
-              <div className="flex items-center justify-between">
+            <div className="mt-4 bg-white/95 backdrop-blur rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(15,23,42,0.12)] p-4 text-slate-900 pb-2">
+              <div className="flex items-center justify-between ">
                 <h2 className="font-semibold text-slate-900">
                   Selected Hoardings
                 </h2>

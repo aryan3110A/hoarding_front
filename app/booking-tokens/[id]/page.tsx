@@ -43,6 +43,8 @@ export default function BookingTokenDetailPage() {
   const [installationProofFiles, setInstallationProofFiles] = useState<File[]>(
     [],
   );
+  const [showFinalizeConfirm, setShowFinalizeConfirm] = useState(false);
+  const [isFinalizing, setIsFinalizing] = useState(false);
 
   useEffect(() => {
     if (userFromContext) {
@@ -425,7 +427,7 @@ export default function BookingTokenDetailPage() {
 
   const handleConfirm = async () => {
     if (!tokenId) return;
-    if (!confirm("Finalize this token?")) return;
+    setShowFinalizeConfirm(false);
 
     // Pre-check (best-effort). Backend still enforces atomicity.
     if (hoardingStatusLower === "under_process") {
@@ -434,6 +436,7 @@ export default function BookingTokenDetailPage() {
     }
 
     try {
+      setIsFinalizing(true);
       setSubmitting(true);
       if (!selectedExecutionType) {
         showError("Please select an execution type");
@@ -483,7 +486,21 @@ export default function BookingTokenDetailPage() {
       showError(msg);
     } finally {
       setSubmitting(false);
+      setIsFinalizing(false);
     }
+  };
+
+  const handleOpenFinalizeConfirm = () => {
+    if (submitting || isFinalizing) return;
+    if (!selectedExecutionType) {
+      showError("Please select an execution type");
+      return;
+    }
+    if (!plannedLiveDateDraft) {
+      showError("Please select a live date");
+      return;
+    }
+    setShowFinalizeConfirm(true);
   };
 
   const handleDesignStatusUpdate = async (
@@ -1328,7 +1345,7 @@ export default function BookingTokenDetailPage() {
                           onChange={setSelectedExecutionType}
                           options={executionTypeOptions}
                           placeholder="Select execution type"
-                          openDirection="up"
+                          openDirection="down"
                           className={
                             submitting ? "opacity-60 pointer-events-none" : ""
                           }
@@ -1356,18 +1373,68 @@ export default function BookingTokenDetailPage() {
                       </div>
                       <button
                         className="btn btn-primary"
-                        onClick={handleConfirm}
-                        disabled={
-                          submitting ||
-                          !selectedExecutionType ||
-                          !plannedLiveDateDraft
-                        }
+                        onClick={handleOpenFinalizeConfirm}
+                        disabled={submitting || isFinalizing}
                       >
-                        Finalize
+                        {isFinalizing ? "Finalizing..." : "Finalize"}
                       </button>
                     </div>
                   )}
               </div>
+
+              {showFinalizeConfirm && (
+                <div
+                  className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/45 p-4"
+                  onClick={() => setShowFinalizeConfirm(false)}
+                >
+                  <div
+                    className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h3
+                      style={{
+                        marginBottom: 8,
+                        fontSize: 20,
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      Finalize Token
+                    </h3>
+                    <p
+                      style={{
+                        marginBottom: 16,
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      Are you sure you want to finalize this token?
+                    </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        gap: 10,
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="btn btn-secondary !px-3 !py-2 !text-sm"
+                        onClick={() => setShowFinalizeConfirm(false)}
+                        disabled={submitting}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary !px-3 !py-2 !text-sm"
+                        onClick={handleConfirm}
+                        disabled={submitting || isFinalizing}
+                      >
+                        {isFinalizing ? "Finalizing..." : "Confirm"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

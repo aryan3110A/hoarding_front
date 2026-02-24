@@ -232,7 +232,6 @@ h4 {
   padding: 2px 16px;
   font-size: 13px;
   max-height: 40px;
-  
 }
 
 /* Form Elements */
@@ -407,15 +406,15 @@ h4 {
 }
 
 .cool-dropdown-item.selected {
-  background: #f1f5f9; /* muted selected */
-  color: #0b5f8a;
+  background: #2a6bc4;
+  color: #ffffff;
   font-weight: 600;
 }
 
 .cool-dropdown-check {
   opacity: 1;
   margin-left: 8px;
-  color: #0ea5e9;
+  color: currentColor;
 }
 
 /* small scrollbar styling for dropdown list */

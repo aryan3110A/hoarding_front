@@ -135,6 +135,64 @@ export default function FinalizeProposalPage() {
     [selected],
   );
 
+  const pricing = useMemo(() => {
+    type LineRate = { hid: string; base: number };
+    const clampMoney = (v: unknown) => {
+      const n = typeof v === "number" ? v : Number(v);
+      if (!Number.isFinite(n)) return 0;
+      return Math.max(0, n);
+    };
+    const clampPct = (v: unknown) => {
+      const n = typeof v === "number" ? v : Number(v);
+      if (!Number.isFinite(n)) return 0;
+      return Math.max(0, Math.min(100, n));
+    };
+
+    const rows = Array.isArray(proposal?.hoardings) ? proposal.hoardings : [];
+    const includeGst = !!proposal?.includeGst;
+    const gstRatePct = clampPct(proposal?.gstRatePct ?? 0);
+    const discountTypeRaw = String(proposal?.discountType ?? "").toUpperCase();
+    const discountType = discountTypeRaw === "FLAT" ? "FLAT" : "PERCENT";
+    const discountValue = clampMoney(proposal?.discountValue ?? 0);
+    const printingCharges = clampMoney(proposal?.printingCharges ?? 0);
+    const mountingCharges = clampMoney(proposal?.mountingCharges ?? 0);
+
+    const lineBaseRates: LineRate[] = rows
+      .map((h: any) => {
+        const hid = String(h?.hoardingId || "");
+        const base = clampMoney(finalRates[hid] ?? h?.finalRate ?? 0);
+        return { hid, base };
+      })
+      .filter((r: LineRate) => !!r.hid);
+
+    const baseSubtotal = lineBaseRates.reduce((sum, r) => sum + r.base, 0);
+    const discountAmount =
+      discountType === "FLAT"
+        ? Math.min(baseSubtotal, discountValue)
+        : baseSubtotal * (clampPct(discountValue) / 100);
+
+    const discounted = Math.max(0, baseSubtotal - discountAmount);
+    const preGstWithCharges = discounted + printingCharges + mountingCharges;
+    const gstAmount = includeGst ? preGstWithCharges * (gstRatePct / 100) : 0;
+    const grandTotal = preGstWithCharges + gstAmount;
+
+    const perRowPayable: Record<string, number> = {};
+    if (lineBaseRates.length === 0) {
+      return { perRowPayable, grandTotal };
+    }
+
+    if (baseSubtotal > 0) {
+      for (const r of lineBaseRates) {
+        perRowPayable[r.hid] = (r.base / baseSubtotal) * grandTotal;
+      }
+    } else {
+      const each = grandTotal / lineBaseRates.length;
+      for (const r of lineBaseRates) perRowPayable[r.hid] = each;
+    }
+
+    return { perRowPayable, grandTotal };
+  }, [proposal, finalRates]);
+
   const proposalRows = Array.isArray(proposal?.hoardings)
     ? proposal.hoardings
     : [];
@@ -339,19 +397,34 @@ export default function FinalizeProposalPage() {
                           </span>
                         </td>
                         <td className="p-2 text-right">
-                          <input
-                            type="number"
-                            min={0}
-                            value={Number(finalRates[hid] ?? h.finalRate ?? 0)}
-                            disabled={isDisabled || rowBusy}
-                            onChange={(e) =>
-                              setFinalRates((p) => ({
-                                ...p,
-                                [hid]: Math.max(0, Number(e.target.value || 0)),
-                              }))
-                            }
-                            className="w-28 border rounded px-2 py-1 text-right disabled:opacity-50"
-                          />
+                          <div className="text-sm font-semibold">
+                            {Number(pricing.perRowPayable?.[hid] ?? 0).toFixed(
+                              2,
+                            )}
+                          </div>
+                          <div className="mt-1">
+                            <input
+                              type="number"
+                              min={0}
+                              value={Number(
+                                finalRates[hid] ?? h.finalRate ?? 0,
+                              )}
+                              disabled={isDisabled || rowBusy}
+                              onChange={(e) =>
+                                setFinalRates((p) => ({
+                                  ...p,
+                                  [hid]: Math.max(
+                                    0,
+                                    Number(e.target.value || 0),
+                                  ),
+                                }))
+                              }
+                              className="w-28 border rounded px-2 py-1 text-right text-xs disabled:opacity-50"
+                            />
+                            <div className="mt-0.5 text-[11px] text-slate-500">
+                              Base rate
+                            </div>
+                          </div>
                         </td>
                         <td className="p-2 text-right">
                           <div className="flex justify-end gap-2">
@@ -391,6 +464,11 @@ export default function FinalizeProposalPage() {
             <div className="mt-4 flex items-center justify-between">
               <div className="text-sm text-gray-600">
                 Selected: {selectedIds.length}
+                <span className="mx-2 text-slate-300">|</span>
+                Final payable (total):{" "}
+                <span className="font-semibold text-slate-800">
+                  {Number(pricing.grandTotal ?? 0).toFixed(2)}
+                </span>
               </div>
               <button
                 onClick={confirm}

@@ -156,7 +156,7 @@ export default function BlockedHoardingsPage() {
                           <td>
                             <button
                               type="button"
-                              className="btn btn-secondary"
+                              className="btn btn-secondary !px-3 !py-2 !text-xs !min-h-[34px]"
                               onClick={() => toggleExpanded(client.clientId)}
                             >
                               {isOpen ? "Hide" : "View"}
@@ -220,14 +220,14 @@ export default function BlockedHoardingsPage() {
                                           >
                                             <Link
                                               href={`/hoardings/${h.hoardingId}`}
-                                              className="btn btn-secondary"
+                                              className="btn btn-secondary !px-3 !py-2 !text-xs !min-h-[34px]"
                                             >
                                               View Details
                                             </Link>
                                             {h.tokenId ? (
                                               <Link
                                                 href={`/booking-tokens/${encodeURIComponent(h.tokenId)}`}
-                                                className="btn btn-primary"
+                                                className="btn btn-primary !px-3 !py-2 !text-xs !min-h-[34px]"
                                               >
                                                 Book
                                               </Link>
@@ -263,7 +263,7 @@ export default function BlockedHoardingsPage() {
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-secondary !px-3 !py-2 !text-xs !min-h-[34px]"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                   >
@@ -279,7 +279,7 @@ export default function BlockedHoardingsPage() {
                   </div>
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-secondary !px-3 !py-2 !text-xs !min-h-[34px]"
                     disabled={page >= totalPages}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   >
