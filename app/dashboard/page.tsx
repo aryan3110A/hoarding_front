@@ -91,13 +91,28 @@ function DashboardContent() {
       // Sales: Fetch hoardings, bookings, enquiries stats
       else if (userRole === "sales") {
         try {
-          const [hoardingsRes, bookingsRes, enquiriesRes, proposalsRes] =
-            await Promise.allSettled([
-              hoardingsAPI.getAll({ page: 1, limit: 1000 }),
-              bookingsAPI.getAll().catch(() => ({ data: [] })),
-              enquiriesAPI.getAll().catch(() => ({ data: [] })),
-              proposalsAPI.list().catch(() => ({ success: true, data: [] })),
-            ]);
+          const [
+            salesDashboardRes,
+            hoardingsRes,
+            bookingsRes,
+            enquiriesRes,
+            proposalsRes,
+          ] = await Promise.allSettled([
+            dashboardAPI.getSalesDashboard().catch(() => ({ data: null })),
+            hoardingsAPI.getAll({ page: 1, limit: 1000 }),
+            bookingsAPI
+              .getAll(user?.id ? { createdBy: user.id } : undefined)
+              .catch(() => ({ data: [] })),
+            enquiriesAPI
+              .getAll({ page: 1, limit: 100, assignedToMe: true })
+              .catch(() => ({ data: [] })),
+            proposalsAPI.list().catch(() => ({ success: true, data: [] })),
+          ]);
+
+          const salesDashboardData =
+            salesDashboardRes.status === "fulfilled"
+              ? salesDashboardRes.value?.data || salesDashboardRes.value || null
+              : null;
 
           const hoardingsData =
             hoardingsRes.status === "fulfilled"
@@ -117,14 +132,34 @@ function DashboardContent() {
               ? proposalsRes.value
               : { data: [] };
 
-          const totalHoardings = hoardingsData.data?.total || 0;
+          const hoardingsPayload = hoardingsData?.data || hoardingsData || {};
+          const hoardings = Array.isArray(hoardingsPayload?.hoardings)
+            ? hoardingsPayload.hoardings
+            : [];
+
+          const totalHoardings =
+            Number(hoardingsPayload?.total) || hoardings.length || 0;
           const availableHoardings =
-            hoardingsData.data?.hoardings?.filter(
-              (h: any) => h.status === "available",
-            ).length || 0;
-          const bookings = bookingsData.data?.data || bookingsData.data || [];
-          const enquiries =
-            enquiriesData.data?.data || enquiriesData.data || [];
+            Number(salesDashboardData?.availableHoardings) ||
+            hoardings.filter((h: any) => {
+              const status = String(h?.status || "").toLowerCase();
+              return status === "available" || status === "live";
+            }).length ||
+            0;
+
+          const bookingsPayload = bookingsData?.data || bookingsData || [];
+          const bookings = Array.isArray(bookingsPayload)
+            ? bookingsPayload
+            : Array.isArray(bookingsPayload?.bookings)
+              ? bookingsPayload.bookings
+              : [];
+
+          const enquiriesPayload = enquiriesData?.data || enquiriesData || {};
+          const enquiries = Array.isArray(enquiriesPayload)
+            ? enquiriesPayload
+            : Array.isArray(enquiriesPayload?.inquiries)
+              ? enquiriesPayload.inquiries
+              : [];
 
           const proposals = proposalsData.data || [];
           setMyProposals(
@@ -152,10 +187,19 @@ function DashboardContent() {
           setSalesStats({
             totalHoardings,
             availableHoardings,
-            totalBookings: bookings.length,
-            totalEnquiries: enquiries.length,
+            totalBookings:
+              Number(salesDashboardData?.myBookings) || bookings.length || 0,
+            totalEnquiries:
+              Number(salesDashboardData?.myEnquiries) ||
+              Number(enquiriesPayload?.total) ||
+              enquiries.length ||
+              0,
             pendingEnquiries: enquiries.filter(
-              (e: any) => e.status === "pending" || e.status === "new",
+              (e: any) =>
+                ["open", "pending", "new"].includes(
+                  String(e?.status || "").toLowerCase(),
+                ) ||
+                String(e?.followupStatus || "").toLowerCase() === "pending",
             ).length,
           });
           setRecentBookings(recent);
@@ -497,7 +541,37 @@ function DashboardContent() {
     }
   };
 
-  // Don't show loading spinner - show content immediately with empty states if needed
+  const LoadingAnimation = ({ label }: { label: string }) => (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        marginTop: 8,
+        color: "var(--text-secondary)",
+        fontWeight: 600,
+      }}
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: 9999,
+          border: "3px solid var(--brand-blue)",
+          borderTopColor: "var(--brand-orange)",
+          borderRightColor: "var(--brand-yellow)",
+          boxShadow: "0 0 0 1px rgba(31, 92, 169, 0.18)",
+          display: "inline-block",
+          flex: "0 0 auto",
+          animation: "spin 0.9s linear infinite",
+        }}
+      />
+      <span>{label}</span>
+    </div>
+  );
 
   return (
     <>
@@ -559,6 +633,12 @@ function DashboardContent() {
               </div>
               <div style={{ fontSize: "24px" }}>→</div>
             </div>
+          </div>
+        )}
+
+        {loading && (
+          <div className="card" style={{ marginBottom: "24px" }}>
+            <LoadingAnimation label="Loading data..." />
           </div>
         )}
 
@@ -659,9 +739,7 @@ function DashboardContent() {
             {loading ? (
               <div className="card">
                 <h3>Upcoming Rent Due</h3>
-                <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
-                  Loading rent dues...
-                </p>
+                <LoadingAnimation label="Loading rent dues..." />
               </div>
             ) : upcomingDues.length > 0 ? (
               <div className="card">
@@ -791,23 +869,53 @@ function DashboardContent() {
           <>
             <div className="grid">
               <div className="stat-card">
-                <h3>{salesStats?.totalHoardings || 0}</h3>
+                <h3>
+                  {loading ? (
+                    <span className="loading-value animate-pulse">•••</span>
+                  ) : (
+                    salesStats?.totalHoardings || 0
+                  )}
+                </h3>
                 <p>Total Hoardings</p>
               </div>
               <div className="stat-card">
-                <h3>{salesStats?.availableHoardings || 0}</h3>
+                <h3>
+                  {loading ? (
+                    <span className="loading-value animate-pulse">•••</span>
+                  ) : (
+                    salesStats?.availableHoardings || 0
+                  )}
+                </h3>
                 <p>Available Hoardings</p>
               </div>
               <div className="stat-card">
-                <h3>{salesStats?.totalBookings || 0}</h3>
+                <h3>
+                  {loading ? (
+                    <span className="loading-value animate-pulse">•••</span>
+                  ) : (
+                    salesStats?.totalBookings || 0
+                  )}
+                </h3>
                 <p>Total Bookings</p>
               </div>
               <div className="stat-card">
-                <h3>{salesStats?.totalEnquiries || 0}</h3>
+                <h3>
+                  {loading ? (
+                    <span className="loading-value animate-pulse">•••</span>
+                  ) : (
+                    salesStats?.totalEnquiries || 0
+                  )}
+                </h3>
                 <p>Total Enquiries</p>
               </div>
               <div className="stat-card">
-                <h3>{salesStats?.pendingEnquiries || 0}</h3>
+                <h3>
+                  {loading ? (
+                    <span className="loading-value animate-pulse">•••</span>
+                  ) : (
+                    salesStats?.pendingEnquiries || 0
+                  )}
+                </h3>
                 <p>Pending Enquiries</p>
               </div>
             </div>
@@ -816,9 +924,7 @@ function DashboardContent() {
             {loading ? (
               <div className="card" style={{ marginTop: "24px" }}>
                 <h3>Recent Bookings</h3>
-                <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
-                  Loading bookings...
-                </p>
+                <LoadingAnimation label="Loading bookings..." />
               </div>
             ) : recentBookings && recentBookings.length > 0 ? (
               <div className="card" style={{ marginTop: "24px" }}>
@@ -908,9 +1014,7 @@ function DashboardContent() {
             {loading ? (
               <div className="card" style={{ marginTop: "24px" }}>
                 <h3>Recent Enquiries</h3>
-                <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
-                  Loading enquiries...
-                </p>
+                <LoadingAnimation label="Loading enquiries..." />
               </div>
             ) : recentEnquiries && recentEnquiries.length > 0 ? (
               <div className="card" style={{ marginTop: "24px" }}>
@@ -1320,11 +1424,7 @@ function DashboardContent() {
             <div className="card" style={{ marginTop: "24px" }}>
               <h3>My Assigned Installation Jobs</h3>
               {loading ? (
-                <p
-                  style={{ color: "var(--text-secondary)", marginTop: "16px" }}
-                >
-                  Loading installation jobs...
-                </p>
+                <LoadingAnimation label="Loading installation jobs..." />
               ) : tasks.length > 0 ? (
                 <table className="table" style={{ marginTop: "16px" }}>
                   <thead>
@@ -1540,6 +1640,15 @@ function DashboardContent() {
             </div>
           )}
       </div>
+      <style jsx>{`
+        .loading-value {
+          display: inline-block;
+          min-width: 24px;
+          letter-spacing: 2px;
+          color: var(--brand-blue);
+          font-weight: 800;
+        }
+      `}</style>
     </>
   );
 }

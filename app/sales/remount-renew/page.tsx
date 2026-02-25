@@ -298,7 +298,7 @@ export default function SalesRemountRenewPage() {
                     <td>{fmtDateTime(row.remountRequestedAt)}</td>
                     <td>
                       <button
-                        className="btn btn-secondary"
+                        className="btn btn-secondary !px-3 !py-1.5 !text-xs !min-h-[32px]"
                         disabled={
                           busyId === row.id || row.remountStatus === "PENDING"
                         }

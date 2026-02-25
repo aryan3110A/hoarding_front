@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import CustomSelect from "@/components/CustomSelect";
 import { enquiriesAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
@@ -148,17 +149,13 @@ export default function EnquiryRemindersPage() {
           <h1>Enquiry Reminders</h1>
           <div className="flex items-center gap-2">
             <strong>Pending:</strong> {pendingCount}
-            <select
-              value={range}
-              onChange={(e) => setRange(e.target.value as ReminderRange)}
-              className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm"
-            >
-              {rangeOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            <div className="w-[150px]">
+              <CustomSelect
+                value={range}
+                onChange={(v) => setRange(v as ReminderRange)}
+                options={rangeOptions}
+              />
+            </div>
           </div>
         </div>
 

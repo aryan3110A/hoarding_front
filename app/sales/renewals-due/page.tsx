@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
 import AccessDenied from "@/components/AccessDenied";
+import CustomSelect from "@/components/CustomSelect";
 import { contractsAPI, hoardingsAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
@@ -303,6 +304,17 @@ export default function SalesRenewalsDuePage() {
     );
   }, [activeClientBase]);
 
+  const clientOptions = useMemo(
+    () => [
+      { value: "all", label: "All Clients" },
+      ...clientGroups.map((group) => ({
+        value: group.key,
+        label: `${group.clientName} (${group.clientPhone}) - ${group.hoardingCount} hoarding(s)`,
+      })),
+    ],
+    [clientGroups],
+  );
+
   const isSelectedClient = useCallback(
     (clientName?: string, clientPhone?: string) => {
       if (selectedClientKey === "all") return true;
@@ -410,19 +422,13 @@ export default function SalesRenewalsDuePage() {
           gap: "10px",
         }}
       >
-        <select
-          value={selectedClientKey}
-          onChange={(e) => setSelectedClientKey(e.target.value)}
-          className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm"
-        >
-          <option value="all">All Clients</option>
-          {clientGroups.map((group) => (
-            <option key={group.key} value={group.key}>
-              {group.clientName} ({group.clientPhone}) - {group.hoardingCount}{" "}
-              hoarding(s)
-            </option>
-          ))}
-        </select>
+        <div className="w-[380px] max-w-full">
+          <CustomSelect
+            value={selectedClientKey}
+            onChange={(v) => setSelectedClientKey(v)}
+            options={clientOptions}
+          />
+        </div>
       </div>
 
       <div className="card" style={{ marginBottom: "14px" }}>
