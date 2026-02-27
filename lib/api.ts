@@ -90,6 +90,8 @@ export const hoardingsAPI = {
     type?: string;
     size?: string;
     availability?: string;
+    startDate?: string;
+    endDate?: string;
     status?: string;
     ownership?: string;
   }) => {
@@ -236,6 +238,12 @@ export const propertyRentAPI = {
   },
   get: async (propertyGroupId: string) => {
     const response = await api.get(`/property-rents/${propertyGroupId}`);
+    return response.data;
+  },
+  getByLandlord: async (landlordName: string) => {
+    const response = await api.get(
+      `/property-rents/by-landlord/${encodeURIComponent(landlordName)}`,
+    );
     return response.data;
   },
   save: async (data: any) => {
@@ -651,7 +659,12 @@ export const bookingTokensAPI = {
   },
   confirm: async (
     id: string,
-    data?: { executionType?: string; plannedLiveDate?: string },
+    data?: {
+      executionType?: string;
+      plannedLiveDate?: string;
+      durationMonths?: number;
+      durationDays?: number;
+    },
   ) => {
     const response = await api.post(
       `/booking-tokens/${id}/confirm`,

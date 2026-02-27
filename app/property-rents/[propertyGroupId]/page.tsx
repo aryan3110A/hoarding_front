@@ -11,7 +11,7 @@ import { getRoleFromUser, canViewRent } from "@/lib/rbac";
 export default function PropertyRentPage() {
   const params = useParams<{ propertyGroupId: string }>();
   const propertyGroupId = decodeURIComponent(
-    String(params?.propertyGroupId || "")
+    String(params?.propertyGroupId || ""),
   );
   const router = useRouter();
   const user = useUser();
@@ -84,7 +84,7 @@ export default function PropertyRentPage() {
                     (h: any) =>
                       (h.rateHistory && h.rateHistory.landlord) ||
                       h.landlord ||
-                      null
+                      null,
                   )
                   .find(Boolean) || ""
               : "";
@@ -134,7 +134,7 @@ export default function PropertyRentPage() {
                     (h: any) =>
                       (h.rateHistory && h.rateHistory.landlord) ||
                       h.landlord ||
-                      null
+                      null,
                   )
                   .find(Boolean) || ""
               : "";
@@ -158,7 +158,7 @@ export default function PropertyRentPage() {
     if (form.rentStartDate && form.incrementCycleYears) {
       const next = new Date(form.rentStartDate);
       next.setFullYear(
-        next.getFullYear() + Number(form.incrementCycleYears || 1)
+        next.getFullYear() + Number(form.incrementCycleYears || 1),
       );
       const nextDate = next.toISOString().split("T")[0];
       const current = Number(form.rentAmount || 0);
@@ -181,8 +181,8 @@ export default function PropertyRentPage() {
   ]);
 
   useEffect(() => {
-    if (form.lastPaymentDate && form.paymentFrequency) {
-      const d = new Date(form.lastPaymentDate);
+    if (form.rentStartDate && form.paymentFrequency) {
+      const d = new Date(form.rentStartDate);
       switch (form.paymentFrequency) {
         case "Monthly":
           d.setMonth(d.getMonth() + 1);
@@ -201,7 +201,7 @@ export default function PropertyRentPage() {
     } else {
       setNextDueDate("");
     }
-  }, [form.lastPaymentDate, form.paymentFrequency]);
+  }, [form.rentStartDate, form.paymentFrequency]);
 
   const toggleReminder = (day: number) => {
     setForm((prev: any) => {
@@ -222,6 +222,7 @@ export default function PropertyRentPage() {
     try {
       const payload: any = {
         propertyGroupId: form.propertyGroupId,
+        landlordName: (form.landlordName || "Unknown").trim(),
         location: form.location,
         rentAmount: form.rentAmount ? Number(form.rentAmount) : 0,
         incrementCycleYears: form.incrementCycleYears,
@@ -254,7 +255,7 @@ export default function PropertyRentPage() {
       setError(
         err.response?.data?.message ||
           err.message ||
-          "Failed to save property rent"
+          "Failed to save property rent",
       );
     } finally {
       setSaving(false);
@@ -558,8 +559,8 @@ export default function PropertyRentPage() {
                   {saving
                     ? "Saving..."
                     : exists
-                    ? "Update Rent"
-                    : "Create Rent"}
+                      ? "Update Rent"
+                      : "Create Rent"}
                 </button>
                 <Link href="/hoardings" className="btn btn-secondary">
                   Cancel

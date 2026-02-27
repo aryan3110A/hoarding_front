@@ -16,6 +16,15 @@ const executionTypeOptions = [
   { value: "IN_HOUSE_DESIGN", label: "In-house designing" },
 ];
 
+const durationOptions = [
+  { value: "1", label: "1 month" },
+  { value: "3", label: "3 months" },
+  { value: "6", label: "6 months" },
+  { value: "9", label: "9 months" },
+  { value: "12", label: "1 year" },
+  { value: "8d", label: "8 days" },
+];
+
 export default function BookingTokenDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -32,6 +41,8 @@ export default function BookingTokenDetailPage() {
   const [selectedExecutionType, setSelectedExecutionType] =
     useState<string>("");
   const [plannedLiveDateDraft, setPlannedLiveDateDraft] = useState<string>("");
+  const [selectedDurationChoice, setSelectedDurationChoice] =
+    useState<string>("");
 
   const [fitters, setFitters] = useState<any[]>([]);
   const [loadingFitters, setLoadingFitters] = useState(false);
@@ -132,6 +143,33 @@ export default function BookingTokenDetailPage() {
     if (isNaN(d.getTime())) return;
     const next = d.toISOString().slice(0, 10);
     setPlannedLiveDateDraft((prev) => (prev ? prev : next));
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    let resolved = "";
+    const months = Number((token as any)?.durationMonths || 0);
+    if (months > 0 && [1, 3, 6, 9, 12].includes(months)) {
+      resolved = String(months);
+    } else {
+      const from = (token as any)?.dateFrom
+        ? new Date(String((token as any).dateFrom))
+        : null;
+      const to = (token as any)?.dateTo
+        ? new Date(String((token as any).dateTo))
+        : null;
+      if (from && to && !isNaN(from.getTime()) && !isNaN(to.getTime())) {
+        const diffDays = Math.round(
+          (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        if (diffDays === 8) {
+          resolved = "8d";
+        }
+      }
+    }
+
+    setSelectedDurationChoice((prev) => (prev ? prev : resolved));
   }, [token]);
 
   useEffect(() => {
@@ -442,13 +480,36 @@ export default function BookingTokenDetailPage() {
         showError("Please select an execution type");
         return;
       }
-      if (!plannedLiveDateDraft) {
-        showError("Please select a live date");
+      if (!selectedDurationChoice) {
+        showError("Please select a duration");
         return;
       }
+
+      const durationPayload: {
+        durationMonths?: number;
+        durationDays?: number;
+      } = {};
+      if (selectedDurationChoice.endsWith("d")) {
+        const days = parseInt(selectedDurationChoice.replace("d", ""), 10) || 0;
+        if (days <= 0) {
+          showError("Invalid duration selection");
+          return;
+        }
+        durationPayload.durationDays = days;
+      } else {
+        const months = Number(selectedDurationChoice);
+        if (isNaN(months) || months <= 0) {
+          showError("Invalid duration selection");
+          return;
+        }
+        durationPayload.durationMonths = months;
+      }
+
       const payload = {
         executionType: selectedExecutionType,
-        plannedLiveDate: plannedLiveDateDraft,
+        plannedLiveDate:
+          plannedLiveDateDraft || new Date().toISOString().slice(0, 10),
+        ...durationPayload,
       };
       const resp = await bookingTokensAPI.confirm(tokenId, payload);
       if (resp?.success) {
@@ -496,8 +557,8 @@ export default function BookingTokenDetailPage() {
       showError("Please select an execution type");
       return;
     }
-    if (!plannedLiveDateDraft) {
-      showError("Please select a live date");
+    if (!selectedDurationChoice) {
+      showError("Please select a duration");
       return;
     }
     setShowFinalizeConfirm(true);
@@ -921,9 +982,13 @@ export default function BookingTokenDetailPage() {
                 )}
                 <div>
                   <strong>Duration:</strong>{" "}
-                  {token.durationMonths
-                    ? `${token.durationMonths} months`
-                    : "—"}
+                  {selectedDurationChoice
+                    ? durationOptions.find(
+                        (d) => d.value === selectedDurationChoice,
+                      )?.label || "—"
+                    : token.durationMonths
+                      ? `${token.durationMonths} months`
+                      : "—"}
                 </div>
                 <div>
                   <strong>Notes:</strong> {token.notes || "—"}
@@ -1359,16 +1424,17 @@ export default function BookingTokenDetailPage() {
                             marginBottom: 4,
                           }}
                         >
-                          Live Date
+                          Duration
                         </label>
-                        <input
-                          className="input"
-                          type="date"
-                          value={plannedLiveDateDraft}
-                          onChange={(e) =>
-                            setPlannedLiveDateDraft(e.target.value)
+                        <CustomSelect
+                          value={selectedDurationChoice}
+                          onChange={setSelectedDurationChoice}
+                          options={durationOptions}
+                          placeholder="Select duration"
+                          openDirection="down"
+                          className={
+                            submitting ? "opacity-60 pointer-events-none" : ""
                           }
-                          disabled={submitting}
                         />
                       </div>
                       <button

@@ -167,8 +167,7 @@ const SIZE_PRESETS = [
 
 const AVAILABILITY_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "available", label: "Immediately Available" },
-  { value: "available_free", label: "Available (not blocked by me)" },
-  { value: "available_soon", label: "Available Soon" },
+  { value: "available_in_range", label: "Available In Date Range" },
   { value: "blocked", label: "Blocked" },
   { value: "booked", label: "Booked" },
   { value: "under_process", label: "Under Process" },
@@ -236,6 +235,8 @@ export default function ProposalBuilder({
     type: "",
     size: "",
     availability: "",
+    availabilityStartDate: "",
+    availabilityEndDate: "",
   });
   const [categories, setCategories] = useState<
     Array<{ id: string; name: string }>
@@ -473,6 +474,17 @@ export default function ProposalBuilder({
   const loadHoardings = async (nextPage: number) => {
     setLoading(true);
     try {
+      const isRangeMode = filters.availability === "available_in_range";
+      if (
+        isRangeMode &&
+        (!filters.availabilityStartDate || !filters.availabilityEndDate)
+      ) {
+        setHoardings([]);
+        setTotal(0);
+        setPage(1);
+        return;
+      }
+
       const resp = await hoardingsAPI.getAll({
         page: nextPage,
         limit,
@@ -483,6 +495,12 @@ export default function ProposalBuilder({
         type: filters.type || undefined,
         size: filters.size || undefined,
         availability: filters.availability || undefined,
+        startDate: isRangeMode
+          ? filters.availabilityStartDate || undefined
+          : undefined,
+        endDate: isRangeMode
+          ? filters.availabilityEndDate || undefined
+          : undefined,
       });
       const payload = resp?.data || {};
       setHoardings(Array.isArray(payload.hoardings) ? payload.hoardings : []);
@@ -532,6 +550,8 @@ export default function ProposalBuilder({
     filters.type,
     filters.size,
     filters.availability,
+    filters.availabilityStartDate,
+    filters.availabilityEndDate,
   ]);
 
   // Hydrate from return-to flow: /clients/new redirects back with ?clientId=
@@ -643,6 +663,8 @@ export default function ProposalBuilder({
       type: "",
       size: "",
       availability: "",
+      availabilityStartDate: "",
+      availabilityEndDate: "",
     });
     setPage(1);
     loadHoardings(1);
@@ -1374,11 +1396,55 @@ export default function ProposalBuilder({
                       setFilters((p) => ({
                         ...p,
                         availability: value,
+                        availabilityStartDate:
+                          value === "available_in_range"
+                            ? p.availabilityStartDate
+                            : "",
+                        availabilityEndDate:
+                          value === "available_in_range"
+                            ? p.availabilityEndDate
+                            : "",
                       }))
                     }
                     options={AVAILABILITY_OPTIONS}
                   />
                 </div>
+                {filters.availability === "available_in_range" ? (
+                  <>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={filters.availabilityStartDate}
+                        onChange={(e) =>
+                          setFilters((p) => ({
+                            ...p,
+                            availabilityStartDate: e.target.value,
+                          }))
+                        }
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={filters.availabilityEndDate}
+                        onChange={(e) =>
+                          setFilters((p) => ({
+                            ...p,
+                            availabilityEndDate: e.target.value,
+                          }))
+                        }
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                      />
+                    </div>
+                  </>
+                ) : null}
               </div>
 
               <div className="flex items-center justify-between mt-4">

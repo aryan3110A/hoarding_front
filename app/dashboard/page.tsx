@@ -341,7 +341,11 @@ function DashboardContent() {
   };
 
   const handleSendReminders = async () => {
-    if (!confirm("Send rent reminders for hoardings due in the next 7 days?")) {
+    if (
+      !confirm(
+        "Send rent reminders for landlords/properties due in the next 7 days?",
+      )
+    ) {
       return;
     }
 
@@ -650,7 +654,7 @@ function DashboardContent() {
                 <>
                   <div className="stat-card">
                     <h3>{stats?.totalProperties || 0}</h3>
-                    <p>Total Properties on Rent</p>
+                    <p>Total Landlords on Rent</p>
                   </div>
                   <div className="stat-card">
                     <h3>
@@ -659,14 +663,14 @@ function DashboardContent() {
                         stats?.totalMonthlyRentLoad || 0,
                       ).toLocaleString()}
                     </h3>
-                    <p>Total Monthly Rent Load</p>
+                    <p>Total Monthly Landlord Rent</p>
                   </div>
                   <div className="stat-card">
                     <h3>
                       ₹
                       {Number(stats?.totalAnnualizedRent || 0).toLocaleString()}
                     </h3>
-                    <p>Annualized Rent</p>
+                    <p>Annualized Landlord Rent</p>
                   </div>
                   <div className="stat-card">
                     <h3>{(stats?.upcomingDues || []).length}</h3>
@@ -681,24 +685,24 @@ function DashboardContent() {
                 <>
                   <div className="stat-card">
                     <h3>{stats?.totalHoardingsOnRent || 0}</h3>
-                    <p>Total Hoardings on Rent</p>
+                    <p>Total Landlords on Rent</p>
                   </div>
                   <div className="stat-card">
                     <h3>
                       ₹{Number(stats?.totalRentAmount || 0).toLocaleString()}
                     </h3>
-                    <p>Total Rent Amount</p>
+                    <p>Total Monthly Landlord Rent</p>
                   </div>
                   <div className="stat-card">
                     <h3>
                       ₹
                       {Number(stats?.totalAnnualizedRent || 0).toLocaleString()}
                     </h3>
-                    <p>Annualized Rent</p>
+                    <p>Annualized Landlord Rent</p>
                   </div>
                   <div className="stat-card">
                     <h3>{upcomingDues.length}</h3>
-                    <p>Upcoming Rent Dues</p>
+                    <p>Upcoming Landlord Rent Dues</p>
                   </div>
                 </>
               )}
@@ -721,8 +725,8 @@ function DashboardContent() {
                       margin: "8px 0 0 0",
                     }}
                   >
-                    Send email reminders for hoardings with rent due in the next
-                    7 days
+                    Send email reminders for landlord/property rents due in the
+                    next 7 days
                   </p>
                 </div>
                 <button
@@ -738,18 +742,26 @@ function DashboardContent() {
             {/* Upcoming Rent Dues */}
             {loading ? (
               <div className="card">
-                <h3>Upcoming Rent Due</h3>
+                <h3>Upcoming Landlord Rent Due</h3>
                 <LoadingAnimation label="Loading rent dues..." />
               </div>
             ) : upcomingDues.length > 0 ? (
               <div className="card">
-                <h3>Upcoming Rent Due (Next 5)</h3>
+                <h3>Upcoming Landlord Rent Due (Next 5)</h3>
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Hoarding Code</th>
+                      <th>
+                        {stats?.mode === "property"
+                          ? "Landlord"
+                          : "Hoarding Code"}
+                      </th>
                       <th>Location</th>
-                      <th>Party Type</th>
+                      <th>
+                        {stats?.mode === "property"
+                          ? "Payment Frequency"
+                          : "Party Type"}
+                      </th>
                       <th>Rent Amount</th>
                       <th>Next Due Date</th>
                       <th>Days Until Due</th>
@@ -787,15 +799,30 @@ function DashboardContent() {
                           }
                         >
                           <td>
-                            <strong>{rent.hoarding?.code || "N/A"}</strong>
+                            <strong>
+                              {stats?.mode === "property"
+                                ? rent.landlord || "N/A"
+                                : rent.hoarding?.code || "N/A"}
+                            </strong>
                           </td>
                           <td>
-                            {rent.hoarding?.city || ""}
-                            {rent.hoarding?.area && `, ${rent.hoarding.area}`}
+                            {stats?.mode === "property"
+                              ? rent.location ||
+                                [
+                                  rent.hoardings?.[0]?.city || "",
+                                  rent.hoardings?.[0]?.area || "",
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ") ||
+                                "N/A"
+                              : `${rent.hoarding?.city || ""}${rent.hoarding?.area ? `, ${rent.hoarding.area}` : ""}` ||
+                                "N/A"}
                           </td>
                           <td>
                             <span className="badge badge-info">
-                              {rent.partyType}
+                              {stats?.mode === "property"
+                                ? rent.paymentFrequency || "N/A"
+                                : rent.partyType}
                             </span>
                           </td>
                           <td>₹{Number(rent.rentAmount).toLocaleString()}</td>
@@ -824,17 +851,51 @@ function DashboardContent() {
                             )}
                           </td>
                           <td>
-                            <button
-                              className="btn btn-primary"
-                              style={{ padding: "5px 10px", fontSize: "12px" }}
-                              onClick={() =>
-                                router.push(
-                                  `/hoardings/${rent.hoardingId}/rent`,
-                                )
-                              }
-                            >
-                              View Rent
-                            </button>
+                            {stats?.mode === "property" ? (
+                              <button
+                                className="btn btn-primary"
+                                style={{
+                                  padding: "5px 10px",
+                                  fontSize: "12px",
+                                }}
+                                onClick={() => {
+                                  const landlord = String(
+                                    rent.landlord || "",
+                                  ).trim();
+                                  if (landlord) {
+                                    router.push(
+                                      `/landlords/${encodeURIComponent(landlord)}/rent`,
+                                    );
+                                    return;
+                                  }
+                                  if (rent.propertyGroupId) {
+                                    router.push(
+                                      `/property-rents/${encodeURIComponent(String(rent.propertyGroupId))}`,
+                                    );
+                                  }
+                                }}
+                                disabled={
+                                  !rent.landlord && !rent.propertyGroupId
+                                }
+                              >
+                                Edit Rent
+                              </button>
+                            ) : (
+                              <button
+                                className="btn btn-primary"
+                                style={{
+                                  padding: "5px 10px",
+                                  fontSize: "12px",
+                                }}
+                                onClick={() =>
+                                  router.push(
+                                    `/hoardings/${rent.hoardingId}/rent`,
+                                  )
+                                }
+                              >
+                                View Rent
+                              </button>
+                            )}
                           </td>
                         </tr>
                       );
@@ -844,7 +905,7 @@ function DashboardContent() {
               </div>
             ) : (
               <div className="card">
-                <h3>Upcoming Rent Due</h3>
+                <h3>Upcoming Landlord Rent Due</h3>
                 <div
                   style={{
                     textAlign: "center",
@@ -856,7 +917,7 @@ function DashboardContent() {
                     📅
                   </div>
                   <p style={{ marginTop: "8px" }}>
-                    No upcoming rent dues at the moment.
+                    No upcoming landlord rent dues at the moment.
                   </p>
                 </div>
               </div>

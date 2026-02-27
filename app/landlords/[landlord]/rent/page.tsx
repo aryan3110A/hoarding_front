@@ -1,740 +1,434 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { hoardingsAPI, propertyRentAPI } from "@/lib/api";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { useUser } from "@/components/AppLayout";
-import { rentAPI, hoardingsAPI } from "@/lib/api";
-import { getRoleFromUser, canEditRent } from "@/lib/rbac";
-import { showSuccess, showError } from "@/lib/toast";
+import { canEditRent, getRoleFromUser } from "@/lib/rbac";
+import { showError, showSuccess } from "@/lib/toast";
 
-function round2(value: number) {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
+type Frequency = "Monthly" | "Quarterly" | "HalfYearly" | "Yearly";
+
+function addMonthsClamped(base: Date, months: number) {
+  const next = new Date(base);
+  const day = next.getDate();
+  next.setMonth(next.getMonth() + months);
+  if (next.getDate() < day) next.setDate(0);
+  return next;
 }
 
-function parseDateOnlyUTC(value: string): Date | null {
-  if (!value) return null;
-  const parts = value.split("-").map((p) => Number(p));
-  if (parts.length !== 3) return null;
-  const [y, m, d] = parts;
-  if (!y || !m || !d) return null;
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  if (Number.isNaN(dt.getTime())) return null;
-  return dt;
-}
+function nextDueFromStart(startDate: string, frequency: Frequency) {
+  if (!startDate) return "";
+  const start = new Date(startDate);
+  if (Number.isNaN(start.getTime())) return "";
 
-function formatDateOnlyUTC(date: Date) {
-  return date.toISOString().split("T")[0];
-}
+  const months =
+    frequency === "Monthly"
+      ? 1
+      : frequency === "Quarterly"
+        ? 3
+        : frequency === "HalfYearly"
+          ? 6
+          : 12;
 
-function todayDateOnlyUTC() {
+  let due = addMonthsClamped(start, months);
   const now = new Date();
-  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-}
-
-function daysInMonthUTC(year: number, monthIndex0: number) {
-  return new Date(Date.UTC(year, monthIndex0 + 1, 0)).getUTCDate();
-}
-
-function addYearsClampedUTC(date: Date, years: number) {
-  const y = date.getUTCFullYear() + years;
-  const m = date.getUTCMonth();
-  const d = date.getUTCDate();
-  const maxDay = daysInMonthUTC(y, m);
-  const clampedDay = Math.min(d, maxDay);
-  return new Date(Date.UTC(y, m, clampedDay));
-}
-
-function calculateNextIncrementPreview(args: {
-  rentStartDate: string;
-  baseRent: number;
-  incrementCycleYears: number;
-  incrementType: "PERCENTAGE" | "AMOUNT";
-  incrementRatePercent: number;
-  incrementAmount: number;
-  referenceDate?: Date;
-}): { nextDate?: string; nextRent?: number } {
-  const start = parseDateOnlyUTC(args.rentStartDate);
-  if (!start) return {};
-
-  const cycleYears = Number(args.incrementCycleYears || 0);
-  if (!Number.isFinite(cycleYears) || cycleYears <= 0) return {};
-
-  const baseRent = Number(args.baseRent);
-  if (!Number.isFinite(baseRent) || baseRent <= 0) return {};
-
-  const today = args.referenceDate ? args.referenceDate : todayDateOnlyUTC();
-
-  // How many full cycles have passed since the Rent Start Date (anchored to start date).
-  let cyclesPassed = 0;
-  if (today.getTime() >= start.getTime()) {
-    const yearsDiff = today.getUTCFullYear() - start.getUTCFullYear();
-    let guess = Math.floor(yearsDiff / cycleYears);
-
-    while (guess > 0) {
-      const d = addYearsClampedUTC(start, guess * cycleYears);
-      if (d.getTime() <= today.getTime()) break;
-      guess--;
-    }
-    while (true) {
-      const next = addYearsClampedUTC(start, (guess + 1) * cycleYears);
-      if (next.getTime() <= today.getTime()) {
-        guess++;
-        continue;
-      }
-      break;
-    }
-    cyclesPassed = Math.max(0, guess);
+  while (due.getTime() <= now.getTime()) {
+    due = addMonthsClamped(due, months);
   }
 
-  const applyIncrementOnce = (current: number) => {
-    if (args.incrementType === "AMOUNT") {
-      const inc = Number(args.incrementAmount || 0);
-      return round2(current + (Number.isFinite(inc) ? inc : 0));
-    }
-    const rate = Number(args.incrementRatePercent || 0);
-    const safeRate = Number.isFinite(rate) ? rate : 0;
-    return round2(current + (current * safeRate) / 100);
-  };
+  return due.toISOString().split("T")[0];
+}
 
-  let currentRent = round2(baseRent);
-  for (let i = 0; i < cyclesPassed; i++) {
-    currentRent = applyIncrementOnce(currentRent);
-  }
+function extractLandlordName(hoarding: any) {
+  const history =
+    hoarding?.rateHistory && typeof hoarding.rateHistory === "object"
+      ? hoarding.rateHistory
+      : {};
+  const fromHistory =
+    (history as any)?.landlordName || (history as any)?.landlord || "";
+  if (String(fromHistory).trim()) return String(fromHistory).trim();
 
-  const nextRent = applyIncrementOnce(currentRent);
-  const nextDate = addYearsClampedUTC(start, (cyclesPassed + 1) * cycleYears);
+  const ownership = String(hoarding?.ownership || "");
+  const match = ownership.match(/^(gov|govt|government)\s*-\s*(.+)$/i);
+  if (match && match[2]) return String(match[2]).trim();
 
-  return { nextDate: formatDateOnlyUTC(nextDate), nextRent };
+  return "Unknown";
 }
 
 export default function LandlordRentPage() {
   const params = useParams<{ landlord: string }>();
+  const landlordName = decodeURIComponent(
+    String(params?.landlord || ""),
+  ).trim();
   const router = useRouter();
-  const userFromContext = useUser();
-  const [user, setUser] = useState<any>(null);
-  const landlord = decodeURIComponent(String(params?.landlord || ""));
+  const user = useUser();
+  const role = getRoleFromUser(user);
+  const canEdit = canEditRent(role);
 
-  const [hoardings, setHoardings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  const [formData, setFormData] = useState({
-    partyType: "Private",
+  const [hoardingCount, setHoardingCount] = useState(0);
+  const [form, setForm] = useState({
+    landlordName,
+    location: "",
     rentAmount: "",
     incrementCycleYears: 1,
-    incrementRate: 10,
-    incrementType: "PERCENTAGE", // PERCENTAGE | AMOUNT
-    incrementValue: "", // number as string
+    incrementType: "PERCENTAGE",
+    incrementValue: "10",
     rentStartDate: "",
-    paymentFrequency: "Monthly",
-    paymentMode: "Cash",
-    chequeName: "",
-    bankName: "",
-    ifsc: "",
-    accountNumber: "",
-    landlordName: "",
+    paymentFrequency: "Monthly" as Frequency,
     lastPaymentDate: "",
     reminderDays: [14] as number[],
   });
-  const [nextDueDate, setNextDueDate] = useState<string>("");
-  const [nextIncrementPreview, setNextIncrementPreview] = useState<{
-    nextDate?: string;
-    nextRent?: number;
-  }>({});
 
-  // Load user from context or localStorage
   useEffect(() => {
-    if (userFromContext) {
-      setUser(userFromContext);
-    } else {
-      const localUser = localStorage.getItem("user");
-      if (localUser) {
-        try {
-          setUser(JSON.parse(localUser));
-        } catch (e) {
-          console.error("Failed to parse user from localStorage", e);
+    const load = async () => {
+      try {
+        setLoading(true);
+
+        const hoardingRes = await hoardingsAPI.getAll({ page: 1, limit: 2000 });
+
+        if (hoardingRes?.success) {
+          const all = hoardingRes.data?.hoardings || [];
+          const matched = all.filter(
+            (h: any) =>
+              extractLandlordName(h).toLowerCase() ===
+              landlordName.toLowerCase(),
+          );
+          setHoardingCount(matched.length);
+
+          if (matched.length > 0) {
+            const loc = [matched[0].city, matched[0].area]
+              .filter(Boolean)
+              .join(", ");
+            if (loc) {
+              setForm((prev) => ({ ...prev, location: prev.location || loc }));
+            }
+          }
         }
-      }
-    }
-  }, [userFromContext]);
 
-  useEffect(() => {
-    fetchHoardings();
-    // Pre-fill landlord name
-    setFormData((prev) => ({ ...prev, landlordName: landlord }));
-  }, [landlord]);
-
-  // Client-side preview for next increment values when user edits form
-  useEffect(() => {
-    const preview = calculateNextIncrementPreview({
-      rentStartDate: formData.rentStartDate,
-      baseRent: Number(formData.rentAmount),
-      incrementCycleYears: Number(formData.incrementCycleYears || 1),
-      incrementType: formData.incrementType as any,
-      incrementRatePercent: Number(formData.incrementRate || 0),
-      incrementAmount: Number(formData.incrementValue || 0),
-    });
-    setNextIncrementPreview(preview);
-  }, [
-    formData.rentStartDate,
-    formData.incrementCycleYears,
-    formData.rentAmount,
-    formData.incrementType,
-    formData.incrementValue,
-    formData.incrementRate,
-  ]);
-
-  useEffect(() => {
-    if (formData.lastPaymentDate && formData.paymentFrequency) {
-      const d = new Date(formData.lastPaymentDate);
-      switch (formData.paymentFrequency) {
-        case "Monthly":
-          d.setMonth(d.getMonth() + 1);
-          break;
-        case "Quarterly":
-          d.setMonth(d.getMonth() + 3);
-          break;
-        case "HalfYearly":
-        case "Half-Yearly":
-          d.setMonth(d.getMonth() + 6);
-          break;
-        case "Yearly":
-          d.setFullYear(d.getFullYear() + 1);
-          break;
-      }
-      setNextDueDate(d.toISOString().split("T")[0]);
-    } else {
-      setNextDueDate("");
-    }
-  }, [formData.lastPaymentDate, formData.paymentFrequency]);
-
-  const fetchHoardings = async () => {
-    try {
-      setLoading(true);
-      // Fetch all hoardings and filter by landlord on client side
-      const response = await hoardingsAPI.getAll({
-        page: 1,
-        limit: 1000,
-      });
-
-      if (response.success && response.data) {
-        const allHoardings = response.data.hoardings || [];
-
-        // Helper to extract landlord from hoarding
-        const getLandlord = (h: any): string => {
-          if (h.rateHistory && typeof h.rateHistory === "object") {
-            const landlord = (h.rateHistory as any)?.landlord;
-            if (landlord && typeof landlord === "string" && landlord.trim()) {
-              return landlord.trim();
-            }
+        try {
+          const landlordRentRes =
+            await propertyRentAPI.getByLandlord(landlordName);
+          if (landlordRentRes?.success && landlordRentRes.data) {
+            const data = landlordRentRes.data;
+            setForm((prev) => ({
+              ...prev,
+              landlordName,
+              location: data.location || prev.location || "",
+              rentAmount: String(data.rentAmount || ""),
+              incrementCycleYears: Number(data.incrementCycleYears || 1),
+              incrementType: String(data.incrementType || "PERCENTAGE"),
+              incrementValue: data.incrementValue
+                ? String(data.incrementValue)
+                : prev.incrementValue,
+              rentStartDate: data.rentStartDate
+                ? String(data.rentStartDate).split("T")[0]
+                : "",
+              paymentFrequency: (data.paymentFrequency ||
+                "Monthly") as Frequency,
+              lastPaymentDate: data.lastPaymentDate
+                ? String(data.lastPaymentDate).split("T")[0]
+                : "",
+              reminderDays:
+                Array.isArray(data.reminderDays) && data.reminderDays.length
+                  ? data.reminderDays
+                  : [14],
+            }));
           }
-          if (h.ownership) {
-            const ownership = h.ownership.toString();
-            const match = ownership.match(
-              /^(gov|govt|government)\s*-\s*(.+)$/i
+        } catch (rentError: any) {
+          const message = String(
+            rentError?.response?.data?.message || rentError?.message || "",
+          ).toLowerCase();
+          const status = Number(rentError?.response?.status || 0);
+          const isNotFound = status === 404 || message.includes("not found");
+          if (!isNotFound) {
+            showError(
+              rentError?.response?.data?.message ||
+                "Failed to load landlord rent data",
             );
-            if (match && match[2]) {
-              return match[2].trim();
-            }
           }
-          return "Unknown";
-        };
-
-        // Filter hoardings by landlord
-        const landlordHoardings = allHoardings.filter((h: any) => {
-          const hLandlord = getLandlord(h);
-          return hLandlord === landlord;
-        });
-
-        setHoardings(landlordHoardings);
+        }
+      } catch (error: any) {
+        showError(
+          error?.response?.data?.message || "Failed to load landlord rent data",
+        );
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to fetch hoardings:", error);
-      showError("Failed to load hoardings");
-      router.push("/hoardings");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    if (landlordName) load();
+  }, [landlordName]);
+
+  const nextDueDate = useMemo(
+    () => nextDueFromStart(form.rentStartDate, form.paymentFrequency),
+    [form.rentStartDate, form.paymentFrequency],
+  );
 
   const toggleReminder = (day: number) => {
-    setFormData((prev: any) => {
+    setForm((prev) => {
       const has = prev.reminderDays.includes(day);
       return {
         ...prev,
         reminderDays: has
-          ? prev.reminderDays.filter((d: number) => d !== day)
+          ? prev.reminderDays.filter((d) => d !== day)
           : [...prev.reminderDays, day],
       };
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.rentAmount || !formData.partyType || !formData.paymentMode) {
-      showError("Please fill in all required fields");
+    if (!form.rentAmount || !form.rentStartDate) {
+      showError("Rent amount and rent start date are required");
       return;
     }
-
-    if (hoardings.length === 0) {
-      showError("No hoardings found for this landlord");
-      return;
-    }
-
-    const confirmRent = window.confirm(
-      `Are you sure you want to create rent records for all ${hoardings.length} hoarding(s) under "${landlord}"? These hoardings will now be available for bookings.`
-    );
-    if (!confirmRent) return;
 
     try {
       setSaving(true);
+      await propertyRentAPI.save({
+        landlordName,
+        location: form.location || undefined,
+        rentAmount: Number(form.rentAmount),
+        incrementCycleYears: Number(form.incrementCycleYears || 1),
+        incrementType: form.incrementType,
+        incrementValue: Number(form.incrementValue || 0),
+        rentStartDate: form.rentStartDate,
+        paymentFrequency: form.paymentFrequency,
+        lastPaymentDate: form.lastPaymentDate || undefined,
+        reminderDays: form.reminderDays,
+      });
 
-      // For individual hoarding rent records, we use the fields that the rent API supports
-      // Note: The rent API uses paymentMode for frequency (Monthly/Quarterly/etc)
-      // Map paymentFrequency to paymentMode format expected by rent API
-      const paymentModeForRent =
-        formData.paymentFrequency === "HalfYearly"
-          ? "Half-Yearly"
-          : formData.paymentFrequency;
-
-      const rentData = {
-        partyType: formData.partyType,
-        rentAmount: (() => {
-          const amount = parseFloat(formData.rentAmount);
-          return isNaN(amount) ? 0 : Math.round(amount * 100) / 100;
-        })(),
-        incrementYear: formData.rentStartDate
-          ? new Date(formData.rentStartDate).getFullYear() +
-            (formData.incrementCycleYears || 1)
-          : null,
-        paymentMode: paymentModeForRent, // Rent API uses paymentMode for frequency
-        lastPaymentDate: formData.lastPaymentDate || null,
-      };
-
-      // Create rent records for all hoardings
-      const rentPromises = hoardings.map((h) =>
-        rentAPI.saveRent(h.id, rentData)
-      );
-
-      await Promise.all(rentPromises);
-
-      // Mark all hoardings as "on_rent"
-      const updatePromises = hoardings.map((h) =>
-        hoardingsAPI.update(h.id, { status: "on_rent" })
-      );
-
-      await Promise.all(updatePromises);
-
-      showSuccess(
-        `Rent details saved for all ${hoardings.length} hoarding(s) under "${landlord}". These hoardings will now be available for bookings.`
-      );
+      showSuccess("Landlord rent saved successfully");
       router.push("/hoardings");
     } catch (error: any) {
-      console.error("Error saving rent:", error);
       showError(
-        "Error saving rent: " +
-          (error.response?.data?.message || "Unknown error")
+        error?.response?.data?.message || "Failed to save landlord rent",
       );
     } finally {
       setSaving(false);
     }
   };
 
-  // Robust role extraction with fallback
-  const extractedRole = getRoleFromUser(user);
-  const rawRole = (user as any)?.role || (user as any)?.userRole || "";
-  const userRole =
-    extractedRole || (typeof rawRole === "string" ? rawRole : "");
-  const canEdit = canEditRent(userRole);
-  const fallbackRoleLower = (user as any)?.role?.toLowerCase?.() || "";
-  const canEditFinal =
-    canEdit || ["owner", "manager", "admin"].includes(fallbackRoleLower);
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: "center", padding: "40px" }}>
-        <div className="loading-spinner" style={{ margin: "0 auto" }}></div>
-        <p>Loading hoardings...</p>
-      </div>
-    );
-  }
-
-  if (!canEditFinal) {
-    return (
-      <div>
-        <button
-          className="btn btn-secondary"
-          onClick={() => router.back()}
-          style={{ marginBottom: "16px" }}
-        >
-          ← Back
-        </button>
-        <div className="card">
-          <p>You don't have permission to create rent records.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <div style={{ marginBottom: "24px" }}>
-        <button
-          className="btn btn-secondary"
-          onClick={() => router.back()}
-          style={{ marginBottom: "16px" }}
+    <ProtectedRoute component="hoardings">
+      <div>
+        <div
+          style={{
+            marginBottom: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
         >
-          ← Back
-        </button>
-        <h1>Create Rent for Landlord</h1>
-        <p style={{ color: "var(--text-secondary)", marginTop: "8px" }}>
-          Landlord: <strong>{landlord}</strong>
-        </p>
-        <p style={{ color: "var(--text-secondary)", marginTop: "4px" }}>
-          Hoardings: <strong>{hoardings.length}</strong> hoarding(s) will be
-          marked as "on rent"
-        </p>
-      </div>
-
-      {hoardings.length === 0 ? (
-        <div className="card">
-          <p>No hoardings found for this landlord.</p>
+          <button
+            className="btn btn-secondary"
+            onClick={() => router.push("/hoardings")}
+          >
+            ← Back
+          </button>
+          <h1 style={{ margin: 0 }}>Landlord Rent Editor</h1>
         </div>
-      ) : (
-        <div className="card">
-          <h3>Rent Details</h3>
-          <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
-            The rent details you enter below will be applied to all{" "}
-            <strong>{hoardings.length}</strong> hoarding(s) under this landlord.
-          </p>
-          <form onSubmit={handleSubmit}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "16px",
-              }}
-            >
-              <div className="form-group">
-                <label>
-                  Party Type <span style={{ color: "red" }}>*</span>
-                </label>
-                <select
-                  value={formData.partyType}
-                  onChange={(e) =>
-                    setFormData({ ...formData, partyType: e.target.value })
-                  }
-                  required
-                  disabled={saving}
-                >
-                  <option value="Government">Government</option>
-                  <option value="Private">Private</option>
-                  <option value="Friend">Friend</option>
-                </select>
-              </div>
 
-              <div className="form-group">
-                <label>
-                  Rent Amount (₹) <span style={{ color: "red" }}>*</span>
-                </label>
-                <input
-                  type="number"
-                  value={formData.rentAmount}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === "" || !isNaN(parseFloat(value))) {
-                      setFormData({ ...formData, rentAmount: value });
-                    }
-                  }}
-                  onBlur={(e) => {
-                    const value = e.target.value;
-                    if (value && !isNaN(parseFloat(value))) {
-                      const rounded = (
-                        Math.round(parseFloat(value) * 100) / 100
-                      ).toFixed(2);
-                      setFormData({ ...formData, rentAmount: rounded });
-                    }
-                  }}
-                  placeholder="Enter rent amount"
-                  required
-                  min="0"
-                  step="0.01"
-                  disabled={saving}
-                />
-              </div>
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "40px" }}>
+            <div className="loading-spinner" style={{ margin: "0 auto" }}></div>
+            <p>Loading landlord rent...</p>
+          </div>
+        ) : (
+          <div className="card">
+            <div style={{ marginBottom: "16px" }}>
+              <strong>Landlord:</strong> {landlordName || "N/A"}
+              <br />
+              <strong>Linked hoardings:</strong> {hoardingCount}
+            </div>
 
-              <div className="form-group">
-                <label>Increment Type</label>
-                <select
-                  value={formData.incrementType}
-                  onChange={(e) =>
-                    setFormData({ ...formData, incrementType: e.target.value })
-                  }
-                  disabled={saving}
-                >
-                  <option value="PERCENTAGE">Percentage</option>
-                  <option value="AMOUNT">Fixed Amount</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Increment Cycle (years)</label>
-                <select
-                  value={formData.incrementCycleYears}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      incrementCycleYears: Number(e.target.value),
-                    })
-                  }
-                  disabled={saving}
-                >
-                  <option value={1}>Every 1 year</option>
-                  <option value={2}>Every 2 years</option>
-                  <option value={3}>Every 3 years</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                {formData.incrementType === "PERCENTAGE" ? (
-                  <>
-                    <label>Increment Rate (%)</label>
-                    <input
-                      type="number"
-                      value={formData.incrementRate}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          incrementRate: Number(e.target.value),
-                        })
-                      }
-                      min={0}
-                      step={0.1}
-                      disabled={saving}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <label>Increment Amount (₹)</label>
-                    <input
-                      type="number"
-                      value={formData.incrementValue}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          incrementValue: e.target.value,
-                        })
-                      }
-                      min={0}
-                      step={1}
-                      disabled={saving}
-                    />
-                  </>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label>Rent Start Date</label>
-                <input
-                  type="date"
-                  value={formData.rentStartDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, rentStartDate: e.target.value })
-                  }
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>
-                  Payment Frequency <span style={{ color: "red" }}>*</span>
-                </label>
-                <select
-                  value={formData.paymentFrequency}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      paymentFrequency: e.target.value,
-                    })
-                  }
-                  required
-                  disabled={saving}
-                >
-                  <option value="Monthly">Monthly</option>
-                  <option value="Quarterly">Quarterly</option>
-                  <option value="HalfYearly">Half-Yearly</option>
-                  <option value="Yearly">Yearly</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>
-                  Payment Mode <span style={{ color: "red" }}>*</span>
-                </label>
-                <select
-                  value={formData.paymentMode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, paymentMode: e.target.value })
-                  }
-                  required
-                  disabled={saving}
-                >
-                  <option value="Cash">Cash</option>
-                  <option value="Cheque">Cheque</option>
-                  <option value="Online">Online</option>
-                </select>
-              </div>
-
-              {formData.paymentMode === "Cheque" && (
+            <form onSubmit={onSubmit}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: "16px",
+                }}
+              >
                 <div className="form-group">
-                  <label>Cheque issued to (name)</label>
+                  <label>Landlord Name</label>
+                  <input value={landlordName} disabled />
+                </div>
+                <div className="form-group">
+                  <label>Location</label>
                   <input
-                    type="text"
-                    value={formData.chequeName}
+                    value={form.location}
                     onChange={(e) =>
-                      setFormData({ ...formData, chequeName: e.target.value })
+                      setForm((p) => ({ ...p, location: e.target.value }))
                     }
-                    disabled={saving}
+                    placeholder="City / Area"
                   />
                 </div>
-              )}
-
-              {formData.paymentMode === "Online" && (
-                <>
-                  <div className="form-group">
-                    <label>Bank Name</label>
-                    <input
-                      type="text"
-                      value={formData.bankName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, bankName: e.target.value })
-                      }
-                      disabled={saving}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>IFSC</label>
-                    <input
-                      type="text"
-                      value={formData.ifsc}
-                      onChange={(e) =>
-                        setFormData({ ...formData, ifsc: e.target.value })
-                      }
-                      disabled={saving}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Account Number</label>
-                    <input
-                      type="text"
-                      value={formData.accountNumber}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          accountNumber: e.target.value,
-                        })
-                      }
-                      disabled={saving}
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="form-group">
-                <label>Landlord</label>
-                <input
-                  type="text"
-                  value={formData.landlordName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, landlordName: e.target.value })
-                  }
-                  placeholder="Owner / Landlord name"
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Last Payment Date</label>
-                <input
-                  type="date"
-                  value={formData.lastPaymentDate}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      lastPaymentDate: e.target.value,
-                    })
-                  }
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Next Due Date</label>
-                <input
-                  type="date"
-                  value={nextDueDate}
-                  disabled
-                  style={{ background: "#f8fafc" }}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Next Increment Preview</label>
-                <div className="card" style={{ padding: "8px" }}>
-                  <div>
-                    Next Increment On: {nextIncrementPreview.nextDate || "--"}
-                  </div>
-                  <div>
-                    Expected Next Rent:{" "}
-                    {nextIncrementPreview.nextRent != null
-                      ? `₹${nextIncrementPreview.nextRent.toLocaleString()}`
-                      : "--"}
-                  </div>
+                <div className="form-group">
+                  <label>Rent Amount (₹) *</label>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={form.rentAmount}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, rentAmount: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Payment Frequency *</label>
+                  <select
+                    value={form.paymentFrequency}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        paymentFrequency: e.target.value as Frequency,
+                      }))
+                    }
+                  >
+                    <option value="Monthly">Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="HalfYearly">Half Yearly</option>
+                    <option value="Yearly">Yearly</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Rent Start Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={form.rentStartDate}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, rentStartDate: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Last Payment Date (history only)</label>
+                  <input
+                    type="date"
+                    value={form.lastPaymentDate}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        lastPaymentDate: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Increment Cycle (Years)</label>
+                  <select
+                    value={form.incrementCycleYears}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        incrementCycleYears: Number(e.target.value),
+                      }))
+                    }
+                  >
+                    <option value={1}>1 year</option>
+                    <option value={2}>2 years</option>
+                    <option value={3}>3 years</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Increment Type</label>
+                  <select
+                    value={form.incrementType}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, incrementType: e.target.value }))
+                    }
+                  >
+                    <option value="PERCENTAGE">Percentage</option>
+                    <option value="AMOUNT">Amount</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>
+                    {form.incrementType === "AMOUNT"
+                      ? "Increment Amount (₹)"
+                      : "Increment Value (%)"}
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.incrementValue}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, incrementValue: e.target.value }))
+                    }
+                  />
                 </div>
               </div>
 
-              <div className="form-group">
-                <label>Reminder Settings</label>
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                  {[7, 14, 30].map((d) => (
-                    <label key={d} style={{ fontSize: "12px" }}>
+              <div className="form-group" style={{ marginTop: "8px" }}>
+                <label>Reminder Days</label>
+                <div style={{ display: "flex", gap: "12px" }}>
+                  {[7, 14, 30].map((day) => (
+                    <label
+                      key={day}
+                      style={{ display: "inline-flex", gap: "6px" }}
+                    >
                       <input
                         type="checkbox"
-                        checked={formData.reminderDays.includes(d)}
-                        onChange={() => toggleReminder(d)}
-                        style={{ marginRight: "4px" }}
-                        disabled={saving}
+                        checked={form.reminderDays.includes(day)}
+                        onChange={() => toggleReminder(day)}
                       />
-                      {d} days before
+                      {day} days
                     </label>
                   ))}
                 </div>
               </div>
-            </div>
 
-            <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={saving}
+              <div
+                style={{
+                  marginTop: "16px",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  background: "var(--bg-primary, #f8fafc)",
+                }}
               >
-                {saving
-                  ? "Saving..."
-                  : `Save Rent for ${hoardings.length} Hoarding(s)`}
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => router.back()}
-                disabled={saving}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+                <strong>Next Due Date (Fixed Cycle):</strong>{" "}
+                {nextDueDate || "N/A"}
+                <div
+                  style={{ fontSize: "12px", color: "var(--text-secondary)" }}
+                >
+                  Derived from Rent Start Date + Cycle. Late payments do not
+                  shift schedule.
+                </div>
+              </div>
+
+              <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+                {canEdit ? (
+                  <button
+                    className="btn btn-primary"
+                    type="submit"
+                    disabled={saving}
+                  >
+                    {saving ? "Saving..." : "Save Landlord Rent"}
+                  </button>
+                ) : (
+                  <button className="btn btn-secondary" type="button" disabled>
+                    View Only
+                  </button>
+                )}
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => router.push("/hoardings")}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
+    </ProtectedRoute>
   );
 }

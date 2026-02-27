@@ -318,15 +318,9 @@ export default function Hoardings() {
             }
             totalDisplay = unique.size;
           }
-          // For sales view on rent, total should reflect individual hoardings in rented properties
+          // Sales totals must remain purely operational and independent of landlord rent configuration.
           if (isSalesView && hoardings && hoardings.length) {
-            totalDisplay = hoardings.filter((h) => {
-              // Consider hoardings belonging to a propertyGroupId that has rent attached
-              // or the hoarding itself marked on_rent
-              const status = (h.status || "").toLowerCase();
-              const hasGroupRent = !!h.propertyRent || !!h.propertyGroupId; // backend attaches propertyRent on items in rented groups
-              return status === "on_rent" || hasGroupRent;
-            }).length;
+            totalDisplay = total;
           }
           // Render header with dynamic total count
           return (
@@ -399,41 +393,41 @@ export default function Hoardings() {
                 <label style={{ display: "block", marginBottom: "6px" }}>
                   Category
                 </label>
-                <select
+                <CustomSelect
                   value={filters.categoryId}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFilters((prev) => ({
                       ...prev,
-                      categoryId: e.target.value,
+                      categoryId: value,
                     }))
                   }
-                  style={{ width: "100%" }}
-                >
-                  <option value="">All</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: "", label: "All Categories" },
+                    ...categories.map((c) => ({ value: c.id, label: c.name })),
+                  ]}
+                  placeholder="All Categories"
+                  openDirection="down"
+                />
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label style={{ display: "block", marginBottom: "6px" }}>
                   Status
                 </label>
-                <select
+                <CustomSelect
                   value={filters.status}
-                  onChange={(e) =>
-                    setFilters((prev) => ({ ...prev, status: e.target.value }))
+                  onChange={(value) =>
+                    setFilters((prev) => ({ ...prev, status: value }))
                   }
-                  style={{ width: "100%" }}
-                >
-                  <option value="">All</option>
-                  <option value="available">Available</option>
-                  <option value="tokenized">Tokenized</option>
-                  <option value="under_process">Under Processing</option>
-                  <option value="booked">Booked</option>
-                </select>
+                  options={[
+                    { value: "", label: "All Status" },
+                    { value: "available", label: "Available" },
+                    { value: "tokenized", label: "Tokenized" },
+                    { value: "under_process", label: "Under Processing" },
+                    { value: "booked", label: "Booked" },
+                  ]}
+                  placeholder="All Status"
+                  openDirection="down"
+                />
               </div>
             </div>
           </div>

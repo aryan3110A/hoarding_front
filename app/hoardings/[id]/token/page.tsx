@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import CustomSelect from "@/components/CustomSelect";
 import { bookingTokensAPI, hoardingsAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
@@ -203,24 +204,25 @@ export default function HoardingTokenPage() {
                 <label style={{ fontSize: "12px" }}>
                   Duration (months / days)
                 </label>
-                <select
-                  value={durationMonths ?? ""}
-                  onChange={(e) => {
-                    const v = e.target.value;
+                <CustomSelect
+                  value={String(durationMonths ?? "")}
+                  onChange={(v) => {
                     if (!v) return setDurationMonths(undefined);
-                    // support day-based option like '8d'
                     if (v.endsWith("d")) return setDurationMonths(v);
                     const n = Number(v);
                     setDurationMonths(isNaN(n) ? undefined : n);
                   }}
-                >
-                  <option value="">Select</option>
-                  <option value="3">3</option>
-                  <option value="6">6</option>
-                  <option value="9">9</option>
-                  <option value="12">12</option>
-                  <option value="8d">8 days</option>
-                </select>
+                  options={[
+                    { value: "", label: "Select" },
+                    { value: "3", label: "3" },
+                    { value: "6", label: "6" },
+                    { value: "9", label: "9" },
+                    { value: "12", label: "12" },
+                    { value: "8d", label: "8 days" },
+                  ]}
+                  placeholder="Select"
+                  openDirection="down"
+                />
               </div>
 
               <div style={{ width: "100%" }} />

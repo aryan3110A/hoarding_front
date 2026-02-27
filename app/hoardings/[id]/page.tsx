@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@/components/AppLayout";
-import { hoardingsAPI, rentAPI } from "@/lib/api";
+import { hoardingsAPI, propertyRentAPI } from "@/lib/api";
 import { canUpdate, canDelete, getRoleFromUser, canViewRent } from "@/lib/rbac";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { showError, showSuccess } from "@/lib/toast";
@@ -18,7 +18,12 @@ export default function HoardingDetailPage() {
   const hoardingId = String(params?.id || "");
 
   const [hoarding, setHoarding] = useState<any>(null);
-  const [rent, setRent] = useState<any>(null);
+  const [landlordRent, setLandlordRent] = useState<any>(null);
+  const [landlordInfo, setLandlordInfo] = useState<{
+    name: string;
+    phone: string;
+    email: string;
+  }>({ name: "", phone: "", email: "" });
   const [loading, setLoading] = useState(true);
 
   // Load user from context or localStorage
@@ -41,6 +46,38 @@ export default function HoardingDetailPage() {
     fetchData();
   }, [hoardingId]);
 
+  const extractLandlordInfo = (record: any) => {
+    const history =
+      record?.rateHistory && typeof record.rateHistory === "object"
+        ? record.rateHistory
+        : {};
+
+    const fromHistory =
+      (history as any)?.landlordName || (history as any)?.landlord || "";
+    const ownership = String(record?.ownership || "");
+    const ownershipMatch = ownership.match(
+      /^(gov|govt|government)\s*-\s*(.+)$/i,
+    );
+    const landlordName =
+      String(fromHistory || "").trim() ||
+      (ownershipMatch && ownershipMatch[2] ? ownershipMatch[2].trim() : "");
+
+    const phone = String(
+      (history as any)?.landlordPhone ||
+        (history as any)?.phone ||
+        (history as any)?.ownerPhone ||
+        "",
+    ).trim();
+    const email = String(
+      (history as any)?.landlordEmail ||
+        (history as any)?.email ||
+        (history as any)?.ownerEmail ||
+        "",
+    ).trim();
+
+    return { name: landlordName, phone, email };
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -48,19 +85,29 @@ export default function HoardingDetailPage() {
       // Fetch hoarding details
       const hoardingResponse = await hoardingsAPI.getById(hoardingId);
       if (hoardingResponse.success) {
-        setHoarding(hoardingResponse.data);
-      }
+        const detail = hoardingResponse.data;
+        setHoarding(detail);
+        const landlord = extractLandlordInfo(detail);
+        setLandlordInfo(landlord);
 
-      // Fetch rent details if available
-      try {
-        const rentResponse = await rentAPI.getRentDetails(hoardingId);
-        if (rentResponse.success && rentResponse.data) {
-          setRent(rentResponse.data);
-        }
-      } catch (error: any) {
-        // Rent not found is okay
-        if (error.response?.status !== 404) {
-          console.error("Error fetching rent:", error);
+        if (landlord.name) {
+          try {
+            const rentResponse = await propertyRentAPI.getByLandlord(
+              landlord.name,
+            );
+            if (rentResponse.success && rentResponse.data) {
+              setLandlordRent(rentResponse.data);
+            } else {
+              setLandlordRent(null);
+            }
+          } catch (error: any) {
+            setLandlordRent(null);
+            if (error.response?.status !== 404) {
+              console.error("Error fetching landlord rent:", error);
+            }
+          }
+        } else {
+          setLandlordRent(null);
         }
       }
     } catch (error) {
@@ -308,9 +355,30 @@ export default function HoardingDetailPage() {
               </div>
             </div>
 
-            {rent && (
+            <div className="card" style={{ marginBottom: "24px" }}>
+              <h3>Landlord Information</h3>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: "16px",
+                }}
+              >
+                <div>
+                  <strong>Landlord Name:</strong> {landlordInfo.name || "N/A"}
+                </div>
+                <div>
+                  <strong>Phone:</strong> {landlordInfo.phone || "N/A"}
+                </div>
+                <div>
+                  <strong>Email:</strong> {landlordInfo.email || "N/A"}
+                </div>
+              </div>
+            </div>
+
+            {landlordRent && (
               <div className="card" style={{ marginBottom: "24px" }}>
-                <h3>Rent Information</h3>
+                <h3>Landlord Rent Reference</h3>
                 <div
                   style={{
                     display: "grid",
@@ -320,23 +388,24 @@ export default function HoardingDetailPage() {
                 >
                   <div>
                     <strong>Rent Amount:</strong> ₹
-                    {Number(rent.rentAmount).toLocaleString()}
+                    {Number(landlordRent.rentAmount).toLocaleString()}
                   </div>
                   <div>
-                    <strong>Party Type:</strong> {rent.partyType}
+                    <strong>Payment Frequency:</strong>{" "}
+                    {landlordRent.paymentFrequency || "N/A"}
                   </div>
                   <div>
-                    <strong>Payment Mode:</strong> {rent.paymentMode}
+                    <strong>Rent Start Date:</strong>{" "}
+                    {landlordRent.rentStartDate
+                      ? new Date(
+                          landlordRent.rentStartDate,
+                        ).toLocaleDateString()
+                      : "N/A"}
                   </div>
-                  {rent.nextDueDate && (
+                  {landlordRent.nextDueDate && (
                     <div>
                       <strong>Next Due Date:</strong>{" "}
-                      {new Date(rent.nextDueDate).toLocaleDateString()}
-                    </div>
-                  )}
-                  {rent.incrementYear && (
-                    <div>
-                      <strong>Increment Year:</strong> {rent.incrementYear}
+                      {new Date(landlordRent.nextDueDate).toLocaleDateString()}
                     </div>
                   )}
                 </div>
@@ -345,18 +414,23 @@ export default function HoardingDetailPage() {
 
             <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
               {canViewRentDetails &&
-                !(openedFromNotification && (isOwner || isManager)) && (
+                !(openedFromNotification && (isOwner || isManager)) &&
+                (landlordInfo.name ? (
                   <Link
-                    href={`/hoardings/${hoardingId}/rent`}
+                    href={`/landlords/${encodeURIComponent(landlordInfo.name)}/rent`}
                     className="btn btn-primary"
                     style={{
                       backgroundColor: "#f59e0b",
                       borderColor: "#f59e0b",
                     }}
                   >
-                    {hoarding.status === "on_rent" ? "View Rent" : "Rent"}
+                    Edit Rent Details
                   </Link>
-                )}
+                ) : (
+                  <button className="btn btn-secondary" disabled>
+                    Landlord Not Mapped
+                  </button>
+                ))}
               {canEdit &&
                 !(
                   isOwner &&

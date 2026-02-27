@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
@@ -97,6 +98,15 @@ export default function SalesRenewalsDuePage() {
   );
   const [selectedClientKey, setSelectedClientKey] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<StatusTab>("renewalDue");
+  const [expandedPendingClientKey, setExpandedPendingClientKey] = useState<
+    string | null
+  >(null);
+  const [expandedLiveClientKey, setExpandedLiveClientKey] = useState<
+    string | null
+  >(null);
+  const [expandedRenewalClientKey, setExpandedRenewalClientKey] = useState<
+    string | null
+  >(null);
 
   const userRole = String(user?.role || "").toLowerCase();
   const canSend = ["sales", "owner", "manager", "admin"].includes(userRole);
@@ -340,6 +350,37 @@ export default function SalesRenewalsDuePage() {
     [pendingRows, isSelectedClient],
   );
 
+  const groupedPendingRows = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        key: string;
+        clientName: string;
+        clientPhone: string;
+        hoardings: StatusRow[];
+      }
+    >();
+
+    filteredPendingRows.forEach((row) => {
+      const key = `${String(row.clientName || "—")}::${String(row.clientPhone || "—")}`;
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          clientName: String(row.clientName || "—"),
+          clientPhone: String(row.clientPhone || "—"),
+          hoardings: [],
+        });
+      }
+      map.get(key)!.hoardings.push(row);
+    });
+
+    return Array.from(map.values()).sort((a, b) =>
+      `${a.clientName} ${a.clientPhone}`.localeCompare(
+        `${b.clientName} ${b.clientPhone}`,
+      ),
+    );
+  }, [filteredPendingRows]);
+
   const filteredLiveRows = useMemo(
     () =>
       liveRows.filter((row) =>
@@ -348,10 +389,72 @@ export default function SalesRenewalsDuePage() {
     [liveRows, isSelectedClient],
   );
 
+  const groupedLiveRows = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        key: string;
+        clientName: string;
+        clientPhone: string;
+        hoardings: StatusRow[];
+      }
+    >();
+
+    filteredLiveRows.forEach((row) => {
+      const key = `${String(row.clientName || "—")}::${String(row.clientPhone || "—")}`;
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          clientName: String(row.clientName || "—"),
+          clientPhone: String(row.clientPhone || "—"),
+          hoardings: [],
+        });
+      }
+      map.get(key)!.hoardings.push(row);
+    });
+
+    return Array.from(map.values()).sort((a, b) =>
+      `${a.clientName} ${a.clientPhone}`.localeCompare(
+        `${b.clientName} ${b.clientPhone}`,
+      ),
+    );
+  }, [filteredLiveRows]);
+
   const filteredTotalSent = useMemo(
     () => filteredRenewalDueRows.filter((r) => r.renewalMessageSent).length,
     [filteredRenewalDueRows],
   );
+
+  const groupedRenewalDueRows = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        key: string;
+        clientName: string;
+        clientPhone: string;
+        hoardings: RenewalDueRow[];
+      }
+    >();
+
+    filteredRenewalDueRows.forEach((row) => {
+      const key = `${String(row.clientName || "—")}::${String(row.clientPhone || "—")}`;
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          clientName: String(row.clientName || "—"),
+          clientPhone: String(row.clientPhone || "—"),
+          hoardings: [],
+        });
+      }
+      map.get(key)!.hoardings.push(row);
+    });
+
+    return Array.from(map.values()).sort((a, b) =>
+      `${a.clientName} ${a.clientPhone}`.localeCompare(
+        `${b.clientName} ${b.clientPhone}`,
+      ),
+    );
+  }, [filteredRenewalDueRows]);
 
   useEffect(() => {
     if (selectedClientKey === "all") return;
@@ -362,6 +465,30 @@ export default function SalesRenewalsDuePage() {
       setSelectedClientKey("all");
     }
   }, [clientGroups, selectedClientKey]);
+
+  useEffect(() => {
+    if (!expandedPendingClientKey) return;
+    const exists = groupedPendingRows.some(
+      (group) => group.key === expandedPendingClientKey,
+    );
+    if (!exists) setExpandedPendingClientKey(null);
+  }, [groupedPendingRows, expandedPendingClientKey]);
+
+  useEffect(() => {
+    if (!expandedLiveClientKey) return;
+    const exists = groupedLiveRows.some(
+      (group) => group.key === expandedLiveClientKey,
+    );
+    if (!exists) setExpandedLiveClientKey(null);
+  }, [groupedLiveRows, expandedLiveClientKey]);
+
+  useEffect(() => {
+    if (!expandedRenewalClientKey) return;
+    const exists = groupedRenewalDueRows.some(
+      (group) => group.key === expandedRenewalClientKey,
+    );
+    if (!exists) setExpandedRenewalClientKey(null);
+  }, [groupedRenewalDueRows, expandedRenewalClientKey]);
 
   if (!user) {
     return (
@@ -434,19 +561,20 @@ export default function SalesRenewalsDuePage() {
       <div className="card" style={{ marginBottom: "14px" }}>
         {activeTab === "pending" ? (
           <>
-            <strong>Total Pending:</strong> {filteredPendingRows.length} &nbsp;
-            | &nbsp; <strong>No. of Hoardings:</strong>{" "}
+            <strong>Total Pending Clients:</strong> {groupedPendingRows.length}
+            &nbsp; | &nbsp; <strong>No. of Hoardings:</strong>{" "}
             {filteredPendingRows.length}
           </>
         ) : activeTab === "live" ? (
           <>
-            <strong>Total Live:</strong> {filteredLiveRows.length} &nbsp; |
-            &nbsp; <strong>No. of Hoardings:</strong> {filteredLiveRows.length}
+            <strong>Total Live Clients:</strong> {groupedLiveRows.length} &nbsp;
+            | &nbsp; <strong>No. of Hoardings:</strong>{" "}
+            {filteredLiveRows.length}
           </>
         ) : (
           <>
-            <strong>Total Due:</strong> {filteredRenewalDueRows.length} &nbsp; |
-            &nbsp; <strong>No. of Hoardings:</strong>{" "}
+            <strong>Total Due Clients:</strong> {groupedRenewalDueRows.length}
+            &nbsp; | &nbsp; <strong>No. of Hoardings:</strong>{" "}
             {filteredRenewalDueRows.length}
             &nbsp; | &nbsp; <strong>Reminder Sent:</strong> {filteredTotalSent}
           </>
@@ -474,55 +602,135 @@ export default function SalesRenewalsDuePage() {
             <div style={{ overflowX: "auto" }}>
               <table
                 className="table"
-                style={{ marginTop: "10px", minWidth: 1200 }}
+                style={{ marginTop: "10px", minWidth: 900 }}
               >
                 <thead>
                   <tr>
                     <th>Client Name</th>
                     <th>Client Phone</th>
-                    <th>Hoarding Code</th>
-                    <th>Location</th>
-                    <th>Live Start Date</th>
-                    <th>Expiry Date</th>
-                    <th>Days Remaining</th>
-                    <th>Renewal Message Sent</th>
-                    <th>Sent Date/Time</th>
-                    <th>Sent By</th>
-                    <th>Action</th>
+                    <th>Number of Renewal Due Hoardings</th>
+                    <th>Expand / View</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRenewalDueRows.map((row) => {
-                    const disabled =
-                      !canSend ||
-                      row.renewalMessageSent ||
-                      sendingId === row.id;
+                  {groupedRenewalDueRows.map((group) => {
+                    const isOpen = expandedRenewalClientKey === group.key;
                     return (
-                      <tr key={row.id}>
-                        <td>{row.clientName || "—"}</td>
-                        <td>{row.clientPhone || "—"}</td>
-                        <td>{row.hoardingCode || "—"}</td>
-                        <td>{row.location || "—"}</td>
-                        <td>{fmtDate(row.contractStartDate)}</td>
-                        <td>{fmtDate(row.contractExpiryDate)}</td>
-                        <td>{row.daysRemaining ?? "—"}</td>
-                        <td>{row.renewalMessageSent ? "Yes" : "No"}</td>
-                        <td>{fmtDateTime(row.renewalMessageSentAt)}</td>
-                        <td>{row.renewalMessageSentBy || "—"}</td>
-                        <td>
-                          <button
-                            className="btn btn-sm"
-                            disabled={disabled}
-                            onClick={() => handleSendReminder(row.id)}
+                      <Fragment key={group.key}>
+                        <tr>
+                          <td>{group.clientName || "—"}</td>
+                          <td>{group.clientPhone || "—"}</td>
+                          <td>{group.hoardings.length}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="btn btn-secondary !px-3 !py-2 !text-xs !min-h-[34px]"
+                              onClick={() =>
+                                setExpandedRenewalClientKey((prev) =>
+                                  prev === group.key ? null : group.key,
+                                )
+                              }
+                            >
+                              {isOpen ? "Hide" : "View"}
+                            </button>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td
+                            colSpan={4}
+                            style={{ padding: 0, borderTop: "none" }}
                           >
-                            {row.renewalMessageSent
-                              ? "Already Sent"
-                              : sendingId === row.id
-                                ? "Sending..."
-                                : "Send Renewal WhatsApp"}
-                          </button>
-                        </td>
-                      </tr>
+                            <div
+                              style={{
+                                maxHeight: isOpen ? "520px" : "0px",
+                                opacity: isOpen ? 1 : 0,
+                                overflow: "hidden",
+                                transition:
+                                  "max-height 280ms ease, opacity 240ms ease",
+                                background: "#f8fafc",
+                                borderTop: isOpen
+                                  ? "1px solid #e2e8f0"
+                                  : "none",
+                              }}
+                            >
+                              <div style={{ padding: "12px" }}>
+                                <table
+                                  className="table"
+                                  style={{ margin: 0, minWidth: 1200 }}
+                                >
+                                  <thead>
+                                    <tr>
+                                      <th>Client Name</th>
+                                      <th>Client Phone</th>
+                                      <th>Hoarding Code</th>
+                                      <th>Location</th>
+                                      <th>Live Start Date</th>
+                                      <th>Expiry Date</th>
+                                      <th>Days Remaining</th>
+                                      <th>Renewal Message Sent</th>
+                                      <th>Sent Date/Time</th>
+                                      <th>Sent By</th>
+                                      <th>Action</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {group.hoardings.map((row) => {
+                                      const disabled =
+                                        !canSend ||
+                                        row.renewalMessageSent ||
+                                        sendingId === row.id;
+                                      return (
+                                        <tr key={row.id}>
+                                          <td>{row.clientName || "—"}</td>
+                                          <td>{row.clientPhone || "—"}</td>
+                                          <td>{row.hoardingCode || "—"}</td>
+                                          <td>{row.location || "—"}</td>
+                                          <td>
+                                            {fmtDate(row.contractStartDate)}
+                                          </td>
+                                          <td>
+                                            {fmtDate(row.contractExpiryDate)}
+                                          </td>
+                                          <td>{row.daysRemaining ?? "—"}</td>
+                                          <td>
+                                            {row.renewalMessageSent
+                                              ? "Yes"
+                                              : "No"}
+                                          </td>
+                                          <td>
+                                            {fmtDateTime(
+                                              row.renewalMessageSentAt,
+                                            )}
+                                          </td>
+                                          <td>
+                                            {row.renewalMessageSentBy || "—"}
+                                          </td>
+                                          <td>
+                                            <button
+                                              className="btn btn-sm !px-3 !py-2 !text-xs !min-h-[34px]"
+                                              disabled={disabled}
+                                              onClick={() =>
+                                                handleSendReminder(row.id)
+                                              }
+                                            >
+                                              {row.renewalMessageSent
+                                                ? "Already Sent"
+                                                : sendingId === row.id
+                                                  ? "Sending..."
+                                                  : "Send Renewal WhatsApp"}
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </Fragment>
                     );
                   })}
                 </tbody>
@@ -547,55 +755,231 @@ export default function SalesRenewalsDuePage() {
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
-                <table
-                  className="table"
-                  style={{ marginTop: "10px", minWidth: 1050 }}
-                >
-                  <thead>
-                    <tr>
-                      <th>Client Name</th>
-                      <th>Client Phone</th>
-                      <th>Hoarding Code</th>
-                      <th>Location</th>
-                      <th>Current Status</th>
-                      <th>Expiry Date</th>
-                      <th>Days Remaining</th>
-                      {isPending ? <th>Action</th> : null}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {list.map((row) => {
-                      const days = getDaysRemaining(row.expiryDate);
-                      const isNotifyLoading = notifySupervisorId === row.id;
-                      return (
-                        <tr key={row.id}>
-                          <td>{row.clientName || "—"}</td>
-                          <td>{row.clientPhone || "—"}</td>
-                          <td>{row.hoardingCode || "—"}</td>
-                          <td>{row.location || "—"}</td>
-                          <td>
-                            {String(row.currentStatus || "—").toUpperCase()}
-                          </td>
-                          <td>{fmtDate(row.expiryDate)}</td>
-                          <td>{days ?? "—"}</td>
-                          {isPending ? (
-                            <td>
-                              <button
-                                className="btn btn-secondary"
-                                disabled={isNotifyLoading}
-                                onClick={() => handleNotifySupervisor(row.id)}
+                {isPending ? (
+                  <table
+                    className="table"
+                    style={{ marginTop: "10px", minWidth: 900 }}
+                  >
+                    <thead>
+                      <tr>
+                        <th>Client Name</th>
+                        <th>Client Phone</th>
+                        <th>Number of Pending Hoardings</th>
+                        <th>Expand / View</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groupedPendingRows.map((group) => {
+                        const isOpen = expandedPendingClientKey === group.key;
+                        return (
+                          <Fragment key={group.key}>
+                            <tr>
+                              <td>{group.clientName || "—"}</td>
+                              <td>{group.clientPhone || "—"}</td>
+                              <td>{group.hoardings.length}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="btn btn-secondary !px-3 !py-2 !text-xs !min-h-[34px]"
+                                  onClick={() =>
+                                    setExpandedPendingClientKey((prev) =>
+                                      prev === group.key ? null : group.key,
+                                    )
+                                  }
+                                >
+                                  {isOpen ? "Hide" : "View"}
+                                </button>
+                              </td>
+                            </tr>
+
+                            <tr>
+                              <td
+                                colSpan={4}
+                                style={{ padding: 0, borderTop: "none" }}
                               >
-                                {isNotifyLoading
-                                  ? "Sending..."
-                                  : "Send Notification"}
-                              </button>
-                            </td>
-                          ) : null}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                                <div
+                                  style={{
+                                    maxHeight: isOpen ? "520px" : "0px",
+                                    opacity: isOpen ? 1 : 0,
+                                    overflow: "hidden",
+                                    transition:
+                                      "max-height 280ms ease, opacity 240ms ease",
+                                    background: "#f8fafc",
+                                    borderTop: isOpen
+                                      ? "1px solid #e2e8f0"
+                                      : "none",
+                                  }}
+                                >
+                                  <div style={{ padding: "12px" }}>
+                                    <table
+                                      className="table"
+                                      style={{ margin: 0, minWidth: 1050 }}
+                                    >
+                                      <thead>
+                                        <tr>
+                                          <th>Client Name</th>
+                                          <th>Client Phone</th>
+                                          <th>Hoarding Code</th>
+                                          <th>Location</th>
+                                          <th>Current Status</th>
+                                          <th>Expiry Date</th>
+                                          <th>Days Remaining</th>
+                                          <th>Action</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {group.hoardings.map((row) => {
+                                          const days = getDaysRemaining(
+                                            row.expiryDate,
+                                          );
+                                          const isNotifyLoading =
+                                            notifySupervisorId === row.id;
+                                          return (
+                                            <tr key={row.id}>
+                                              <td>{row.clientName || "—"}</td>
+                                              <td>{row.clientPhone || "—"}</td>
+                                              <td>{row.hoardingCode || "—"}</td>
+                                              <td>{row.location || "—"}</td>
+                                              <td>
+                                                {String(
+                                                  row.currentStatus || "—",
+                                                ).toUpperCase()}
+                                              </td>
+                                              <td>{fmtDate(row.expiryDate)}</td>
+                                              <td>{days ?? "—"}</td>
+                                              <td>
+                                                <button
+                                                  className="btn btn-secondary !px-3 !py-2 !text-xs !min-h-[34px]"
+                                                  disabled={isNotifyLoading}
+                                                  onClick={() =>
+                                                    handleNotifySupervisor(
+                                                      row.id,
+                                                    )
+                                                  }
+                                                >
+                                                  {isNotifyLoading
+                                                    ? "Sending..."
+                                                    : "Send Notification"}
+                                                </button>
+                                              </td>
+                                            </tr>
+                                          );
+                                        })}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          </Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : (
+                  <table
+                    className="table"
+                    style={{ marginTop: "10px", minWidth: 1050 }}
+                  >
+                    <thead>
+                      <tr>
+                        <th>Client Name</th>
+                        <th>Client Phone</th>
+                        <th>Number of Live Hoardings</th>
+                        <th>Expand / View</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groupedLiveRows.map((group) => {
+                        const isOpen = expandedLiveClientKey === group.key;
+                        return (
+                          <Fragment key={group.key}>
+                            <tr>
+                              <td>{group.clientName || "—"}</td>
+                              <td>{group.clientPhone || "—"}</td>
+                              <td>{group.hoardings.length}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="btn btn-secondary !px-3 !py-2 !text-xs !min-h-[34px]"
+                                  onClick={() =>
+                                    setExpandedLiveClientKey((prev) =>
+                                      prev === group.key ? null : group.key,
+                                    )
+                                  }
+                                >
+                                  {isOpen ? "Hide" : "View"}
+                                </button>
+                              </td>
+                            </tr>
+
+                            <tr>
+                              <td
+                                colSpan={4}
+                                style={{ padding: 0, borderTop: "none" }}
+                              >
+                                <div
+                                  style={{
+                                    maxHeight: isOpen ? "520px" : "0px",
+                                    opacity: isOpen ? 1 : 0,
+                                    overflow: "hidden",
+                                    transition:
+                                      "max-height 280ms ease, opacity 240ms ease",
+                                    background: "#f8fafc",
+                                    borderTop: isOpen
+                                      ? "1px solid #e2e8f0"
+                                      : "none",
+                                  }}
+                                >
+                                  <div style={{ padding: "12px" }}>
+                                    <table
+                                      className="table"
+                                      style={{ margin: 0, minWidth: 1000 }}
+                                    >
+                                      <thead>
+                                        <tr>
+                                          <th>Client Name</th>
+                                          <th>Client Phone</th>
+                                          <th>Hoarding Code</th>
+                                          <th>Location</th>
+                                          <th>Current Status</th>
+                                          <th>Expiry Date</th>
+                                          <th>Days Remaining</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {group.hoardings.map((row) => {
+                                          const days = getDaysRemaining(
+                                            row.expiryDate,
+                                          );
+                                          return (
+                                            <tr key={row.id}>
+                                              <td>{row.clientName || "—"}</td>
+                                              <td>{row.clientPhone || "—"}</td>
+                                              <td>{row.hoardingCode || "—"}</td>
+                                              <td>{row.location || "—"}</td>
+                                              <td>
+                                                {String(
+                                                  row.currentStatus || "—",
+                                                ).toUpperCase()}
+                                              </td>
+                                              <td>{fmtDate(row.expiryDate)}</td>
+                                              <td>{days ?? "—"}</td>
+                                            </tr>
+                                          );
+                                        })}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          </Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
               </div>
             );
           })()

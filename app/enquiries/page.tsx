@@ -194,6 +194,12 @@ export default function Enquiries() {
   >([]);
 
   const [phoneConflictMessage, setPhoneConflictMessage] = useState("");
+  const [matchedClientByPhone, setMatchedClientByPhone] = useState<{
+    id?: string;
+    name?: string;
+    companyName?: string | null;
+    email?: string | null;
+  } | null>(null);
 
   const extractListRows = (
     payload: any,
@@ -339,6 +345,7 @@ export default function Enquiries() {
         categoryId: "",
         assignedSalesId: "",
       });
+      setMatchedClientByPhone(null);
       // If backend returns existing inquiry (owner), it returns 200 with message.
       const msg = res?.message || "Inquiry saved";
       showSuccess(msg);
@@ -356,9 +363,12 @@ export default function Enquiries() {
   useEffect(() => {
     const rawPhone = String(formData.phone || "").trim();
     const rawName = String(formData.clientName || "").trim();
+    const roleName = String(getRoleFromUser(user) || "").toLowerCase();
+    const isSalesRole = roleName === "sales";
 
     if (!rawPhone) {
       setPhoneConflictMessage("");
+      setMatchedClientByPhone(null);
       return;
     }
 
@@ -366,6 +376,36 @@ export default function Enquiries() {
       try {
         const res = await clientsAPI.byPhone(rawPhone);
         const client = res?.data || null;
+
+        if (isSalesRole) {
+          if (client && client?.name) {
+            setMatchedClientByPhone(client);
+            setFormData((prev) => ({
+              ...prev,
+              clientName: String(client.name || ""),
+              companyName: String(client.companyName || ""),
+              email: String(client.email || ""),
+            }));
+            setPhoneConflictMessage("");
+            return;
+          }
+
+          // For sales users: if phone doesn't match any client, allow manual entry.
+          setMatchedClientByPhone((prev) => {
+            if (prev) {
+              setFormData((current) => ({
+                ...current,
+                clientName: "",
+                companyName: "",
+                email: "",
+              }));
+            }
+            return null;
+          });
+          setPhoneConflictMessage("");
+          return;
+        }
+
         if (client && client?.name) {
           const existingName = normalizeName(client.name);
           const enteredName = normalizeName(rawName);
@@ -379,11 +419,14 @@ export default function Enquiries() {
         setPhoneConflictMessage("");
       } catch (error) {
         setPhoneConflictMessage("");
+        if (isSalesRole) {
+          setMatchedClientByPhone(null);
+        }
       }
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [formData.phone, formData.clientName]);
+  }, [formData.phone, formData.clientName, user]);
 
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
@@ -555,6 +598,7 @@ export default function Enquiries() {
                     onChange={(e) =>
                       setFormData({ ...formData, clientName: e.target.value })
                     }
+                    disabled={isSalesRole && !!matchedClientByPhone}
                     required
                   />
                 </div>
@@ -565,6 +609,11 @@ export default function Enquiries() {
                     value={formData.companyName}
                     onChange={(e) =>
                       setFormData({ ...formData, companyName: e.target.value })
+                    }
+                    disabled={
+                      isSalesRole &&
+                      !!matchedClientByPhone &&
+                      !!String(matchedClientByPhone?.companyName || "").trim()
                     }
                     placeholder="optional"
                   />
@@ -622,6 +671,11 @@ export default function Enquiries() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
+                    disabled={
+                      isSalesRole &&
+                      !!matchedClientByPhone &&
+                      !!String(matchedClientByPhone?.email || "").trim()
+                    }
                     placeholder="optional"
                   />
                 </div>
@@ -643,7 +697,7 @@ export default function Enquiries() {
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <button
                       type="button"
-                      className="btn btn-secondary"
+                      className="btn btn-secondary !px-3 !py-2 !text-xs !min-h-[34px]"
                       onClick={() => {
                         const next = new Date();
                         next.setDate(next.getDate() + 7);

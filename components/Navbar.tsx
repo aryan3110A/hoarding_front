@@ -88,7 +88,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Bookings",
       href: "/bookings",
       iconName: "Calendar",
-      roles: ["owner", "manager", "sales", "admin"],
+      roles: ["owner", "manager", "admin"],
     },
     {
       title: "Enquiries",
