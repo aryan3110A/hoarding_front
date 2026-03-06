@@ -6,6 +6,9 @@ import { hoardingsAPI } from "@/lib/api";
 import { showError } from "@/lib/toast";
 
 function extractLandlordName(hoarding: any) {
+  const fromRelation = String(hoarding?.landlord?.name || "").trim();
+  if (fromRelation) return fromRelation;
+
   const history =
     hoarding?.rateHistory && typeof hoarding.rateHistory === "object"
       ? hoarding.rateHistory

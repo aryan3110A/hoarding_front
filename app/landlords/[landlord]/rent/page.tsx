@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { hoardingsAPI, propertyRentAPI } from "@/lib/api";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useUser } from "@/components/AppLayout";
@@ -9,6 +9,14 @@ import { canEditRent, getRoleFromUser } from "@/lib/rbac";
 import { showError, showSuccess } from "@/lib/toast";
 
 type Frequency = "Monthly" | "Quarterly" | "HalfYearly" | "Yearly";
+type IncrementMode = "AUTO" | "MANUAL";
+type IncrementType = "PERCENTAGE" | "AMOUNT";
+
+type ManualIncrementRow = {
+  year: number;
+  type: IncrementType;
+  value: string;
+};
 
 function addMonthsClamped(base: Date, months: number) {
   const next = new Date(base);
@@ -41,7 +49,94 @@ function nextDueFromStart(startDate: string, frequency: Frequency) {
   return due.toISOString().split("T")[0];
 }
 
+function defaultManualIncrements(): ManualIncrementRow[] {
+  return [2, 3, 4, 5].map((year) => ({
+    year,
+    type: "PERCENTAGE",
+    value: "",
+  }));
+}
+
+function normalizeManualIncrementsFromPayload(payload: unknown): ManualIncrementRow[] {
+  const base = defaultManualIncrements();
+  if (!payload || typeof payload !== "object") return base;
+
+  const raw = payload as {
+    mode?: unknown;
+    manualIncrements?: Array<{ year?: unknown; type?: unknown; value?: unknown }>;
+  };
+
+  if (String(raw.mode || "").toUpperCase() !== "MANUAL") {
+    return base;
+  }
+
+  const mapped = new Map<number, ManualIncrementRow>();
+  for (const item of Array.isArray(raw.manualIncrements) ? raw.manualIncrements : []) {
+    const year = Number(item?.year || 0);
+    if (year < 2 || year > 5) continue;
+    const type =
+      String(item?.type || "").toUpperCase() === "AMOUNT"
+        ? "AMOUNT"
+        : "PERCENTAGE";
+    const value = String(item?.value ?? "");
+    mapped.set(year, { year, type, value });
+  }
+
+  return base.map((entry) => mapped.get(entry.year) || entry);
+}
+
+function buildFiveYearRentSchedule(input: {
+  baseRent: number;
+  incrementMode: IncrementMode;
+  incrementType: IncrementType;
+  incrementValue: number;
+  incrementCycleYears: number;
+  manualIncrements: ManualIncrementRow[];
+}) {
+  const {
+    baseRent,
+    incrementMode,
+    incrementType,
+    incrementValue,
+    incrementCycleYears,
+    manualIncrements,
+  } = input;
+
+  const rows: Array<{ year: number; rent: number }> = [{ year: 1, rent: baseRent }];
+  let current = baseRent;
+
+  for (let year = 2; year <= 5; year += 1) {
+    if (incrementMode === "MANUAL") {
+      const rule = manualIncrements.find((item) => item.year === year);
+      const value = Number(rule?.value || 0);
+      if (rule && Number.isFinite(value) && value > 0) {
+        if (rule.type === "AMOUNT") {
+          current += value;
+        } else {
+          current += (current * value) / 100;
+        }
+      }
+    } else {
+      const shouldApply = incrementCycleYears > 0 && (year - 1) % incrementCycleYears === 0;
+      if (shouldApply && incrementValue > 0) {
+        if (incrementType === "AMOUNT") {
+          current += incrementValue;
+        } else {
+          current += (current * incrementValue) / 100;
+        }
+      }
+    }
+
+    rows.push({ year, rent: current });
+  }
+
+  return rows;
+}
+
 function extractLandlordName(hoarding: any) {
+  const fromRelation = String(hoarding?.landlord?.name || "").trim();
+  if (fromRelation) return fromRelation;
+
   const history =
     hoarding?.rateHistory && typeof hoarding.rateHistory === "object"
       ? hoarding.rateHistory
@@ -59,6 +154,7 @@ function extractLandlordName(hoarding: any) {
 
 export default function LandlordRentPage() {
   const params = useParams<{ landlord: string }>();
+  const searchParams = useSearchParams();
   const landlordName = decodeURIComponent(
     String(params?.landlord || ""),
   ).trim();
@@ -66,6 +162,8 @@ export default function LandlordRentPage() {
   const user = useUser();
   const role = getRoleFromUser(user);
   const canEdit = canEditRent(role);
+
+  const backHref = searchParams?.get("from") === "vendors" ? "/vendors" : "/hoardings";
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -75,8 +173,10 @@ export default function LandlordRentPage() {
     location: "",
     rentAmount: "",
     incrementCycleYears: 1,
+    incrementMode: "AUTO" as IncrementMode,
     incrementType: "PERCENTAGE",
     incrementValue: "10",
+    manualIncrements: defaultManualIncrements(),
     rentStartDate: "",
     paymentFrequency: "Monthly" as Frequency,
     lastPaymentDate: "",
@@ -120,10 +220,18 @@ export default function LandlordRentPage() {
               location: data.location || prev.location || "",
               rentAmount: String(data.rentAmount || ""),
               incrementCycleYears: Number(data.incrementCycleYears || 1),
+              incrementMode:
+                String(data.incrementSchedule?.mode || "").toUpperCase() ===
+                "MANUAL"
+                  ? "MANUAL"
+                  : "AUTO",
               incrementType: String(data.incrementType || "PERCENTAGE"),
               incrementValue: data.incrementValue
                 ? String(data.incrementValue)
                 : prev.incrementValue,
+              manualIncrements: normalizeManualIncrementsFromPayload(
+                data.incrementSchedule,
+              ),
               rentStartDate: data.rentStartDate
                 ? String(data.rentStartDate).split("T")[0]
                 : "",
@@ -168,6 +276,27 @@ export default function LandlordRentPage() {
     [form.rentStartDate, form.paymentFrequency],
   );
 
+  const fiveYearSchedule = useMemo(() => {
+    const baseRent = Number(form.rentAmount || 0);
+    if (!Number.isFinite(baseRent) || baseRent < 0) return [];
+
+    return buildFiveYearRentSchedule({
+      baseRent,
+      incrementMode: form.incrementMode,
+      incrementType: form.incrementType as IncrementType,
+      incrementValue: Number(form.incrementValue || 0),
+      incrementCycleYears: Number(form.incrementCycleYears || 1),
+      manualIncrements: form.manualIncrements,
+    });
+  }, [
+    form.rentAmount,
+    form.incrementMode,
+    form.incrementType,
+    form.incrementValue,
+    form.incrementCycleYears,
+    form.manualIncrements,
+  ]);
+
   const toggleReminder = (day: number) => {
     setForm((prev) => {
       const has = prev.reminderDays.includes(day);
@@ -194,8 +323,19 @@ export default function LandlordRentPage() {
         location: form.location || undefined,
         rentAmount: Number(form.rentAmount),
         incrementCycleYears: Number(form.incrementCycleYears || 1),
+        incrementMode: form.incrementMode,
         incrementType: form.incrementType,
         incrementValue: Number(form.incrementValue || 0),
+        manualIncrements:
+          form.incrementMode === "MANUAL"
+            ? form.manualIncrements
+                .map((item) => ({
+                  year: item.year,
+                  type: item.type,
+                  value: Number(item.value || 0),
+                }))
+                .filter((item) => Number.isFinite(item.value) && item.value >= 0)
+            : undefined,
         rentStartDate: form.rentStartDate,
         paymentFrequency: form.paymentFrequency,
         lastPaymentDate: form.lastPaymentDate || undefined,
@@ -203,7 +343,7 @@ export default function LandlordRentPage() {
       });
 
       showSuccess("Landlord rent saved successfully");
-      router.push("/hoardings");
+      router.push(backHref);
     } catch (error: any) {
       showError(
         error?.response?.data?.message || "Failed to save landlord rent",
@@ -226,7 +366,7 @@ export default function LandlordRentPage() {
         >
           <button
             className="btn btn-secondary"
-            onClick={() => router.push("/hoardings")}
+            onClick={() => router.push(backHref)}
           >
             ← Back
           </button>
@@ -335,35 +475,132 @@ export default function LandlordRentPage() {
                     <option value={1}>1 year</option>
                     <option value={2}>2 years</option>
                     <option value={3}>3 years</option>
+                    <option value={4}>4 years</option>
+                    <option value={5}>5 years</option>
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Increment Type</label>
+                  <label>Increment Mode</label>
                   <select
-                    value={form.incrementType}
+                    value={form.incrementMode}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, incrementType: e.target.value }))
+                      setForm((p) => ({
+                        ...p,
+                        incrementMode:
+                          e.target.value === "MANUAL" ? "MANUAL" : "AUTO",
+                      }))
                     }
                   >
-                    <option value="PERCENTAGE">Percentage</option>
-                    <option value="AMOUNT">Amount</option>
+                    <option value="AUTO">Auto (cycle based)</option>
+                    <option value="MANUAL">Manual (year-wise)</option>
                   </select>
                 </div>
-                <div className="form-group">
-                  <label>
-                    {form.incrementType === "AMOUNT"
-                      ? "Increment Amount (₹)"
-                      : "Increment Value (%)"}
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.incrementValue}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, incrementValue: e.target.value }))
-                    }
-                  />
-                </div>
+                {form.incrementMode === "AUTO" ? (
+                  <>
+                    <div className="form-group">
+                      <label>Increment Type</label>
+                      <select
+                        value={form.incrementType}
+                        onChange={(e) =>
+                          setForm((p) => ({
+                            ...p,
+                            incrementType: e.target.value,
+                          }))
+                        }
+                      >
+                        <option value="PERCENTAGE">Percentage</option>
+                        <option value="AMOUNT">Amount</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>
+                        {form.incrementType === "AMOUNT"
+                          ? "Increment Amount (₹)"
+                          : "Increment Value (%)"}
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.incrementValue}
+                        onChange={(e) =>
+                          setForm((p) => ({
+                            ...p,
+                            incrementValue: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div
+                    style={{
+                      gridColumn: "1 / span 2",
+                      border: "1px solid var(--border-color, #e2e8f0)",
+                      borderRadius: "8px",
+                      padding: "12px",
+                    }}
+                  >
+                    <label style={{ fontWeight: 600 }}>Manual Year-wise Increments (Year 2-5)</label>
+                    <table className="table" style={{ marginTop: "10px", marginBottom: 0 }}>
+                      <thead>
+                        <tr>
+                          <th>Year</th>
+                          <th>Type</th>
+                          <th>Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {form.manualIncrements.map((row) => (
+                          <tr key={row.year}>
+                            <td>Year {row.year}</td>
+                            <td>
+                              <select
+                                value={row.type}
+                                onChange={(e) =>
+                                  setForm((p) => ({
+                                    ...p,
+                                    manualIncrements: p.manualIncrements.map((item) =>
+                                      item.year === row.year
+                                        ? {
+                                            ...item,
+                                            type:
+                                              e.target.value === "AMOUNT"
+                                                ? "AMOUNT"
+                                                : "PERCENTAGE",
+                                          }
+                                        : item,
+                                    ),
+                                  }))
+                                }
+                              >
+                                <option value="PERCENTAGE">Percentage</option>
+                                <option value="AMOUNT">Amount</option>
+                              </select>
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                min={0}
+                                value={row.value}
+                                onChange={(e) =>
+                                  setForm((p) => ({
+                                    ...p,
+                                    manualIncrements: p.manualIncrements.map((item) =>
+                                      item.year === row.year
+                                        ? { ...item, value: e.target.value }
+                                        : item,
+                                    ),
+                                  }))
+                                }
+                                placeholder={row.type === "AMOUNT" ? "₹" : "%"}
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginTop: "8px" }}>
@@ -403,6 +640,49 @@ export default function LandlordRentPage() {
                 </div>
               </div>
 
+              <div
+                style={{
+                  marginTop: "12px",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  background: "var(--bg-primary, #f8fafc)",
+                }}
+              >
+                <strong>5-Year Increment Schedule</strong>
+                {fiveYearSchedule.length > 0 ? (
+                  <table className="table" style={{ marginTop: "10px", marginBottom: 0 }}>
+                    <thead>
+                      <tr>
+                        <th>Year</th>
+                        <th>Projected Rent</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fiveYearSchedule.map((row) => (
+                        <tr key={row.year}>
+                          <td>Year {row.year}</td>
+                          <td>
+                            ₹{Number(row.rent || 0).toLocaleString("en-IN", {
+                              maximumFractionDigits: 2,
+                            })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div
+                    style={{
+                      marginTop: "8px",
+                      fontSize: "12px",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    Enter rent amount to preview schedule.
+                  </div>
+                )}
+              </div>
+
               <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
                 {canEdit ? (
                   <button
@@ -420,7 +700,7 @@ export default function LandlordRentPage() {
                 <button
                   className="btn btn-secondary"
                   type="button"
-                  onClick={() => router.push("/hoardings")}
+                  onClick={() => router.push(backHref)}
                 >
                   Cancel
                 </button>

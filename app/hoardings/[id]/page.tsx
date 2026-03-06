@@ -47,6 +47,10 @@ export default function HoardingDetailPage() {
   }, [hoardingId]);
 
   const extractLandlordInfo = (record: any) => {
+    const relationName = String(record?.landlord?.name || "").trim();
+    const relationPhone = String(record?.landlord?.phone || "").trim();
+    const relationEmail = String(record?.landlord?.email || "").trim();
+
     const history =
       record?.rateHistory && typeof record.rateHistory === "object"
         ? record.rateHistory
@@ -59,16 +63,19 @@ export default function HoardingDetailPage() {
       /^(gov|govt|government)\s*-\s*(.+)$/i,
     );
     const landlordName =
+      relationName ||
       String(fromHistory || "").trim() ||
       (ownershipMatch && ownershipMatch[2] ? ownershipMatch[2].trim() : "");
 
     const phone = String(
+      relationPhone ||
       (history as any)?.landlordPhone ||
         (history as any)?.phone ||
         (history as any)?.ownerPhone ||
         "",
     ).trim();
     const email = String(
+      relationEmail ||
       (history as any)?.landlordEmail ||
         (history as any)?.email ||
         (history as any)?.ownerEmail ||

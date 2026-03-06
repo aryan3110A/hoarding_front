@@ -189,6 +189,29 @@ export const hoardingsAPI = {
   },
 };
 
+// Landlords API
+export const landlordsAPI = {
+  list: async (params?: { q?: string }) => {
+    const response = await api.get("/landlords", { params });
+    return response.data;
+  },
+
+  groupedHoardings: async (params?: { q?: string }) => {
+    const response = await api.get("/landlords/hoardings", { params });
+    return response.data;
+  },
+
+  create: async (data: {
+    name: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+  }) => {
+    const response = await api.post("/landlords", data);
+    return response.data;
+  },
+};
+
 // Categories API
 export const categoriesAPI = {
   list: async () => {

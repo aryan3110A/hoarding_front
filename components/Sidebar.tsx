@@ -119,7 +119,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       roles: ["owner", "manager", "sales", "supervisor", "admin"],
     },
     {
-      title: "Vendors & Rent",
+      title: "Vendors & Landlord",
       href: "/vendors",
       icon: "💰",
       roles: ["owner", "manager", "admin"], // Only Owner/Manager can view rent
