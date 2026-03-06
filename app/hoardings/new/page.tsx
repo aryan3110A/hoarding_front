@@ -514,7 +514,9 @@ export default function NewHoarding() {
     } catch (err: any) {
       const validationMessage = getFriendlyValidationMessage(err);
       const fallbackMessage =
-        err?.response?.data?.message || err?.message || "Failed to create hoarding";
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to create hoarding";
       const message =
         validationMessage ||
         (fallbackMessage === "Validation failed"
@@ -641,7 +643,9 @@ export default function NewHoarding() {
                               className="block w-full text-left px-3 py-2 text-sm hover:bg-slate-50"
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <span className="truncate">{landlord.name}</span>
+                                <span className="truncate">
+                                  {landlord.name}
+                                </span>
                                 {landlord.phone ? (
                                   <span className="text-xs text-slate-500">
                                     {landlord.phone}
@@ -664,9 +668,7 @@ export default function NewHoarding() {
                   }}
                 >
                   Selected: {selectedLandlord.name}
-                  {selectedLandlord.phone
-                    ? ` • ${selectedLandlord.phone}`
-                    : ""}
+                  {selectedLandlord.phone ? ` • ${selectedLandlord.phone}` : ""}
                 </div>
               )}
             </div>

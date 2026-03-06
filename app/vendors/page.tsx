@@ -103,7 +103,9 @@ export default function Vendors() {
       setVendors([]);
       setRents(rentsData);
       setHoardings(Array.isArray(hoardingsData) ? hoardingsData : []);
-      setLandlordGroups(Array.isArray(landlordGroupsData) ? landlordGroupsData : []);
+      setLandlordGroups(
+        Array.isArray(landlordGroupsData) ? landlordGroupsData : [],
+      );
     } catch (error) {
       console.error("Failed to fetch data:", error);
       setVendors([]);
@@ -124,7 +126,9 @@ export default function Vendors() {
   const filteredLandlordGroups = useMemo(() => {
     const query = landlordSearch.trim().toLowerCase();
     return landlordGroups.filter((row: any) => {
-      const landlord = String(row?.landlordName || "").trim().toLowerCase();
+      const landlord = String(row?.landlordName || "")
+        .trim()
+        .toLowerCase();
       if (!query) return true;
       return landlord.includes(query);
     });
@@ -338,7 +342,11 @@ export default function Vendors() {
                     }}
                   >
                     <div
-                      style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
                     >
                       <span
                         style={{
@@ -754,7 +762,9 @@ export default function Vendors() {
                     )
                   : null;
                 const isUrgent =
-                  daysUntilDue !== null && daysUntilDue <= 7 && daysUntilDue >= 0;
+                  daysUntilDue !== null &&
+                  daysUntilDue <= 7 &&
+                  daysUntilDue >= 0;
                 const hoarding = rent.hoarding || {};
 
                 return (
@@ -840,7 +850,10 @@ export default function Vendors() {
             <p style={{ marginBottom: "24px" }}>
               Create your first rent record to start tracking payments.
             </p>
-            <button onClick={() => setShowRentForm(true)} className="btn btn-primary">
+            <button
+              onClick={() => setShowRentForm(true)}
+              className="btn btn-primary"
+            >
               Add Rent Record
             </button>
           </div>
