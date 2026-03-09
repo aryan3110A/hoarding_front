@@ -45,6 +45,8 @@ export default function Hoardings() {
   const canCreateHoarding = canCreate(userRole, "hoardings");
   const canEditHoarding = canUpdate(userRole, "hoardings");
   const canDeleteHoarding = canDelete(userRole, "hoardings");
+  const canCreateBookingToken = canCreate(userRole, "bookingTokens");
+  const isSalesUser = userRole === "sales";
 
   useEffect(() => {
     if (userFromContext) {
@@ -309,6 +311,21 @@ export default function Hoardings() {
                 ) : (
                   hoardings.map((h: any) => (
                     <tr key={h.id}>
+                      {(() => {
+                        const hoardingStatus = String(h.status || "")
+                          .toLowerCase()
+                          .trim();
+                        const isBooked = hoardingStatus === "booked";
+                        const salesAlreadyBlocked =
+                          String(h.myActiveToken || "").toLowerCase() === "true" ||
+                          h.myActiveToken === true;
+                        const canSalesBlock =
+                          !["booked", "live", "under_process"].includes(
+                            hoardingStatus,
+                          );
+
+                        return (
+                          <>
                       <td>
                         {h.code || "—"} {h.side ? `(${h.side})` : ""}
                       </td>
@@ -347,6 +364,36 @@ export default function Hoardings() {
                             View
                           </Link>
 
+                          {isSalesUser &&
+                            canCreateBookingToken &&
+                            (salesAlreadyBlocked ? (
+                              <button
+                                type="button"
+                                className="btn btn-secondary"
+                                style={{ padding: "5px 10px", fontSize: "12px" }}
+                                disabled
+                              >
+                                Blocked
+                              </button>
+                            ) : isBooked ? (
+                              <button
+                                type="button"
+                                className="btn btn-secondary"
+                                style={{ padding: "5px 10px", fontSize: "12px" }}
+                                disabled
+                              >
+                                Booked
+                              </button>
+                            ) : canSalesBlock ? (
+                              <Link
+                                href={`/hoardings/${h.id}/token`}
+                                className="btn btn-primary"
+                                style={{ padding: "5px 10px", fontSize: "12px" }}
+                              >
+                                Block
+                              </Link>
+                            ) : null)}
+
                           {canEditHoarding && (
                             <Link
                               href={`/hoardings/${h.id}/edit`}
@@ -369,6 +416,9 @@ export default function Hoardings() {
                           )}
                         </div>
                       </td>
+                          </>
+                        );
+                      })()}
                     </tr>
                   ))
                 )}
