@@ -39,7 +39,9 @@ export default function Hoardings() {
     type: "",
   });
 
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
 
   const userRole = getRoleFromUser(user);
   const canCreateHoarding = canCreate(userRole, "hoardings");
@@ -77,7 +79,10 @@ export default function Hoardings() {
     loadCategories();
   }, []);
 
-  const fetchHoardings = async (pageNum: number = 1, reset: boolean = false) => {
+  const fetchHoardings = async (
+    pageNum: number = 1,
+    reset: boolean = false,
+  ) => {
     try {
       if (reset) {
         setLoading(true);
@@ -205,7 +210,9 @@ export default function Hoardings() {
             }}
           >
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label style={{ display: "block", marginBottom: "6px" }}>City</label>
+              <label style={{ display: "block", marginBottom: "6px" }}>
+                City
+              </label>
               <input
                 type="text"
                 value={filters.city}
@@ -217,7 +224,9 @@ export default function Hoardings() {
             </div>
 
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label style={{ display: "block", marginBottom: "6px" }}>Area / Zone</label>
+              <label style={{ display: "block", marginBottom: "6px" }}>
+                Area / Zone
+              </label>
               <input
                 type="text"
                 value={filters.area}
@@ -229,7 +238,9 @@ export default function Hoardings() {
             </div>
 
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label style={{ display: "block", marginBottom: "6px" }}>Status</label>
+              <label style={{ display: "block", marginBottom: "6px" }}>
+                Status
+              </label>
               <CustomSelect
                 value={filters.status}
                 onChange={(value) =>
@@ -251,7 +262,9 @@ export default function Hoardings() {
             </div>
 
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label style={{ display: "block", marginBottom: "6px" }}>Category</label>
+              <label style={{ display: "block", marginBottom: "6px" }}>
+                Category
+              </label>
               <CustomSelect
                 value={filters.categoryId}
                 onChange={(value) =>
@@ -267,7 +280,9 @@ export default function Hoardings() {
             </div>
 
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label style={{ display: "block", marginBottom: "6px" }}>Hoarding Type</label>
+              <label style={{ display: "block", marginBottom: "6px" }}>
+                Hoarding Type
+              </label>
               <input
                 type="text"
                 value={filters.type}
@@ -283,7 +298,10 @@ export default function Hoardings() {
         <div className="card">
           {loading ? (
             <div style={{ textAlign: "center", padding: "40px" }}>
-              <div className="loading-spinner" style={{ margin: "0 auto" }}></div>
+              <div
+                className="loading-spinner"
+                style={{ margin: "0 auto" }}
+              ></div>
               <p>Loading hoardings...</p>
             </div>
           ) : (
@@ -304,7 +322,10 @@ export default function Hoardings() {
               <tbody>
                 {hoardings.length === 0 ? (
                   <tr>
-                    <td colSpan={9} style={{ textAlign: "center", padding: "30px" }}>
+                    <td
+                      colSpan={9}
+                      style={{ textAlign: "center", padding: "30px" }}
+                    >
                       No hoardings found
                     </td>
                   </tr>
@@ -317,105 +338,130 @@ export default function Hoardings() {
                           .trim();
                         const isBooked = hoardingStatus === "booked";
                         const salesAlreadyBlocked =
-                          String(h.myActiveToken || "").toLowerCase() === "true" ||
-                          h.myActiveToken === true;
-                        const canSalesBlock =
-                          !["booked", "live", "under_process"].includes(
-                            hoardingStatus,
-                          );
+                          String(h.myActiveToken || "").toLowerCase() ===
+                            "true" || h.myActiveToken === true;
+                        const canSalesBlock = ![
+                          "booked",
+                          "live",
+                          "under_process",
+                        ].includes(hoardingStatus);
 
                         return (
                           <>
-                      <td>
-                        {h.code || "—"} {h.side ? `(${h.side})` : ""}
-                      </td>
-                      <td>{h.city || "—"}</td>
-                      <td>
-                        <strong>{h.landmark || h.roadName || h.title || "—"}</strong>
-                        <div
-                          style={{
-                            fontSize: "12px",
-                            color: "var(--text-secondary)",
-                            marginTop: "4px",
-                          }}
-                        >
-                          {[h.area, h.roadName].filter(Boolean).join(", ") || "—"}
-                        </div>
-                      </td>
-                      <td>{toFt(h.widthCm, h.heightCm)}</td>
-                      <td>{h?.category?.name || "—"}</td>
-                      <td>{formatStatus(h.status)}</td>
-                      <td>{formatRate(h.standardRate)}</td>
-                      <td>{formatRate(h.minimumRate)}</td>
-                      <td>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "8px",
-                            flexWrap: "nowrap",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Link
-                            href={`/hoardings/${h.id}`}
-                            className="btn btn-secondary"
-                            style={{ padding: "5px 10px", fontSize: "12px" }}
-                          >
-                            View
-                          </Link>
-
-                          {isSalesUser &&
-                            canCreateBookingToken &&
-                            (salesAlreadyBlocked ? (
-                              <button
-                                type="button"
-                                className="btn btn-secondary"
-                                style={{ padding: "5px 10px", fontSize: "12px" }}
-                                disabled
+                            <td>
+                              {h.code || "—"} {h.side ? `(${h.side})` : ""}
+                            </td>
+                            <td>{h.city || "—"}</td>
+                            <td>
+                              <strong>
+                                {h.landmark || h.roadName || h.title || "—"}
+                              </strong>
+                              <div
+                                style={{
+                                  fontSize: "12px",
+                                  color: "var(--text-secondary)",
+                                  marginTop: "4px",
+                                }}
                               >
-                                Blocked
-                              </button>
-                            ) : isBooked ? (
-                              <button
-                                type="button"
-                                className="btn btn-secondary"
-                                style={{ padding: "5px 10px", fontSize: "12px" }}
-                                disabled
+                                {[h.area, h.roadName]
+                                  .filter(Boolean)
+                                  .join(", ") || "—"}
+                              </div>
+                            </td>
+                            <td>{toFt(h.widthCm, h.heightCm)}</td>
+                            <td>{h?.category?.name || "—"}</td>
+                            <td>{formatStatus(h.status)}</td>
+                            <td>{formatRate(h.standardRate)}</td>
+                            <td>{formatRate(h.minimumRate)}</td>
+                            <td>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "8px",
+                                  flexWrap: "nowrap",
+                                  alignItems: "center",
+                                }}
                               >
-                                Booked
-                              </button>
-                            ) : canSalesBlock ? (
-                              <Link
-                                href={`/hoardings/${h.id}/token`}
-                                className="btn btn-primary"
-                                style={{ padding: "5px 10px", fontSize: "12px" }}
-                              >
-                                Block
-                              </Link>
-                            ) : null)}
+                                <Link
+                                  href={`/hoardings/${h.id}`}
+                                  className="btn btn-secondary"
+                                  style={{
+                                    padding: "5px 10px",
+                                    fontSize: "12px",
+                                  }}
+                                >
+                                  View
+                                </Link>
 
-                          {canEditHoarding && (
-                            <Link
-                              href={`/hoardings/${h.id}/edit`}
-                              className="btn btn-warning"
-                              style={{ padding: "5px 10px", fontSize: "12px" }}
-                            >
-                              Edit
-                            </Link>
-                          )}
+                                {isSalesUser &&
+                                  canCreateBookingToken &&
+                                  (salesAlreadyBlocked ? (
+                                    <button
+                                      type="button"
+                                      className="btn btn-secondary"
+                                      style={{
+                                        padding: "5px 10px",
+                                        fontSize: "12px",
+                                      }}
+                                      disabled
+                                    >
+                                      Blocked
+                                    </button>
+                                  ) : isBooked ? (
+                                    <button
+                                      type="button"
+                                      className="btn btn-secondary"
+                                      style={{
+                                        padding: "5px 10px",
+                                        fontSize: "12px",
+                                      }}
+                                      disabled
+                                    >
+                                      Booked
+                                    </button>
+                                  ) : canSalesBlock ? (
+                                    <Link
+                                      href={`/hoardings/${h.id}/token`}
+                                      className="btn btn-primary"
+                                      style={{
+                                        padding: "5px 10px",
+                                        fontSize: "12px",
+                                      }}
+                                    >
+                                      Block
+                                    </Link>
+                                  ) : null)}
 
-                          {canDeleteHoarding && (
-                            <button
-                              className="btn btn-danger"
-                              style={{ padding: "5px 10px", fontSize: "12px" }}
-                              disabled={deletingId === String(h.id)}
-                              onClick={() => handleDelete(String(h.id))}
-                            >
-                              {deletingId === String(h.id) ? "Deleting..." : "Delete"}
-                            </button>
-                          )}
-                        </div>
-                      </td>
+                                {canEditHoarding && (
+                                  <Link
+                                    href={`/hoardings/${h.id}/edit`}
+                                    className="btn btn-warning"
+                                    style={{
+                                      padding: "5px 10px",
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    Edit
+                                  </Link>
+                                )}
+
+                                {canDeleteHoarding && (
+                                  <button
+                                    className="btn btn-danger"
+                                    style={{
+                                      padding: "5px 10px",
+                                      fontSize: "12px",
+                                    }}
+                                    disabled={deletingId === String(h.id)}
+                                    onClick={() => handleDelete(String(h.id))}
+                                  >
+                                    {deletingId === String(h.id)
+                                      ? "Deleting..."
+                                      : "Delete"}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
                           </>
                         );
                       })()}
