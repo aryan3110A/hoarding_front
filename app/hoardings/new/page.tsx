@@ -296,6 +296,21 @@ export default function NewHoarding() {
     setLandlordModalError("");
   };
 
+  const parseMoneyInput = (raw: string): number | null => {
+    const clean = String(raw || "")
+      .replace(/,/g, "")
+      .trim();
+    if (!clean) return null;
+    if (!/^\d+(?:\.\d{1,2})?$/.test(clean)) return null;
+
+    const [wholePart, fractionPart = ""] = clean.split(".");
+    const whole = Number(wholePart);
+    const fraction = Number((fractionPart + "00").slice(0, 2));
+    if (!Number.isFinite(whole) || !Number.isFinite(fraction)) return null;
+
+    return (whole * 100 + fraction) / 100;
+  };
+
   const handleCreateLandlord = async (e: React.FormEvent) => {
     e.preventDefault();
     setLandlordModalError("");
@@ -415,21 +430,18 @@ export default function NewHoarding() {
         return;
       }
 
-      const standardRate = formData.standardRate
-        ? parseFloat(formData.standardRate)
-        : 0;
-      const minimumRate = formData.minimumRate
-        ? parseFloat(formData.minimumRate)
-        : standardRate;
+      const standardRate = parseMoneyInput(formData.standardRate);
+      const minimumRateInput = parseMoneyInput(formData.minimumRate);
+      const minimumRate = minimumRateInput ?? standardRate;
 
-      if (!Number.isFinite(standardRate)) {
+      if (standardRate === null) {
         const message = "Standard Rate must be a valid number";
         showError(message);
         setLoading(false);
         return;
       }
 
-      if (!Number.isFinite(minimumRate)) {
+      if (minimumRate === null) {
         const message = "Minimum Rate must be a valid number";
         showError(message);
         setLoading(false);

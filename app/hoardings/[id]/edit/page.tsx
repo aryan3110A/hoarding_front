@@ -229,18 +229,35 @@ export default function EditHoarding() {
     }
   }, [formData.propertyGroupId, formData.city, formData.area]);
 
+  const parseMoneyInput = (raw: string): number | null => {
+    const clean = String(raw || "")
+      .replace(/,/g, "")
+      .trim();
+    if (!clean) return null;
+    if (!/^\d+(?:\.\d{1,2})?$/.test(clean)) return null;
+
+    const [wholePart, fractionPart = ""] = clean.split(".");
+    const whole = Number(wholePart);
+    const fraction = Number((fractionPart + "00").slice(0, 2));
+    if (!Number.isFinite(whole) || !Number.isFinite(fraction)) return null;
+
+    return (whole * 100 + fraction) / 100;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const standardRate = formData.standardRate
-        ? parseFloat(formData.standardRate)
-        : 0;
-      const minimumRate = formData.minimumRate
-        ? parseFloat(formData.minimumRate)
-        : standardRate;
+      const standardRate = parseMoneyInput(formData.standardRate);
+      const minimumRateInput = parseMoneyInput(formData.minimumRate);
+      const minimumRate = minimumRateInput ?? standardRate;
+      if (standardRate === null || minimumRate === null) {
+        setError("Rate must be a valid number with up to 2 decimal places");
+        setLoading(false);
+        return;
+      }
       if (minimumRate > standardRate) {
         setError("Minimum rate cannot be greater than standard rate");
         setLoading(false);
