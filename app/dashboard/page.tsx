@@ -1802,7 +1802,9 @@ function DashboardContent() {
                     <tbody>
                       {supervisorHoardings.map((h: any) => {
                         const hid = String(h.id);
-                        const statusLower = String(h.status || "").toLowerCase();
+                        const statusLower = String(
+                          h.status || "",
+                        ).toLowerCase();
                         const designStatusLower = String(
                           h.latestDesignStatus || "",
                         ).toLowerCase();
@@ -1912,17 +1914,17 @@ function DashboardContent() {
                                   lockAssignAction
                                     ? "Assignment locked for Live + Completed hoarding"
                                     : isClientFlex
-                                    ? "Confirm Client Direct Flex"
-                                    : "Assign execution/designer"
+                                      ? "Confirm Client Direct Flex"
+                                      : "Assign execution/designer"
                                 }
                               >
                                 {lockAssignAction
                                   ? "Locked"
                                   : saving
-                                  ? "Saving..."
-                                  : isClientFlex
-                                    ? "Confirm"
-                                    : "Assign"}
+                                    ? "Saving..."
+                                    : isClientFlex
+                                      ? "Confirm"
+                                      : "Assign"}
                               </button>
                             </td>
                           </tr>
