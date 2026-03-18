@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@/components/AppLayout";
+import OptionAutocomplete from "@/components/OptionAutocomplete";
 import CustomSelect from "@/components/CustomSelect";
 import { categoriesAPI, hoardingsAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
@@ -14,6 +15,7 @@ const PAGE_SIZE = 50;
 type HoardingFilters = {
   city: string;
   area: string;
+  landmark: string;
   status: string;
   categoryId: string;
   type: string;
@@ -34,6 +36,7 @@ export default function Hoardings() {
   const [filters, setFilters] = useState<HoardingFilters>({
     city: "",
     area: "",
+    landmark: "",
     status: "",
     categoryId: "",
     type: "",
@@ -42,6 +45,9 @@ export default function Hoardings() {
   const [categories, setCategories] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [landmarkOptions, setLandmarkOptions] = useState<string[]>([]);
+  const [typeOptions, setTypeOptions] = useState<string[]>([]);
 
   const userRole = getRoleFromUser(user);
   const canCreateHoarding = canCreate(userRole, "hoardings");
@@ -77,6 +83,35 @@ export default function Hoardings() {
     };
 
     loadCategories();
+  }, []);
+
+  useEffect(() => {
+    const loadAutocompleteData = async () => {
+      try {
+        const [citiesRes, landmarksRes, typesRes] = await Promise.all([
+          hoardingsAPI.getCities(),
+          hoardingsAPI.getLandmarks(),
+          hoardingsAPI.getTypes(),
+        ]);
+        setCityOptions(
+          Array.isArray(citiesRes?.data) ? citiesRes.data.map(String) : [],
+        );
+        setLandmarkOptions(
+          Array.isArray(landmarksRes?.data)
+            ? landmarksRes.data.map(String)
+            : [],
+        );
+        setTypeOptions(
+          Array.isArray(typesRes?.data) ? typesRes.data.map(String) : [],
+        );
+      } catch {
+        setCityOptions([]);
+        setLandmarkOptions([]);
+        setTypeOptions([]);
+      }
+    };
+
+    loadAutocompleteData();
   }, []);
 
   const fetchHoardings = async (
@@ -205,7 +240,7 @@ export default function Hoardings() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
               gap: "12px",
             }}
           >
@@ -213,13 +248,14 @@ export default function Hoardings() {
               <label style={{ display: "block", marginBottom: "6px" }}>
                 City
               </label>
-              <input
-                type="text"
+              <OptionAutocomplete
                 value={filters.city}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, city: e.target.value }))
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, city: value }))
                 }
+                options={cityOptions}
                 placeholder="Filter by city"
+                className="w-full border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-md"
               />
             </div>
 
@@ -234,6 +270,21 @@ export default function Hoardings() {
                   setFilters((prev) => ({ ...prev, area: e.target.value }))
                 }
                 placeholder="Filter by area"
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label style={{ display: "block", marginBottom: "6px" }}>
+                Landmark
+              </label>
+              <OptionAutocomplete
+                value={filters.landmark}
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, landmark: value }))
+                }
+                options={landmarkOptions}
+                placeholder="Filter by landmark"
+                className="w-full border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-md"
               />
             </div>
 
@@ -283,13 +334,14 @@ export default function Hoardings() {
               <label style={{ display: "block", marginBottom: "6px" }}>
                 Hoarding Type
               </label>
-              <input
-                type="text"
+              <OptionAutocomplete
                 value={filters.type}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, type: e.target.value }))
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, type: value }))
                 }
+                options={typeOptions}
                 placeholder="Filter by type"
+                className="w-full border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-md"
               />
             </div>
           </div>

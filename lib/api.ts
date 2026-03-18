@@ -85,6 +85,7 @@ export const hoardingsAPI = {
     limit?: number;
     city?: string;
     area?: string;
+    landmark?: string;
     categoryId?: string;
     location?: string;
     type?: string;
@@ -101,6 +102,21 @@ export const hoardingsAPI = {
 
   getById: async (id: string) => {
     const response = await api.get(`/hoardings/${id}`);
+    return response.data;
+  },
+
+  getCities: async () => {
+    const response = await api.get("/hoardings/cities");
+    return response.data;
+  },
+
+  getLandmarks: async () => {
+    const response = await api.get("/hoardings/landmarks");
+    return response.data;
+  },
+
+  getTypes: async () => {
+    const response = await api.get("/hoardings/types");
     return response.data;
   },
 
@@ -807,6 +823,20 @@ export const dashboardAPI = {
 
 // Supervisor API
 export const supervisorAPI = {
+  getExecutionBoard: async (params?: {
+    tab?: "pending" | "live" | "remounting" | "unmounting" | string;
+    page?: number;
+    limit?: number;
+    clientName?: string;
+    city?: string;
+    status?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }) => {
+    const response = await api.get("/supervisor/execution-board", { params });
+    return response.data;
+  },
+
   listHoardings: async (params?: {
     page?: number;
     limit?: number;
@@ -855,6 +885,39 @@ export const supervisorAPI = {
       form,
       { headers: { "Content-Type": "multipart/form-data" } },
     );
+    return response.data;
+  },
+
+  uploadExecutionImages: async (
+    id: string,
+    type: "mount" | "remount" | "unmount",
+    files: File[],
+  ) => {
+    const form = new FormData();
+    form.append("type", type);
+    (files || []).forEach((f) => form.append("images", f));
+    const response = await api.post(
+      `/supervisor/hoardings/${id}/execution-images`,
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return response.data;
+  },
+
+  updateExecutionStatus: async (
+    id: string,
+    status:
+      | "pending"
+      | "received"
+      | "live"
+      | "remount_pending"
+      | "remounted"
+      | "unmount_pending"
+      | "unmounted",
+  ) => {
+    const response = await api.put(`/supervisor/hoardings/${id}/execution-status`, {
+      status,
+    });
     return response.data;
   },
   markFit: async (id: string) => {

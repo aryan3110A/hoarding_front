@@ -40,8 +40,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
 
   const userRole = user?.role?.toLowerCase() || "";
 
-  const dashboardHref =
-    userRole === "supervisor" ? "/dashboard/supervisor" : "/dashboard";
+  const dashboardHref = "/dashboard";
 
   const menuItems = [
     {
@@ -59,10 +58,10 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       ],
     },
     {
-      title: "Supervisor",
+      title: "Status",
       href: "/dashboard/supervisor",
       icon: "🛠️",
-      roles: ["owner", "manager", "admin"],
+      roles: ["owner", "manager", "supervisor", "admin", "sales"],
     },
     {
       title: "Accountant",
@@ -122,7 +121,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Vendors & Landlord",
       href: "/vendors",
       icon: "💰",
-      roles: ["owner", "manager", "admin"], // Only Owner/Manager can view rent
+      roles: ["owner", "manager", "sales", "supervisor", "admin"], // Only Owner/Manager can view rent
     },
     {
       title: "Users & Roles",

@@ -48,11 +48,11 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
 
   const userRole = user?.role?.toLowerCase() || "";
 
-  const dashboardHref =
-    userRole === "supervisor" ? "/dashboard/supervisor" : "/dashboard";
+  const dashboardHref = "/dashboard";
 
   const menuItems = [
     {
+      id: "dashboard",
       title: "Dashboard",
       href: dashboardHref,
       iconName: "BarChart2",
@@ -67,102 +67,119 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       ],
     },
     {
-      title: "Supervisor",
+      id: "supervisor-status",
+      title: "Status",
       href: "/dashboard/supervisor",
       iconName: "Wrench",
-      roles: ["manager", "admin"],
+      roles: ["owner", "manager", "supervisor", "admin", "sales"],
     },
     {
+      id: "accountant",
       title: "Accountant",
       href: "/dashboard/accountant",
       iconName: "Briefcase",
       roles: ["accountant", "manager", "admin"],
     },
     {
+      id: "hoardings",
       title: "Hoardings",
       href: "/hoardings",
       iconName: "Box",
       roles: ["owner", "manager", "sales", "admin"],
     },
     {
+      id: "bookings",
       title: "Bookings",
       href: "/bookings",
       iconName: "Calendar",
       roles: ["owner", "manager", "admin"],
     },
     {
+      id: "enquiries",
       title: "Enquiries",
       href: "/enquiries",
       iconName: "Clipboard",
       roles: ["owner", "manager", "sales", "admin"],
     },
     {
+      id: "enquiry-reminders",
       title: "Enquiry Reminders",
       href: "/sales/enquiry-reminders",
       iconName: "AlarmClock",
       roles: ["owner", "manager", "sales", "admin"],
     },
     {
+      id: "blocked-hoardings",
       title: "Blocked Hoardings",
       href: "/blocked-hoardings",
       iconName: "ShieldAlert",
       roles: ["manager", "sales", "supervisor", "admin"],
     },
     {
+      id: "contracts",
       title: "Contracts",
       href: "/contracts",
       iconName: "FileText",
       roles: ["owner", "manager", "accountant", "admin"],
     },
     {
+      id: "sales-status",
       title: "Status",
       href: "/sales/renewals-due",
       iconName: "MessageCircleWarning",
       roles: ["manager", "sales", "accountant", "admin"],
     },
     {
+      id: "remount-renew",
       title: "Remount / Renew",
       href: "/sales/remount-renew",
       iconName: "RefreshCcw",
       roles: ["manager", "sales", "supervisor", "admin"],
     },
     {
+      id: "vendors",
       title: "Vendors & Landlord",
       href: "/vendors",
       iconName: "DollarSign",
       roles: ["owner", "manager", "admin"],
     },
     {
+      id: "users",
       title: "Users & Roles",
       href: "/users",
       iconName: "Users",
       roles: ["owner", "admin"],
     },
     {
+      id: "design",
       title: "Design",
       href: "/design",
       iconName: "Brush",
       roles: ["manager", "designer", "admin"],
     },
     {
+      id: "reports",
       title: "Reports",
       href: "/reports",
       iconName: "BarChart2",
       roles: ["manager", "accountant", "admin"],
     },
     {
+      id: "tasks",
       title: "Tasks",
       href: "/tasks",
       iconName: "CheckSquare",
       roles: ["owner", "manager", "designer", "supervisor", "admin"],
     },
     {
+      id: "admin-settings",
       title: "Admin Settings",
       href: "/admin",
       iconName: "Settings",
       roles: ["owner", "admin"],
     },
     {
+      id: "notifications",
       title: "Notifications",
       href: "/notifications",
       iconName: "Bell",
@@ -185,11 +202,23 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
     // },
   ];
 
-  const filteredMenuItems = menuItems.filter((item) =>
+  const roleFilteredItems = menuItems.filter((item) =>
     item.roles.includes(userRole),
   );
 
+  // Guard against accidental duplicate tabs in supervisor navbar.
+  const filteredMenuItems =
+    userRole === "supervisor"
+      ? roleFilteredItems.filter(
+          (item, index, arr) =>
+            arr.findIndex((x) => x.title === item.title) === index,
+        )
+      : roleFilteredItems;
+
   const isActive = (href: string) => {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard";
+    }
     return pathname === href;
   };
 
@@ -249,7 +278,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
           <div className="navbar-menu-desktop">
             {filteredMenuItems.map((item) => (
               <div
-                key={item.href}
+                key={(item as any).id || `${item.href}-${item.title}`}
                 style={{ display: "inline-flex", alignItems: "center" }}
               >
                 <Link
@@ -342,7 +371,10 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
         {/* Mobile Menu */}
         <div className={`navbar-menu-mobile ${isMobileMenuOpen ? "open" : ""}`}>
           {filteredMenuItems.map((item) => (
-            <div key={item.href} style={{ display: "block" }}>
+            <div
+              key={(item as any).id || `${item.href}-${item.title}`}
+              style={{ display: "block" }}
+            >
               <Link
                 href={item.href}
                 className={`navbar-link ${isActive(item.href) ? "active" : ""}`}

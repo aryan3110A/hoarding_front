@@ -392,10 +392,9 @@ export default function BookingTokenDetailPage() {
 
   useEffect(() => {
     const existing = String(token?.hoarding?.executionType || "");
-    if (existing && existing !== selectedExecutionType) {
-      setSelectedExecutionType(existing);
-    }
-  }, [token?.hoarding?.executionType, selectedExecutionType]);
+    if (!existing) return;
+    setSelectedExecutionType((prev) => (prev ? prev : existing));
+  }, [token?.hoarding?.executionType]);
 
   const fitterStatusLabel = (raw?: string) => {
     const normalized = String(raw || "")
@@ -513,13 +512,15 @@ export default function BookingTokenDetailPage() {
       };
       const resp = await bookingTokensAPI.confirm(tokenId, payload);
       if (resp?.success) {
-        showSuccess("Token finalized");
+        showSuccess("Booking confirmed");
         await fetchToken();
       } else {
-        showError(resp?.message || "Failed to finalize");
+        showError(resp?.message || "Failed to confirm booking");
       }
     } catch (e: any) {
-      const msg = String(e?.response?.data?.message || "Failed to finalize");
+      const msg = String(
+        e?.response?.data?.message || "Failed to confirm booking",
+      );
       const lower = msg.toLowerCase();
       if (lower.includes("already") && lower.includes("under process")) {
         if (roleLower === "manager") {
@@ -1442,7 +1443,7 @@ export default function BookingTokenDetailPage() {
                         onClick={handleOpenFinalizeConfirm}
                         disabled={submitting || isFinalizing}
                       >
-                        {isFinalizing ? "Finalizing..." : "Finalize"}
+                        {isFinalizing ? "Booking..." : "Book Hoarding"}
                       </button>
                     </div>
                   )}
@@ -1464,7 +1465,7 @@ export default function BookingTokenDetailPage() {
                         color: "var(--text-primary)",
                       }}
                     >
-                      Finalize Token
+                      Confirm Booking
                     </h3>
                     <p
                       style={{
@@ -1472,7 +1473,7 @@ export default function BookingTokenDetailPage() {
                         color: "var(--text-secondary)",
                       }}
                     >
-                      Are you sure you want to finalize this token?
+                      Are you sure you want to book this hoarding?
                     </p>
                     <div
                       style={{
@@ -1495,7 +1496,7 @@ export default function BookingTokenDetailPage() {
                         onClick={handleConfirm}
                         disabled={submitting || isFinalizing}
                       >
-                        {isFinalizing ? "Finalizing..." : "Confirm"}
+                        {isFinalizing ? "Booking..." : "Confirm Booking"}
                       </button>
                     </div>
                   </div>

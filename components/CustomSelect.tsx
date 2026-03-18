@@ -15,6 +15,7 @@ interface CustomSelectProps {
   placeholder?: string;
   className?: string;
   openDirection?: "down" | "up";
+  disabled?: boolean;
 }
 
 export default function CustomSelect({
@@ -24,6 +25,7 @@ export default function CustomSelect({
   placeholder = "Select",
   className = "",
   openDirection = "down",
+  disabled = false,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -48,6 +50,10 @@ export default function CustomSelect({
     document.addEventListener("mousedown", onDocDown);
     return () => document.removeEventListener("mousedown", onDocDown);
   }, []);
+
+  useEffect(() => {
+    if (disabled && open) setOpen(false);
+  }, [disabled, open]);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -112,8 +118,12 @@ export default function CustomSelect({
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        onClick={() => setOpen((s) => !s)}
-        className={`h-10 w-full rounded-md border bg-white px-3 text-left text-sm shadow-sm transition ${open ? "border-sky-500 ring-2 ring-sky-500/30" : "border-slate-300"} hover:bg-slate-50`}
+        disabled={disabled}
+        onClick={() => {
+          if (disabled) return;
+          setOpen((s) => !s);
+        }}
+        className={`h-10 w-full rounded-md border bg-white px-3 text-left text-sm shadow-sm transition ${open ? "border-sky-500 ring-2 ring-sky-500/30" : "border-slate-300"} ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-500" : "hover:bg-slate-50"}`}
       >
         <span className="flex items-center justify-between gap-2">
           <span className="truncate text-slate-900">

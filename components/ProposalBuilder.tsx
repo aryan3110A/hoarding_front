@@ -20,6 +20,7 @@ import AccessDenied from "@/components/AccessDenied";
 import CustomSelect from "@/components/CustomSelect";
 import { getRoleFromUser } from "@/lib/rbac";
 import LocationAutocomplete from "@/components/LocationAutocomplete";
+import OptionAutocomplete from "@/components/OptionAutocomplete";
 import { showError, showInfo, showSuccess } from "@/lib/toast";
 
 type ProposalMode = "WITH_RATE" | "WITHOUT_RATE";
@@ -241,6 +242,8 @@ export default function ProposalBuilder({
   const [categories, setCategories] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [typeOptions, setTypeOptions] = useState<string[]>([]);
 
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(20);
@@ -532,6 +535,28 @@ export default function ProposalBuilder({
     loadCategories();
   }, []);
 
+  useEffect(() => {
+    const loadAutocompleteData = async () => {
+      try {
+        const [citiesRes, typesRes] = await Promise.all([
+          hoardingsAPI.getCities(),
+          hoardingsAPI.getTypes(),
+        ]);
+        setCityOptions(
+          Array.isArray(citiesRes?.data) ? citiesRes.data.map(String) : [],
+        );
+        setTypeOptions(
+          Array.isArray(typesRes?.data) ? typesRes.data.map(String) : [],
+        );
+      } catch {
+        setCityOptions([]);
+        setTypeOptions([]);
+      }
+    };
+
+    loadAutocompleteData();
+  }, []);
+
   // Auto-apply filters (debounced)
   useEffect(() => {
     if (roleName && roleName !== "sales") return;
@@ -670,8 +695,7 @@ export default function ProposalBuilder({
     loadHoardings(1);
   };
 
-  const selectAllVisibleImmediatelyAvailable = () => {
-    if (filters.availability !== "available") return;
+  const selectAllVisible = () => {
     setSelected((prev) => {
       const byId = new Map(prev.map((x) => [x.hoardingId, x]));
       for (const h of hoardings) {
@@ -1301,14 +1325,13 @@ export default function ProposalBuilder({
                   >
                     Reset
                   </button>
-                  {filters.availability === "available" ? (
-                    <button
-                      onClick={selectAllVisibleImmediatelyAvailable}
-                      className="px-4 py-2 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-sm text-blue-700"
-                    >
-                      Select All
-                    </button>
-                  ) : null}
+                  <button
+                    onClick={selectAllVisible}
+                    disabled={hoardings.length === 0}
+                    className="px-4 py-2 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-sm text-blue-700 disabled:opacity-50"
+                  >
+                    Select All
+                  </button>
                 </div>
               </div>
 
@@ -1317,11 +1340,13 @@ export default function ProposalBuilder({
                   <label className="block text-xs text-gray-600 mb-1">
                     City
                   </label>
-                  <input
+                  <OptionAutocomplete
                     value={filters.city}
-                    onChange={(e) =>
-                      setFilters((p) => ({ ...p, city: e.target.value }))
+                    onChange={(value) =>
+                      setFilters((p) => ({ ...p, city: value }))
                     }
+                    options={cityOptions}
+                    placeholder="Filter by city"
                     className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                   />
                 </div>
@@ -1366,11 +1391,13 @@ export default function ProposalBuilder({
                   <label className="block text-xs text-gray-600 mb-1">
                     Hoarding Type
                   </label>
-                  <input
+                  <OptionAutocomplete
                     value={filters.type}
-                    onChange={(e) =>
-                      setFilters((p) => ({ ...p, type: e.target.value }))
+                    onChange={(value) =>
+                      setFilters((p) => ({ ...p, type: value }))
                     }
+                    options={typeOptions}
+                    placeholder="Filter by hoarding type"
                     className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                   />
                 </div>

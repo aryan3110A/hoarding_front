@@ -3,10 +3,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useUser } from "@/components/AppLayout";
+import OptionAutocomplete from "@/components/OptionAutocomplete";
 import { canCreate, canUpdate, getRoleFromUser } from "@/lib/rbac";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { categoriesAPI, clientsAPI, enquiriesAPI } from "@/lib/api";
+import {
+  categoriesAPI,
+  clientsAPI,
+  enquiriesAPI,
+  hoardingsAPI,
+} from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
+
+const validatePhone = (phone: string) => /^[0-9]{10}$/.test(phone);
 
 function StatusDropdown({
   value,
@@ -192,6 +200,7 @@ export default function Enquiries() {
   const [salesUsers, setSalesUsers] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
 
   const [phoneConflictMessage, setPhoneConflictMessage] = useState("");
   const [matchedClientByPhone, setMatchedClientByPhone] = useState<{
@@ -253,6 +262,15 @@ export default function Enquiries() {
         setCategories([]);
       }
 
+      try {
+        const citiesRes = await hoardingsAPI.getCities();
+        setCityOptions(
+          Array.isArray(citiesRes?.data) ? citiesRes.data.map(String) : [],
+        );
+      } catch {
+        setCityOptions([]);
+      }
+
       const roleName = String(getRoleFromUser(user) || "").toLowerCase();
       if (["owner", "manager", "admin"].includes(roleName)) {
         try {
@@ -302,6 +320,10 @@ export default function Enquiries() {
     try {
       if (phoneConflictMessage) {
         showError(phoneConflictMessage);
+        return;
+      }
+      if (!validatePhone(formData.phone)) {
+        showError("Phone number must be exactly 10 digits");
         return;
       }
       const payload = {
@@ -578,6 +600,15 @@ export default function Enquiries() {
                     maxLength={10}
                     required
                   />
+                  <div
+                    style={{
+                      color: "#64748b",
+                      fontSize: "12px",
+                      marginTop: "6px",
+                    }}
+                  >
+                    Please enter number without +91
+                  </div>
                   {phoneConflictMessage ? (
                     <div
                       style={{
@@ -724,16 +755,17 @@ export default function Enquiries() {
                 </div>
                 <div className="form-group">
                   <label>City *</label>
-                  <input
-                    type="text"
+                  <OptionAutocomplete
                     value={formData.city}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setFormData({
                         ...formData,
-                        city: e.target.value,
+                        city: value,
                       })
                     }
-                    required
+                    options={cityOptions}
+                    placeholder="Select city"
+                    className="w-full"
                   />
                 </div>
                 <div className="form-group">
@@ -803,13 +835,11 @@ export default function Enquiries() {
                 onChange={(e) => setFilters({ ...filters, q: e.target.value })}
                 className="h-10 w-[280px] max-w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
               />
-              <input
-                type="text"
-                placeholder="City"
+              <OptionAutocomplete
                 value={filters.city}
-                onChange={(e) =>
-                  setFilters({ ...filters, city: e.target.value })
-                }
+                onChange={(value) => setFilters({ ...filters, city: value })}
+                options={cityOptions}
+                placeholder="City"
                 className="h-10 w-[160px] rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
               />
               <input

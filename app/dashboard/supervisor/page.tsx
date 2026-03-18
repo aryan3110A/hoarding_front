@@ -1,840 +1,1420 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { supervisorAPI } from "@/lib/api";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useUser } from "@/components/AppLayout";
+import CustomSelect from "@/components/CustomSelect";
+import { supervisorAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
-const executionTypes = [
-  { value: "CLIENT_DIRECT_FLEX", label: "Direct flex provided by client" },
-  { value: "CLIENT_CDR", label: "Client provides CDR file" },
-  { value: "IN_HOUSE_DESIGN", label: "In-house designing" },
-];
+type ExecutionTab = "pending" | "live" | "remounting" | "unmounting";
 
-const statusOptions = [
-  { value: "booked", label: "Booked" },
-  { value: "under_process", label: "Under Process" },
+type ExecutionImage = {
+  image_url?: string;
+  filename?: string;
+  timestamp?: string;
+  uploaded_by?: string;
+  type?: string;
+};
+
+type BoardRow = {
+  id: string;
+  code?: string | null;
+  city?: string | null;
+  area?: string | null;
+  landmark?: string | null;
+  roadName?: string | null;
+  status?: string | null;
+  executionStatus?: string | null;
+  remountStatus?: string | null;
+  plannedLiveDate?: string | null;
+  expiryDate?: string | null;
+  clientName?: string | null;
+  executionType?: string | null;
+  groupKey?: string | null;
+  executionImages?: ExecutionImage[];
+  supervisorChecklist?: {
+    isCorrectSize?: boolean | null;
+    isGoodCondition?: boolean | null;
+    isFlexReceived?: boolean | null;
+    isReadyForInstall?: boolean | null;
+    isSiteImageUploaded?: boolean | null;
+  } | null;
+};
+
+type ChecklistDraft = {
+  isCorrectSize: boolean;
+  isGoodCondition: boolean;
+  isFlexReceived: boolean;
+  isReadyForInstall: boolean;
+  isSiteImageUploaded: boolean;
+};
+
+type GroupRow = {
+  key: string;
+  label: string;
+  rows: BoardRow[];
+};
+
+const tabOptions: Array<{ value: ExecutionTab; label: string }> = [
+  { value: "pending", label: "Pending" },
   { value: "live", label: "Live" },
-  { value: "remount_pending", label: "Remount Pending" },
-  { value: "removal_pending", label: "Removal Pending" },
+  { value: "remounting", label: "Re-mounting" },
+  { value: "unmounting", label: "Unmounting" },
 ];
 
-const statusBadge = (status?: string, remountStatus?: string | null) => {
+const statusStyle = (status?: string | null) => {
   const s = String(status || "").toLowerCase();
-  const remount = String(remountStatus || "").toLowerCase();
-  if (remount === "pending") {
-    return { text: "Live + Remount Pending", color: "#dc2626" };
-  }
-  if (s === "booked") return { text: "Booked", color: "#0ea5e9" };
-  if (s === "under_process") return { text: "Under Process", color: "#f59e0b" };
-  if (s === "live") return { text: "Live", color: "#22c55e" };
-  if (s === "removal_pending")
-    return { text: "Removal Pending", color: "#ef4444" };
-  return { text: status || "—", color: "#6b7280" };
+  if (s === "received")
+    return { text: "Received", bg: "#d1fae5", fg: "#065f46" };
+  if (s === "live") return { text: "Live", bg: "#dcfce7", fg: "#166534" };
+  if (s === "remount_pending")
+    return { text: "Remount Pending", bg: "#fee2e2", fg: "#991b1b" };
+  if (s === "remounted")
+    return { text: "Remounted", bg: "#e0f2fe", fg: "#075985" };
+  if (s === "unmount_pending")
+    return { text: "Unmount Pending", bg: "#fef3c7", fg: "#92400e" };
+  if (s === "unmounted")
+    return { text: "Unmounted", bg: "#f1f5f9", fg: "#0f172a" };
+  return { text: "Pending", bg: "#e5e7eb", fg: "#374151" };
 };
 
-const designStatusLabel = (raw?: string) => {
-  const normalized = String(raw || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "_");
-  if (normalized === "completed") return "Completed";
-  if (normalized === "in_progress" || normalized === "inprogress")
-    return "In Progress";
-  if (normalized === "pending") return "Pending";
-  return raw ? String(raw) : "Pending";
-};
-
-export default function SupervisorDashboardPage() {
-  const user = useUser();
-  const roleLower = String(user?.role || "").toLowerCase();
-
-  const [loading, setLoading] = useState(false);
-  const [rows, setRows] = useState<any[]>([]);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [limit] = useState(20);
-
-  const [status, setStatus] = useState("");
-  const [sizeMatch, setSizeMatch] = useState("");
-  const [condition, setCondition] = useState("");
-  const [materialReceived, setMaterialReceived] = useState("");
-
-  const [designers, setDesigners] = useState<any[]>([]);
-  const [designerDrafts, setDesignerDrafts] = useState<Record<string, string>>(
-    {},
-  );
-  const [assigningId, setAssigningId] = useState<string | null>(null);
-  const [uploadingId, setUploadingId] = useState<string | null>(null);
-  const [settingLiveDateId, setSettingLiveDateId] = useState<string | null>(
-    null,
-  );
-  const [liveDateDrafts, setLiveDateDrafts] = useState<Record<string, string>>(
-    {},
-  );
-
-  const canManage = useMemo(() => {
-    return ["supervisor", "owner", "manager", "admin"].includes(roleLower);
-  }, [roleLower]);
-
-  const fetchDesigners = async () => {
-    try {
-      const resp = await supervisorAPI.listDesigners();
-      if (resp?.success) {
-        setDesigners(Array.isArray(resp.data) ? resp.data : []);
-      }
-    } catch (_) {
-      setDesigners([]);
-    }
+const executionTypeLabel = (et?: string | null) => {
+  if (!et) return "-";
+  const map: Record<string, string> = {
+    CLIENT_CDR: "Client CDR",
+    IN_HOUSE_DESIGN: "In-House Design",
+    CLIENT_DIRECT_FLEX: "Client Direct Flex",
   };
+  return map[et] || et;
+};
 
-  const fetchRows = async () => {
-    if (!canManage) return;
+const formatDate = (raw?: string | null) => {
+  if (!raw) return "-";
+  const d = new Date(String(raw));
+  if (Number.isNaN(d.getTime())) return "-";
+  return d.toLocaleDateString("en-IN");
+};
+
+const formatDateInput = (raw?: string | null) => {
+  if (!raw) return "";
+  const d = new Date(String(raw));
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+};
+
+const statusFilterOptions: Record<
+  ExecutionTab,
+  Array<{ value: string; label: string }>
+> = {
+  pending: [
+    { value: "", label: "All Statuses" },
+    { value: "pending", label: "Pending" },
+    { value: "received", label: "Received" },
+  ],
+  live: [
+    { value: "", label: "All Statuses" },
+    { value: "live", label: "Live" },
+  ],
+  remounting: [
+    { value: "", label: "All Statuses" },
+    { value: "remount_pending", label: "Remount Pending" },
+  ],
+  unmounting: [
+    { value: "", label: "All Statuses" },
+    { value: "unmount_pending", label: "Unmount Pending" },
+    { value: "unmounted", label: "Unmounted" },
+  ],
+};
+
+export default function SupervisorExecutionBoardPage() {
+  const user = useUser();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const role = String(user?.role || "").toLowerCase();
+  const canManage = ["supervisor", "owner", "manager", "admin"].includes(role);
+  const canViewBoard = canManage || role === "sales";
+
+  const [activeTab, setActiveTab] = useState<ExecutionTab>("pending");
+  const [rows, setRows] = useState<BoardRow[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const [limit] = useState(50);
+  const [total, setTotal] = useState(0);
+
+  // Filters
+  const [selectedClientKey, setSelectedClientKey] = useState("all");
+  const [cityFilter, setCityFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [expandedImageRow, setExpandedImageRow] = useState<string | null>(null);
+  const [checklistDraftById, setChecklistDraftById] = useState<
+    Record<string, Partial<ChecklistDraft>>
+  >({});
+
+  const setTabAndRoute = useCallback(
+    (nextTab: ExecutionTab) => {
+      setActiveTab(nextTab);
+      setPage(1);
+      setSelectedClientKey("all");
+      setCityFilter("");
+      setStatusFilter("");
+      setDateFrom("");
+      setDateTo("");
+      setExpandedImageRow(null);
+      const params = new URLSearchParams(searchParams?.toString() || "");
+      params.set("tab", nextTab);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  useEffect(() => {
+    const raw = String(searchParams?.get("tab") || "")
+      .trim()
+      .toLowerCase();
+    if (
+      raw === "pending" ||
+      raw === "live" ||
+      raw === "remounting" ||
+      raw === "unmounting"
+    ) {
+      setActiveTab(raw as ExecutionTab);
+    }
+  }, [searchParams]);
+
+  const loadBoard = async () => {
+    if (!canViewBoard) return;
     try {
       setLoading(true);
-      const resp = await supervisorAPI.listHoardings({
+      const params: Record<string, any> = {
+        tab: activeTab,
         page,
         limit,
-        status: status || undefined,
-        sizeMatch: sizeMatch || undefined,
-        condition: condition || undefined,
-        materialReceived: materialReceived || undefined,
-      });
+      };
+      if (cityFilter.trim()) params.city = cityFilter.trim();
+      if (statusFilter) params.status = statusFilter;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+
+      const resp = await supervisorAPI.getExecutionBoard(params);
       if (resp?.success) {
-        setRows(resp.data?.rows || []);
-        setTotal(resp.data?.total || 0);
+        const payload = resp?.data || {};
+        setRows(Array.isArray(payload.rows) ? payload.rows : []);
+        setTotal(Number(payload.total || 0));
       } else {
         setRows([]);
         setTotal(0);
-        showError(resp?.message || "Failed to load supervisor hoardings");
+        showError(resp?.message || "Failed to load status board");
       }
     } catch (e: any) {
       setRows([]);
       setTotal(0);
-      showError(
-        e?.response?.data?.message || "Failed to load supervisor hoardings",
-      );
+      showError(e?.response?.data?.message || "Failed to load status board");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDesigners();
+    loadBoard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [
+    canViewBoard,
+    activeTab,
+    page,
+    cityFilter,
+    statusFilter,
+    dateFrom,
+    dateTo,
+  ]);
 
-  useEffect(() => {
-    fetchRows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, status, sizeMatch, condition, materialReceived]);
+  // Group rows by client or city
+  const groupedRows = useMemo<GroupRow[]>(() => {
+    const map = new Map<string, GroupRow>();
+    for (const row of rows) {
+      const key =
+        String(
+          activeTab === "unmounting"
+            ? row.city || "Unknown City"
+            : row.clientName || "Unknown Client",
+        ) || "Unknown";
+      const existing = map.get(key);
+      if (existing) {
+        existing.rows.push(row);
+      } else {
+        map.set(key, {
+          key,
+          label: key,
+          rows: [row],
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [rows, activeTab]);
 
-  // Live updates for design status
-  useEffect(() => {
-    if (!canManage) return;
-    const apiBase =
-      process.env.NEXT_PUBLIC_API_URL ||
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      "http://localhost:3001";
-    const accessToken =
-      typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    const query = accessToken
-      ? `?token=${encodeURIComponent(accessToken)}`
-      : "";
-    const url = `${apiBase}/api/events/design-status${query}`;
-    const source = new EventSource(url as any);
-    source.onmessage = (evt) => {
-      try {
-        const payload = JSON.parse(evt.data || "{}") as {
-          hoardingId?: string;
-          designStatus?: string;
-        };
-        if (!payload?.hoardingId) return;
-        setRows((prev) =>
-          (prev || []).map((h) =>
-            String(h.id) === String(payload.hoardingId)
-              ? { ...h, latestDesignStatus: payload.designStatus }
-              : h,
-          ),
-        );
-      } catch (_) {}
-    };
-    source.onerror = () => {
-      // ignore; browser reconnects
-    };
-    return () => {
-      try {
-        source.close();
-      } catch (_) {}
-    };
-  }, [canManage]);
+  const clientOptions = useMemo(
+    () => [
+      {
+        value: "all",
+        label: activeTab === "unmounting" ? "All Cities" : "All Clients",
+      },
+      ...groupedRows.map((g) => ({ value: g.key, label: g.label })),
+    ],
+    [groupedRows, activeTab],
+  );
 
-  useEffect(() => {
-    setDesignerDrafts((prev) => {
-      const next = { ...prev };
-      (rows || []).forEach((h: any) => {
-        const id = String(h?.id || "");
-        if (!id) return;
-        const current = h?.designerId ? String(h.designerId) : "";
-        if (!next[id] || next[id] !== current) {
-          next[id] = current;
-        }
-      });
-      return next;
-    });
+  const filteredGroups = useMemo(() => {
+    if (selectedClientKey === "all") return groupedRows;
+    return groupedRows.filter((g) => g.key === selectedClientKey);
+  }, [groupedRows, selectedClientKey]);
+
+  const visibleRows = useMemo(
+    () => filteredGroups.reduce((acc, g) => acc + g.rows.length, 0),
+    [filteredGroups],
+  );
+
+  // Unique cities for the city filter dropdown
+  const cityOptions = useMemo(() => {
+    const cities = new Set<string>();
+    for (const row of rows) {
+      if (row.city) cities.add(row.city);
+    }
+    return [
+      { value: "", label: "All Cities" },
+      ...Array.from(cities)
+        .sort()
+        .map((c) => ({ value: c, label: c })),
+    ];
   }, [rows]);
 
-  const updateChecklist = async (id: string, patch: any) => {
-    // Optimistic local update to avoid full refresh
-    setRows((prev) =>
-      (prev || []).map((h) => {
-        if (String(h.id) !== String(id)) return h;
-        return {
-          ...h,
-          supervisorChecklist: {
-            ...(h.supervisorChecklist || {}),
-            ...patch,
-          },
-        };
-      }),
-    );
-
+  const updateExecutionStatus = async (id: string, next: string) => {
+    if (!canManage) return;
     try {
-      const resp = await supervisorAPI.updateChecklist(id, patch);
+      setProcessingId(id);
+      const resp = await supervisorAPI.updateExecutionStatus(id, next as any);
       if (resp?.success) {
-        showSuccess("Checklist updated");
+        showSuccess("Status updated");
+        await loadBoard();
       } else {
-        showError(resp?.message || "Failed to update checklist");
+        showError(resp?.message || "Failed to update status");
       }
     } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to update checklist");
+      showError(e?.response?.data?.message || "Failed to update status");
+    } finally {
+      setProcessingId(null);
     }
   };
 
-  const uploadChecklistImage = async (id: string, files: FileList | null) => {
-    if (!files || files.length === 0) return;
+  const uploadExecutionImages = async (
+    id: string,
+    type: "mount" | "remount" | "unmount",
+    files: FileList | null,
+  ) => {
+    if (!canManage || !files || files.length === 0) return;
     try {
-      setUploadingId(String(id));
-      const resp = await supervisorAPI.uploadChecklistImage(
+      setProcessingId(id);
+      const resp = await supervisorAPI.uploadExecutionImages(
         id,
+        type,
         Array.from(files),
       );
       if (resp?.success) {
-        showSuccess("Image uploaded");
+        const updatedChecklist = resp?.data || null;
+        const updatedSiteImages = Array.isArray(updatedChecklist?.siteImages)
+          ? (updatedChecklist.siteImages as ExecutionImage[])
+          : null;
         setRows((prev) =>
-          (prev || []).map((h) =>
-            String(h.id) === String(id)
+          (prev || []).map((row) =>
+            row.id === id
               ? {
-                  ...h,
+                  ...row,
+                  executionImages:
+                    updatedSiteImages || row.executionImages || [],
                   supervisorChecklist: {
-                    ...(h.supervisorChecklist || {}),
+                    ...(row.supervisorChecklist || {}),
                     isSiteImageUploaded: true,
-                    siteImages:
-                      resp?.data?.siteImages ||
-                      h?.supervisorChecklist?.siteImages,
                   },
                 }
-              : h,
+              : row,
           ),
         );
+        showSuccess("Images uploaded");
       } else {
-        showError(resp?.message || "Failed to upload image");
+        showError(resp?.message || "Failed to upload images");
       }
     } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to upload image");
+      showError(e?.response?.data?.message || "Failed to upload images");
     } finally {
-      setUploadingId(null);
+      setProcessingId(null);
     }
   };
 
-  const setExecutionType = async (
-    id: string,
-    executionType: string,
-    designerId?: string,
-  ) => {
-    // Optimistic local update to avoid full refresh
-    setRows((prev) =>
-      (prev || []).map((h) =>
-        String(h.id) === String(id)
-          ? { ...h, executionType, designerId: designerId || h.designerId }
-          : h,
+  const getImagesForRow = (
+    row: BoardRow,
+    imgType?: string,
+  ): ExecutionImage[] => {
+    const imgs = Array.isArray(row.executionImages) ? row.executionImages : [];
+    if (!imgType) return imgs;
+    return imgs.filter((img) => img.type === imgType);
+  };
+
+  const hasRemountPending = (row: BoardRow) => {
+    const rs = String(row.remountStatus || "").toUpperCase();
+    return rs === "PENDING";
+  };
+
+  const clearFilters = () => {
+    setSelectedClientKey("all");
+    setCityFilter("");
+    setStatusFilter("");
+    setDateFrom("");
+    setDateTo("");
+    setPage(1);
+  };
+
+  const hasActiveFilters =
+    cityFilter ||
+    statusFilter ||
+    dateFrom ||
+    dateTo ||
+    selectedClientKey !== "all";
+
+  const resolveChecklist = (row: BoardRow): ChecklistDraft => {
+    const base = row.supervisorChecklist || {};
+    const draft = checklistDraftById[row.id] || {};
+    return {
+      isCorrectSize: Boolean(
+        typeof draft.isCorrectSize === "boolean"
+          ? draft.isCorrectSize
+          : base.isCorrectSize,
       ),
+      isGoodCondition: Boolean(
+        typeof draft.isGoodCondition === "boolean"
+          ? draft.isGoodCondition
+          : base.isGoodCondition,
+      ),
+      isFlexReceived: Boolean(
+        typeof draft.isFlexReceived === "boolean"
+          ? draft.isFlexReceived
+          : base.isFlexReceived,
+      ),
+      isReadyForInstall: Boolean(
+        typeof draft.isReadyForInstall === "boolean"
+          ? draft.isReadyForInstall
+          : base.isReadyForInstall,
+      ),
+      isSiteImageUploaded: Boolean(base.isSiteImageUploaded),
+    };
+  };
+
+  const isChecklistComplete = (checklist: ChecklistDraft) => {
+    return (
+      checklist.isCorrectSize &&
+      checklist.isGoodCondition &&
+      checklist.isFlexReceived &&
+      checklist.isReadyForInstall &&
+      checklist.isSiteImageUploaded
     );
-
-    try {
-      const resp = await supervisorAPI.setExecutionType(id, {
-        executionType,
-        designerId: designerId || undefined,
-      });
-      if (resp?.success) {
-        showSuccess("Execution type updated");
-      } else {
-        showError(resp?.message || "Failed to update execution type");
-      }
-    } catch (e: any) {
-      showError(
-        e?.response?.data?.message || "Failed to update execution type",
-      );
-    }
   };
 
-  const assignDesigner = async (id: string, designerId: string) => {
-    if (!designerId) {
-      showError("Please select a designer");
-      return;
-    }
-    const row = (rows || []).find((r) => String(r.id) === String(id));
-    const execType = String(row?.executionType || "");
-    if (!execType) {
-      showError("Please select an execution type first");
-      return;
-    }
-    try {
-      setAssigningId(String(id));
-      const resp = await supervisorAPI.setExecutionType(id, {
-        executionType: execType,
-        designerId,
-      });
-      if (resp?.success) {
-        showSuccess("Designer assigned");
-        fetchRows();
-      } else {
-        showError(resp?.message || "Failed to assign designer");
-      }
-    } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to assign designer");
-    } finally {
-      setAssigningId(null);
-    }
+  const updateChecklistDraft = (
+    hoardingId: string,
+    field:
+      | "isCorrectSize"
+      | "isGoodCondition"
+      | "isFlexReceived"
+      | "isReadyForInstall",
+    value: boolean,
+  ) => {
+    setChecklistDraftById((prev) => ({
+      ...(prev || {}),
+      [hoardingId]: {
+        ...(prev?.[hoardingId] || {}),
+        [field]: value,
+      },
+    }));
   };
 
-  const markLive = async (id: string, liveDate?: string) => {
-    if (!confirm("Mark hoarding as Live?")) return;
+  const persistChecklist = async (
+    row: BoardRow,
+    silent = false,
+  ): Promise<boolean> => {
+    if (!canManage) return false;
+    const checklist = resolveChecklist(row);
     try {
-      // Optimistic local update
+      setProcessingId(row.id);
+      const resp = await supervisorAPI.updateChecklist(row.id, {
+        isCorrectSize: checklist.isCorrectSize,
+        isGoodCondition: checklist.isGoodCondition,
+        isFlexReceived: checklist.isFlexReceived,
+        isReadyForInstall: checklist.isReadyForInstall,
+      });
+      if (resp?.success === false) {
+        showError(resp?.message || "Failed to save checklist");
+        return false;
+      }
+      const updatedChecklist = resp?.data || null;
       setRows((prev) =>
-        (prev || []).map((h) =>
-          String(h.id) === String(id) ? { ...h, status: "live" } : h,
+        (prev || []).map((r) =>
+          r.id === row.id
+            ? {
+                ...r,
+                supervisorChecklist: {
+                  ...(r.supervisorChecklist || {}),
+                  isCorrectSize: Boolean(updatedChecklist?.isCorrectSize),
+                  isGoodCondition: Boolean(updatedChecklist?.isGoodCondition),
+                  isFlexReceived: Boolean(updatedChecklist?.isFlexReceived),
+                  isReadyForInstall: Boolean(
+                    updatedChecklist?.isReadyForInstall,
+                  ),
+                  isSiteImageUploaded: Boolean(
+                    typeof updatedChecklist?.isSiteImageUploaded === "boolean"
+                      ? updatedChecklist.isSiteImageUploaded
+                      : r.supervisorChecklist?.isSiteImageUploaded,
+                  ),
+                },
+              }
+            : r,
         ),
       );
-      const resp = await supervisorAPI.markLive(
-        id,
-        liveDate ? { liveDate } : undefined,
-      );
-      if (resp?.success) {
-        showSuccess("Marked as Live");
-      } else {
-        showError(resp?.message || "Failed to mark as Live");
-      }
+      setChecklistDraftById((prev) => {
+        const next = { ...(prev || {}) };
+        delete next[row.id];
+        return next;
+      });
+      if (!silent) showSuccess("Checklist saved");
+      return true;
     } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to mark as Live");
-    }
-  };
-
-  const setPlannedLiveDate = async (id: string, plannedLiveDate: string) => {
-    if (!plannedLiveDate) {
-      showError("Please select a date");
-      return;
-    }
-    try {
-      setSettingLiveDateId(String(id));
-      const resp = await supervisorAPI.setLiveDate(id, { plannedLiveDate });
-      if (resp?.success) {
-        showSuccess("Live date saved");
-        setRows((prev) =>
-          (prev || []).map((h) =>
-            String(h.id) === String(id)
-              ? { ...h, plannedLiveDate: plannedLiveDate }
-              : h,
-          ),
-        );
-        setLiveDateDrafts((prev) => {
-          const next = { ...prev };
-          delete next[String(id)];
-          return next;
-        });
-      } else {
-        showError(resp?.message || "Failed to save live date");
-      }
-    } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to save live date");
+      showError(e?.response?.data?.message || "Failed to save checklist");
+      return false;
     } finally {
-      setSettingLiveDateId(null);
+      setProcessingId(null);
     }
   };
 
-  const markRemoval = async (id: string) => {
-    const reason = prompt("Reason for removal?");
-    if (!reason) return;
-    try {
-      const resp = await supervisorAPI.markRemoval(id, reason);
-      if (resp?.success) {
-        showSuccess("Marked for removal");
-        fetchRows();
-      } else {
-        showError(resp?.message || "Failed to mark for removal");
-      }
-    } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to mark for removal");
-    }
-  };
-
-  const completeRemount = async (id: string) => {
-    if (!confirm("Mark remount as completed?")) return;
-    try {
-      const resp = await supervisorAPI.completeRemount(id);
-      if (resp?.success) {
-        showSuccess("Remount marked completed");
-        setRows((prev) =>
-          (prev || []).map((h) =>
-            String(h.id) === String(id)
-              ? {
-                  ...h,
-                  remountStatus: "COMPLETED",
-                  remountCompletedAt: new Date().toISOString(),
-                }
-              : h,
-          ),
-        );
-      } else {
-        showError(resp?.message || "Failed to complete remount");
-      }
-    } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to complete remount");
-    }
-  };
-
-  const downloadPdf = async (id: string) => {
-    try {
-      const resp = await supervisorAPI.getOperationalPdf(id);
-      const blob = new Blob([resp.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `hoarding-${id}-operational.pdf`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to generate PDF");
-    }
+  const saveChecklist = async (row: BoardRow) => {
+    await persistChecklist(row, false);
   };
 
   return (
     <ProtectedRoute component="hoardings">
       <div className="page-container">
-        <h1 className="page-title">Supervisor Dashboard</h1>
+        <h1 style={{ marginBottom: "12px" }}>Execution Board</h1>
+        <p style={{ marginBottom: "20px", color: "var(--text-secondary)" }}>
+          Track pending, live, re-mounting and unmounting hoardings.
+        </p>
 
-        <div className="card" style={{ marginBottom: 16 }}>
-          <h3 style={{ marginBottom: 12 }}>Filters</h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 12,
-            }}
-          >
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
-              <option value="">All Status</option>
-              {statusOptions.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
+        {!canViewBoard ? (
+          <div className="card">You are not allowed to access this module.</div>
+        ) : (
+          <>
+            {/* Tab Navigation */}
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                marginBottom: 14,
+                flexWrap: "wrap",
+              }}
+            >
+              {tabOptions.map((tab) => (
+                <button
+                  key={tab.value}
+                  className={
+                    activeTab === tab.value
+                      ? "btn btn-primary"
+                      : "btn btn-tab-inactive"
+                  }
+                  onClick={() => setTabAndRoute(tab.value)}
+                >
+                  {tab.label}
+                </button>
               ))}
-            </select>
-            <select
-              value={sizeMatch}
-              onChange={(e) => setSizeMatch(e.target.value)}
-            >
-              <option value="">Size Match (All)</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-            <select
-              value={condition}
-              onChange={(e) => setCondition(e.target.value)}
-            >
-              <option value="">Condition (All)</option>
-              <option value="good">Good</option>
-              <option value="damaged">Damaged</option>
-            </select>
-            <select
-              value={materialReceived}
-              onChange={(e) => setMaterialReceived(e.target.value)}
-            >
-              <option value="">Material Received (All)</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="card">
-          {loading ? (
-            <div>Loading...</div>
-          ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Code</th>
-                    <th>Status</th>
-                    <th>Execution Type</th>
-                    <th>Checklist</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((h: any) => {
-                    const checklist = h.supervisorChecklist || {};
-                    const isComplete =
-                      checklist.isCorrectSize &&
-                      checklist.isGoodCondition &&
-                      checklist.isFlexReceived &&
-                      checklist.isReadyForInstall &&
-                      checklist.isSiteImageUploaded;
-                    const execType = h.executionType || "";
-                    const needsDesigner = execType === "IN_HOUSE_DESIGN";
-                    const statusLower = String(h.status || "").toLowerCase();
-                    const designStatusLower = String(
-                      h.latestDesignStatus || "",
-                    ).toLowerCase();
-                    const needsDesignComplete = execType === "IN_HOUSE_DESIGN";
-                    const isDesignCompleted =
-                      !needsDesignComplete || designStatusLower === "completed";
-                    const plannedLiveDateRaw = h?.plannedLiveDate;
-                    const plannedLiveDateObj = plannedLiveDateRaw
-                      ? new Date(String(plannedLiveDateRaw))
-                      : null;
-                    const plannedLiveDateValue =
-                      plannedLiveDateObj && !isNaN(plannedLiveDateObj.getTime())
-                        ? plannedLiveDateObj.toISOString().slice(0, 10)
-                        : "";
-                    const liveDateDraft = liveDateDrafts[String(h.id)] || "";
-                    const liveDateValue = plannedLiveDateValue || liveDateDraft;
-                    const canMarkLive =
-                      statusLower !== "live" &&
-                      !!checklist.isReadyForInstall &&
-                      isDesignCompleted &&
-                      !!plannedLiveDateValue;
-                    const canMarkRemoval = statusLower !== "removal_pending";
-                    const canCompleteRemount =
-                      String(h?.remountStatus || "").toLowerCase() ===
-                      "pending";
-                    const markLiveTooltip = canMarkLive
-                      ? "Mark Live"
-                      : !plannedLiveDateValue
-                        ? "Set live date"
-                        : needsDesignComplete && !isDesignCompleted
-                          ? "Requires: Design completed"
-                          : "Requires: Ready for Install and not already Live";
-                    const markRemovalTooltip = canMarkRemoval
-                      ? "Mark for Removal"
-                      : "Already in Removal Pending";
-                    return (
-                      <tr key={h.id}>
-                        <td>{h.code || h.id}</td>
-                        <td>
-                          {(() => {
-                            const b = statusBadge(h.status, h.remountStatus);
-                            return (
-                              <span
-                                style={{
-                                  background: b.color,
-                                  color: "white",
-                                  padding: "2px 8px",
-                                  borderRadius: 12,
-                                  fontSize: 12,
-                                }}
-                              >
-                                {b.text}
-                              </span>
-                            );
-                          })()}
-                        </td>
-                        <td>
-                          <select
-                            value={execType}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              setExecutionType(
-                                h.id,
-                                e.target.value,
-                                h.designerId,
-                              );
-                            }}
-                          >
-                            <option value="">Select</option>
-                            {executionTypes.map((t) => (
-                              <option key={t.value} value={t.value}>
-                                {t.label}
-                              </option>
-                            ))}
-                          </select>
-                          <div style={{ marginTop: 8 }}>
-                            <select
-                              value={designerDrafts[String(h.id)] || ""}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                const val = e.target.value;
-                                setDesignerDrafts((prev) => ({
-                                  ...prev,
-                                  [String(h.id)]: val,
-                                }));
-                              }}
-                              disabled={!execType}
-                            >
-                              <option value="">Select Designer</option>
-                              {designers.map((d) => (
-                                <option key={d.id} value={d.id}>
-                                  {d.name || d.email || d.id}
-                                </option>
-                              ))}
-                            </select>
-                            <button
-                              className="btn btn-primary"
-                              style={{ marginTop: 8 }}
-                              disabled={
-                                !execType ||
-                                assigningId === String(h.id) ||
-                                !designerDrafts[String(h.id)]
-                              }
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                assignDesigner(
-                                  h.id,
-                                  designerDrafts[String(h.id)] || "",
-                                );
-                              }}
-                            >
-                              Assign Designer
-                            </button>
-                            {!execType && (
-                              <div
-                                style={{
-                                  marginTop: 4,
-                                  fontSize: 12,
-                                  color: "#6b7280",
-                                }}
-                              >
-                                Select an execution type to assign a designer.
-                              </div>
-                            )}
-                          </div>
-                          <div
-                            style={{
-                              marginTop: 6,
-                              fontSize: 12,
-                              color: "#6b7280",
-                            }}
-                          >
-                            Design status:{" "}
-                            {designStatusLabel(designStatusLower)}
-                          </div>
-                        </td>
-                        <td>
-                          <div style={{ display: "grid", gap: 6 }}>
-                            <label title="Correct size">
-                              <input
-                                type="checkbox"
-                                checked={!!checklist.isCorrectSize}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  updateChecklist(h.id, {
-                                    isCorrectSize: e.target.checked,
-                                  });
-                                }}
-                              />{" "}
-                              Size OK
-                            </label>
-                            <label title="Good condition">
-                              <input
-                                type="checkbox"
-                                checked={!!checklist.isGoodCondition}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  updateChecklist(h.id, {
-                                    isGoodCondition: e.target.checked,
-                                  });
-                                }}
-                              />{" "}
-                              Condition OK
-                            </label>
-                            <label title="Flex received">
-                              <input
-                                type="checkbox"
-                                checked={!!checklist.isFlexReceived}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  updateChecklist(h.id, {
-                                    isFlexReceived: e.target.checked,
-                                  });
-                                }}
-                              />{" "}
-                              Material Received
-                            </label>
-                            <label title="Ready for installation">
-                              <input
-                                type="checkbox"
-                                checked={!!checklist.isReadyForInstall}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  updateChecklist(h.id, {
-                                    isReadyForInstall: e.target.checked,
-                                  });
-                                }}
-                              />{" "}
-                              Ready for Install
-                            </label>
-                            <div>
-                              <label title="Site image uploaded">
-                                <input
-                                  type="checkbox"
-                                  checked={!!checklist.isSiteImageUploaded}
-                                  readOnly
-                                />{" "}
-                                Site Image Uploaded
-                              </label>
-                              <div style={{ marginTop: 6 }}>
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={(e) =>
-                                    uploadChecklistImage(h.id, e.target.files)
-                                  }
-                                  disabled={uploadingId === String(h.id)}
-                                />
-                              </div>
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 12,
-                                color: isComplete ? "green" : "#999",
-                              }}
-                            >
-                              {isComplete
-                                ? "Checklist complete"
-                                : "Checklist incomplete"}
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: 8,
-                              flexWrap: "wrap",
-                            }}
-                          >
-                            <button
-                              className="btn btn-secondary"
-                              disabled={!canMarkLive}
-                              title={markLiveTooltip}
-                              onClick={() =>
-                                markLive(
-                                  h.id,
-                                  plannedLiveDateValue || undefined,
-                                )
-                              }
-                            >
-                              Mark Live
-                            </button>
-                            <input
-                              type="date"
-                              value={liveDateValue}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setLiveDateDrafts((prev) => ({
-                                  ...prev,
-                                  [String(h.id)]: val,
-                                }));
-                                if (val) {
-                                  setPlannedLiveDate(h.id, val);
-                                }
-                              }}
-                              disabled={
-                                !!plannedLiveDateValue ||
-                                settingLiveDateId === String(h.id) ||
-                                statusLower === "live"
-                              }
-                              style={{ maxWidth: 170 }}
-                              title="Live date"
-                            />
-                            <button
-                              className="btn btn-secondary"
-                              disabled={!canMarkRemoval}
-                              title={markRemovalTooltip}
-                              onClick={() => markRemoval(h.id)}
-                            >
-                              Mark Removal
-                            </button>
-                            <button
-                              className="btn btn-secondary"
-                              disabled={!canCompleteRemount}
-                              title={
-                                canCompleteRemount
-                                  ? "Complete remount"
-                                  : "No pending remount"
-                              }
-                              onClick={() => completeRemount(h.id)}
-                            >
-                              Complete Remount
-                            </button>
-                            <button
-                              className="btn btn-secondary"
-                              onClick={() => downloadPdf(h.id)}
-                            >
-                              PDF
-                            </button>
-                          </div>
-                          {!canMarkLive && (
-                            <div
-                              style={{
-                                marginTop: 6,
-                                fontSize: 12,
-                                color: "#6b7280",
-                              }}
-                            >
-                              Set the live date first. Duration starts from that
-                              date.
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              {rows.length === 0 && <div>No hoardings found.</div>}
             </div>
-          )}
-        </div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: 12,
-          }}
-        >
-          <button
-            className="btn btn-secondary"
-            disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
-          >
-            Previous
-          </button>
-          <div>
-            Page {page} / {Math.max(1, Math.ceil(total / limit))}
-          </div>
-          <button
-            className="btn btn-secondary"
-            disabled={page >= Math.ceil(total / limit)}
-            onClick={() => setPage(page + 1)}
-          >
-            Next
-          </button>
-        </div>
+            {/* Filters Row */}
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                marginBottom: "14px",
+                flexWrap: "wrap",
+                alignItems: "flex-end",
+              }}
+            >
+              {/* Client/City group filter */}
+              <div style={{ minWidth: 200, flex: "1 1 200px", maxWidth: 300 }}>
+                <label
+                  style={{
+                    fontSize: 12,
+                    color: "var(--text-secondary)",
+                    marginBottom: 4,
+                    display: "block",
+                  }}
+                >
+                  {activeTab === "unmounting" ? "City Group" : "Client"}
+                </label>
+                <CustomSelect
+                  value={selectedClientKey}
+                  onChange={(v) => {
+                    setSelectedClientKey(v);
+                    setPage(1);
+                  }}
+                  options={clientOptions}
+                />
+              </div>
+
+              {/* City filter (for non-unmounting tabs) */}
+              {activeTab !== "unmounting" && (
+                <div style={{ minWidth: 160, flex: "0 1 200px" }}>
+                  <label
+                    style={{
+                      fontSize: 12,
+                      color: "var(--text-secondary)",
+                      marginBottom: 4,
+                      display: "block",
+                    }}
+                  >
+                    City
+                  </label>
+                  <CustomSelect
+                    value={cityFilter}
+                    onChange={(v) => {
+                      setCityFilter(v);
+                      setPage(1);
+                    }}
+                    options={cityOptions}
+                  />
+                </div>
+              )}
+
+              {/* Status filter */}
+              <div style={{ minWidth: 160, flex: "0 1 200px" }}>
+                <label
+                  style={{
+                    fontSize: 12,
+                    color: "var(--text-secondary)",
+                    marginBottom: 4,
+                    display: "block",
+                  }}
+                >
+                  Status
+                </label>
+                <CustomSelect
+                  value={statusFilter}
+                  onChange={(v) => {
+                    setStatusFilter(v);
+                    setPage(1);
+                  }}
+                  options={statusFilterOptions[activeTab]}
+                />
+              </div>
+
+              {/* Date Range */}
+              <div style={{ minWidth: 140, flex: "0 1 160px" }}>
+                <label
+                  style={{
+                    fontSize: 12,
+                    color: "var(--text-secondary)",
+                    marginBottom: 4,
+                    display: "block",
+                  }}
+                >
+                  From
+                </label>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => {
+                    setDateFrom(e.target.value);
+                    setPage(1);
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "6px 8px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    fontSize: 13,
+                  }}
+                />
+              </div>
+              <div style={{ minWidth: 140, flex: "0 1 160px" }}>
+                <label
+                  style={{
+                    fontSize: 12,
+                    color: "var(--text-secondary)",
+                    marginBottom: 4,
+                    display: "block",
+                  }}
+                >
+                  To
+                </label>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => {
+                    setDateTo(e.target.value);
+                    setPage(1);
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "6px 8px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    fontSize: 13,
+                  }}
+                />
+              </div>
+
+              {hasActiveFilters && (
+                <div style={{ flex: "0 0 auto", paddingBottom: 1 }}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={clearFilters}
+                    style={{ fontSize: 12 }}
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Summary Card */}
+            <div className="card" style={{ marginBottom: "14px" }}>
+              <strong>
+                {activeTab === "pending"
+                  ? "Total Pending Clients:"
+                  : activeTab === "live"
+                    ? "Total Live Clients:"
+                    : activeTab === "remounting"
+                      ? "Total Re-mounting Clients:"
+                      : "Total Unmounting Cities:"}
+              </strong>{" "}
+              {filteredGroups.length}
+              &nbsp; | &nbsp; <strong>No. of Hoardings:</strong> {visibleRows}
+            </div>
+
+            {/* Data Table */}
+            <div className="card">
+              {loading ? (
+                <div style={{ textAlign: "center", padding: "24px" }}>
+                  Loading hoardings...
+                </div>
+              ) : filteredGroups.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "40px",
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  No hoardings found
+                  {hasActiveFilters ? " for the selected filters" : ""}.
+                </div>
+              ) : (
+                filteredGroups.map((group) => (
+                  <div key={group.key} style={{ marginBottom: 16 }}>
+                    <h3
+                      style={{
+                        marginBottom: 8,
+                        borderBottom: "1px solid #e2e8f0",
+                        paddingBottom: 6,
+                      }}
+                    >
+                      {activeTab === "unmounting"
+                        ? `City: ${group.label}`
+                        : `Client: ${group.label}`}
+                      <span
+                        style={{
+                          fontWeight: 400,
+                          fontSize: 13,
+                          color: "#64748b",
+                          marginLeft: 8,
+                        }}
+                      >
+                        ({group.rows.length} hoarding
+                        {group.rows.length !== 1 ? "s" : ""})
+                      </span>
+                    </h3>
+
+                    <div style={{ overflowX: "auto" }}>
+                      <table className="table">
+                        <thead>
+                          <tr>
+                            <th>Code</th>
+                            <th>City</th>
+                            <th>Location</th>
+                            <th>Exec Type</th>
+                            <th>Execution Status</th>
+                            <th>Planned Live</th>
+                            <th>Expiry</th>
+                            <th>Images</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {group.rows.map((row) => {
+                            const badge = statusStyle(row.executionStatus);
+                            const isBusy = processingId === row.id;
+                            const isRemountRow =
+                              activeTab === "live" && hasRemountPending(row);
+                            const allImages = getImagesForRow(row);
+                            const isExpanded = expandedImageRow === row.id;
+                            const checklist = resolveChecklist(row);
+                            const checklistReady =
+                              isChecklistComplete(checklist);
+                            const hasChecklistDraft =
+                              Object.keys(checklistDraftById[row.id] || {})
+                                .length > 0;
+                            const canMarkLive = checklistReady;
+
+                            return (
+                              <>
+                                <tr
+                                  key={row.id}
+                                  style={
+                                    isRemountRow
+                                      ? {
+                                          background: "#fff7ed",
+                                          borderLeft: "3px solid #f97316",
+                                        }
+                                      : undefined
+                                  }
+                                >
+                                  <td style={{ fontWeight: 600 }}>
+                                    {row.code || row.id}
+                                  </td>
+                                  <td>{row.city || "-"}</td>
+                                  <td>
+                                    {[row.area, row.landmark || row.roadName]
+                                      .filter(Boolean)
+                                      .join(", ") || "-"}
+                                  </td>
+                                  <td style={{ fontSize: 12 }}>
+                                    {executionTypeLabel(row.executionType)}
+                                  </td>
+                                  <td>
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        gap: 4,
+                                        flexWrap: "wrap",
+                                        alignItems: "center",
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          background: badge.bg,
+                                          color: badge.fg,
+                                          borderRadius: 999,
+                                          padding: "4px 10px",
+                                          fontSize: 12,
+                                          fontWeight: 600,
+                                        }}
+                                      >
+                                        {badge.text}
+                                      </span>
+                                      {isRemountRow && (
+                                        <span
+                                          style={{
+                                            background: "#fee2e2",
+                                            color: "#991b1b",
+                                            borderRadius: 999,
+                                            padding: "3px 8px",
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                          }}
+                                        >
+                                          Remount Pending
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td>{formatDate(row.plannedLiveDate)}</td>
+                                  <td>{formatDate(row.expiryDate)}</td>
+                                  <td>
+                                    {allImages.length > 0 ? (
+                                      <button
+                                        className="btn btn-secondary"
+                                        style={{
+                                          fontSize: 11,
+                                          padding: "2px 8px",
+                                        }}
+                                        onClick={() =>
+                                          setExpandedImageRow(
+                                            isExpanded ? null : row.id,
+                                          )
+                                        }
+                                      >
+                                        {isExpanded
+                                          ? "Hide"
+                                          : `View (${allImages.length})`}
+                                      </button>
+                                    ) : (
+                                      <span
+                                        style={{
+                                          color: "#94a3b8",
+                                          fontSize: 12,
+                                        }}
+                                      >
+                                        None
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td>
+                                    {!canManage ? (
+                                      <span
+                                        style={{
+                                          color: "#64748b",
+                                          fontSize: 12,
+                                        }}
+                                      >
+                                        View only
+                                      </span>
+                                    ) : (
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          gap: 8,
+                                          flexWrap: "wrap",
+                                          alignItems: "center",
+                                        }}
+                                      >
+                                        {activeTab === "pending" ? (
+                                          <>
+                                            <div
+                                              style={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: 6,
+                                                minWidth: 260,
+                                              }}
+                                            >
+                                              <div
+                                                style={{
+                                                  display: "grid",
+                                                  gridTemplateColumns:
+                                                    "repeat(2, minmax(120px, 1fr))",
+                                                  gap: 4,
+                                                }}
+                                              >
+                                                <label
+                                                  style={{
+                                                    fontSize: 12,
+                                                    color:
+                                                      "var(--text-primary)",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 4,
+                                                  }}
+                                                >
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={
+                                                      checklist.isCorrectSize
+                                                    }
+                                                    disabled={isBusy}
+                                                    onChange={(e) =>
+                                                      updateChecklistDraft(
+                                                        row.id,
+                                                        "isCorrectSize",
+                                                        e.target.checked,
+                                                      )
+                                                    }
+                                                  />
+                                                  Size OK
+                                                </label>
+                                                <label
+                                                  style={{
+                                                    fontSize: 12,
+                                                    color:
+                                                      "var(--text-primary)",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 4,
+                                                  }}
+                                                >
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={
+                                                      checklist.isGoodCondition
+                                                    }
+                                                    disabled={isBusy}
+                                                    onChange={(e) =>
+                                                      updateChecklistDraft(
+                                                        row.id,
+                                                        "isGoodCondition",
+                                                        e.target.checked,
+                                                      )
+                                                    }
+                                                  />
+                                                  Good Condition
+                                                </label>
+                                                <label
+                                                  style={{
+                                                    fontSize: 12,
+                                                    color:
+                                                      "var(--text-primary)",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 4,
+                                                  }}
+                                                >
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={
+                                                      checklist.isFlexReceived
+                                                    }
+                                                    disabled={isBusy}
+                                                    onChange={(e) =>
+                                                      updateChecklistDraft(
+                                                        row.id,
+                                                        "isFlexReceived",
+                                                        e.target.checked,
+                                                      )
+                                                    }
+                                                  />
+                                                  Flex Received
+                                                </label>
+                                                <label
+                                                  style={{
+                                                    fontSize: 12,
+                                                    color:
+                                                      "var(--text-primary)",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 4,
+                                                  }}
+                                                >
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={
+                                                      checklist.isReadyForInstall
+                                                    }
+                                                    disabled={isBusy}
+                                                    onChange={(e) =>
+                                                      updateChecklistDraft(
+                                                        row.id,
+                                                        "isReadyForInstall",
+                                                        e.target.checked,
+                                                      )
+                                                    }
+                                                  />
+                                                  Ready For Install
+                                                </label>
+                                              </div>
+
+                                              <div
+                                                style={{
+                                                  display: "flex",
+                                                  gap: 6,
+                                                  flexWrap: "wrap",
+                                                  alignItems: "center",
+                                                }}
+                                              >
+                                                <button
+                                                  className="btn btn-secondary"
+                                                  style={{
+                                                    fontSize: 11,
+                                                    padding: "4px 8px",
+                                                  }}
+                                                  disabled={isBusy}
+                                                  onClick={() =>
+                                                    saveChecklist(row)
+                                                  }
+                                                >
+                                                  Save Checklist
+                                                </button>
+
+                                                <label
+                                                  className="btn btn-secondary"
+                                                  style={{
+                                                    fontSize: 11,
+                                                    padding: "4px 8px",
+                                                    cursor: "pointer",
+                                                  }}
+                                                >
+                                                  Upload Site Image
+                                                  <input
+                                                    type="file"
+                                                    multiple
+                                                    accept="image/*"
+                                                    disabled={isBusy}
+                                                    style={{ display: "none" }}
+                                                    onChange={(e) => {
+                                                      uploadExecutionImages(
+                                                        row.id,
+                                                        "mount",
+                                                        e.target.files,
+                                                      );
+                                                      e.currentTarget.value =
+                                                        "";
+                                                    }}
+                                                  />
+                                                </label>
+
+                                                <select
+                                                  value={String(
+                                                    row.executionStatus ||
+                                                      "pending",
+                                                  )}
+                                                  onChange={(e) =>
+                                                    updateExecutionStatus(
+                                                      row.id,
+                                                      e.target.value,
+                                                    )
+                                                  }
+                                                  disabled={isBusy}
+                                                  style={{
+                                                    fontSize: 12,
+                                                    padding: "4px 6px",
+                                                  }}
+                                                >
+                                                  <option value="pending">
+                                                    Pending
+                                                  </option>
+                                                  <option value="received">
+                                                    Received
+                                                  </option>
+                                                </select>
+                                              </div>
+
+                                              <span
+                                                style={{
+                                                  fontSize: 11,
+                                                  color: canMarkLive
+                                                    ? "var(--success-color)"
+                                                    : "var(--warning-color)",
+                                                }}
+                                              >
+                                                {hasChecklistDraft &&
+                                                canMarkLive
+                                                  ? "Checklist changes will be auto-saved when you mark live."
+                                                  : canMarkLive
+                                                    ? "Checklist complete. You can mark this hoarding live."
+                                                    : "Complete all checklist items and upload site image before marking live."}
+                                              </span>
+                                            </div>
+
+                                            <button
+                                              className="btn btn-primary"
+                                              style={{
+                                                fontSize: 11,
+                                                padding: "4px 10px",
+                                              }}
+                                              disabled={isBusy || !canMarkLive}
+                                              onClick={async () => {
+                                                if (!checklistReady) {
+                                                  showError(
+                                                    "Complete checklist and upload site image before marking live.",
+                                                  );
+                                                  return;
+                                                }
+                                                if (hasChecklistDraft) {
+                                                  const ok =
+                                                    await persistChecklist(
+                                                      row,
+                                                      true,
+                                                    );
+                                                  if (!ok) return;
+                                                }
+                                                await updateExecutionStatus(
+                                                  row.id,
+                                                  "live",
+                                                );
+                                              }}
+                                            >
+                                              Mark Live
+                                            </button>
+                                          </>
+                                        ) : null}
+
+                                        {activeTab === "live" ? (
+                                          <>
+                                            <label
+                                              className="btn btn-secondary"
+                                              style={{
+                                                fontSize: 11,
+                                                padding: "4px 8px",
+                                                cursor: "pointer",
+                                              }}
+                                            >
+                                              Upload
+                                              <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                disabled={isBusy}
+                                                style={{ display: "none" }}
+                                                onChange={(e) => {
+                                                  uploadExecutionImages(
+                                                    row.id,
+                                                    "mount",
+                                                    e.target.files,
+                                                  );
+                                                  e.currentTarget.value = "";
+                                                }}
+                                              />
+                                            </label>
+                                            <button
+                                              className="btn btn-secondary"
+                                              style={{
+                                                fontSize: 11,
+                                                padding: "4px 10px",
+                                              }}
+                                              disabled={isBusy}
+                                              onClick={() =>
+                                                updateExecutionStatus(
+                                                  row.id,
+                                                  "remount_pending",
+                                                )
+                                              }
+                                            >
+                                              Mark Remount Pending
+                                            </button>
+                                          </>
+                                        ) : null}
+
+                                        {activeTab === "remounting" ? (
+                                          <>
+                                            <label
+                                              className="btn btn-secondary"
+                                              style={{
+                                                fontSize: 11,
+                                                padding: "4px 8px",
+                                                cursor: "pointer",
+                                              }}
+                                            >
+                                              Upload
+                                              <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                disabled={isBusy}
+                                                style={{ display: "none" }}
+                                                onChange={(e) => {
+                                                  uploadExecutionImages(
+                                                    row.id,
+                                                    "remount",
+                                                    e.target.files,
+                                                  );
+                                                  e.currentTarget.value = "";
+                                                }}
+                                              />
+                                            </label>
+                                            <button
+                                              className="btn btn-primary"
+                                              style={{
+                                                fontSize: 11,
+                                                padding: "4px 10px",
+                                              }}
+                                              disabled={isBusy}
+                                              onClick={() =>
+                                                updateExecutionStatus(
+                                                  row.id,
+                                                  "remounted",
+                                                )
+                                              }
+                                            >
+                                              Mark Remounted
+                                            </button>
+                                          </>
+                                        ) : null}
+
+                                        {activeTab === "unmounting" ? (
+                                          <>
+                                            <label
+                                              className="btn btn-secondary"
+                                              style={{
+                                                fontSize: 11,
+                                                padding: "4px 8px",
+                                                cursor: "pointer",
+                                              }}
+                                            >
+                                              Upload
+                                              <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                disabled={isBusy}
+                                                style={{ display: "none" }}
+                                                onChange={(e) => {
+                                                  uploadExecutionImages(
+                                                    row.id,
+                                                    "unmount",
+                                                    e.target.files,
+                                                  );
+                                                  e.currentTarget.value = "";
+                                                }}
+                                              />
+                                            </label>
+                                            <button
+                                              className="btn btn-primary"
+                                              style={{
+                                                fontSize: 11,
+                                                padding: "4px 10px",
+                                              }}
+                                              disabled={isBusy}
+                                              onClick={() =>
+                                                updateExecutionStatus(
+                                                  row.id,
+                                                  "unmounted",
+                                                )
+                                              }
+                                            >
+                                              Mark Unmounted
+                                            </button>
+                                          </>
+                                        ) : null}
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                                {/* Image expansion row */}
+                                {isExpanded && allImages.length > 0 && (
+                                  <tr key={`${row.id}-images`}>
+                                    <td
+                                      colSpan={9}
+                                      style={{
+                                        padding: "12px 16px",
+                                        background: "#f8fafc",
+                                      }}
+                                    >
+                                      <div
+                                        style={{
+                                          marginBottom: 6,
+                                          fontSize: 13,
+                                          fontWeight: 600,
+                                        }}
+                                      >
+                                        Execution Images
+                                      </div>
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          gap: 12,
+                                          flexWrap: "wrap",
+                                        }}
+                                      >
+                                        {allImages.map((img, idx) => (
+                                          <div
+                                            key={idx}
+                                            style={{
+                                              border: "1px solid #e2e8f0",
+                                              borderRadius: 8,
+                                              padding: 6,
+                                              background: "white",
+                                              textAlign: "center",
+                                              maxWidth: 160,
+                                            }}
+                                          >
+                                            <a
+                                              href={img.image_url || "#"}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                            >
+                                              <img
+                                                src={img.image_url || ""}
+                                                alt={`${img.type || "image"} ${idx + 1}`}
+                                                style={{
+                                                  width: 140,
+                                                  height: 100,
+                                                  objectFit: "cover",
+                                                  borderRadius: 4,
+                                                }}
+                                                onError={(e) => {
+                                                  (
+                                                    e.target as HTMLImageElement
+                                                  ).style.display = "none";
+                                                }}
+                                              />
+                                            </a>
+                                            <div
+                                              style={{
+                                                fontSize: 11,
+                                                color: "#64748b",
+                                                marginTop: 4,
+                                              }}
+                                            >
+                                              <span
+                                                style={{
+                                                  background:
+                                                    img.type === "mount"
+                                                      ? "#dcfce7"
+                                                      : img.type === "remount"
+                                                        ? "#e0f2fe"
+                                                        : img.type === "unmount"
+                                                          ? "#fef3c7"
+                                                          : "#f1f5f9",
+                                                  padding: "1px 6px",
+                                                  borderRadius: 4,
+                                                  fontWeight: 600,
+                                                  textTransform: "capitalize",
+                                                }}
+                                              >
+                                                {img.type || "site"}
+                                              </span>
+                                              {img.timestamp && (
+                                                <div style={{ marginTop: 2 }}>
+                                                  {formatDate(img.timestamp)}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Pagination */}
+            <div
+              style={{
+                marginTop: 12,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <button
+                className="btn btn-secondary"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous
+              </button>
+              <div>
+                Page {page} / {Math.max(1, Math.ceil(total / limit))} ({total}{" "}
+                rows)
+              </div>
+              <button
+                className="btn btn-secondary"
+                disabled={page >= Math.ceil(total / limit)}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </ProtectedRoute>
   );

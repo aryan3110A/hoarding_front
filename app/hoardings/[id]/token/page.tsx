@@ -102,8 +102,8 @@ export default function HoardingTokenPage() {
       return;
     }
 
-    if (!clientPhone || clientPhone.trim().length < 6) {
-      showError("Client phone is required");
+    if (!clientPhone || clientPhone.replace(/\D/g, "").length !== 10) {
+      showError("Client phone must be exactly 10 digits");
       return;
     }
 
@@ -244,9 +244,15 @@ export default function HoardingTokenPage() {
               >
                 <label style={{ fontSize: "12px" }}>Client phone</label>
                 <input
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
                   value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
+                  onChange={(e) =>
+                    setClientPhone(
+                      e.target.value.replace(/\D/g, "").slice(0, 10),
+                    )
+                  }
                 />
               </div>
               <div
