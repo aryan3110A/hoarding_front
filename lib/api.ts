@@ -703,6 +703,21 @@ export const bookingTokensAPI = {
       plannedLiveDate?: string;
       durationMonths?: number;
       durationDays?: number;
+      paymentPlanType?: string;
+      billingFrequency?: string;
+      gstApplicable?: boolean;
+      finalAgreedBasePrice?: number;
+      modeOfPayment?: string;
+      printingChargesBase?: number;
+      mountingChargesBase?: number;
+      poRequired?: boolean;
+      poNotes?: string;
+      expectedPoDate?: string;
+      billingCompanyName?: string;
+      billingPhone?: string;
+      billingEmail?: string;
+      gstin?: string;
+      billingAddress?: string;
     },
   ) => {
     const response = await api.post(
@@ -931,6 +946,20 @@ export const supervisorAPI = {
     );
     return response.data;
   },
+  markLiveWithBilling: async (
+    id: string,
+    data?: {
+      liveDate?: string;
+      billingStartDate?: string;
+      billingPeriodOverrideNote?: string;
+    },
+  ) => {
+    const response = await api.put(
+      `/supervisor/hoardings/${id}/mark-live`,
+      data || {},
+    );
+    return response.data;
+  },
   setLiveDate: async (id: string, data: { plannedLiveDate: string }) => {
     const response = await api.put(
       `/supervisor/hoardings/${id}/live-date`,
@@ -961,6 +990,39 @@ export const supervisorAPI = {
 export const accountantAPI = {
   summary: async () => {
     const response = await api.get("/accountant/summary");
+    return response.data;
+  },
+  getBillingQueue: async (params?: {
+    tab?: "to_be_generated" | "pending" | "overdue" | "completed" | string;
+    clientId?: string;
+  }) => {
+    const response = await api.get("/accountant/billing-queue", { params });
+    return response.data;
+  },
+  listFirms: async () => {
+    const response = await api.get("/accountant/firms");
+    return response.data;
+  },
+  markBillingEventPoPending: async (id: string) => {
+    const response = await api.post(`/accountant/billing-events/${id}/po-pending`);
+    return response.data;
+  },
+  generateBill: async (data: {
+    eventIds: string[];
+    firmName: string;
+    billNumber: string;
+    remarks?: string;
+    billPdf?: File | null;
+  }) => {
+    const form = new FormData();
+    form.append("eventIds", JSON.stringify(data.eventIds || []));
+    form.append("firmName", data.firmName);
+    form.append("billNumber", data.billNumber);
+    if (data.remarks) form.append("remarks", data.remarks);
+    if (data.billPdf) form.append("billPdf", data.billPdf);
+    const response = await api.post("/accountant/bills/generate", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
   },
   listInvoices: async (params?: {

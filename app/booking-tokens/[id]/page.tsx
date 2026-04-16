@@ -25,6 +25,31 @@ const durationOptions = [
   { value: "8d", label: "8 days" },
 ];
 
+const paymentPlanOptions = [
+  { value: "ADVANCE_MONTHLY", label: "Advance Monthly" },
+  { value: "ADVANCE_FULL_CAMPAIGN", label: "Advance Full Campaign" },
+  { value: "ON_SPOT_LIVE", label: "On-the-spot at Live" },
+  { value: "POST_MONTHLY", label: "After end of every month" },
+  { value: "END_OF_CAMPAIGN", label: "Entire bill after campaign" },
+  { value: "MONTHLY_IN_HAND", label: "Monthly bill, payment in hand" },
+];
+
+const billingFrequencyOptions = [
+  { value: "MONTHLY", label: "Monthly" },
+  { value: "QUARTERLY", label: "Quarterly" },
+  { value: "YEARLY", label: "Yearly" },
+  { value: "ONE_TIME", label: "One-time" },
+];
+
+const modeOfPaymentOptions = [
+  "Cash",
+  "Bank Transfer",
+  "UPI",
+  "Cheque",
+  "Card",
+  "In Hand",
+];
+
 export default function BookingTokenDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -43,6 +68,23 @@ export default function BookingTokenDetailPage() {
   const [plannedLiveDateDraft, setPlannedLiveDateDraft] = useState<string>("");
   const [selectedDurationChoice, setSelectedDurationChoice] =
     useState<string>("");
+  const [billingForm, setBillingForm] = useState({
+    paymentPlanType: "",
+    billingFrequency: "",
+    gstApplicable: "yes",
+    finalAgreedBasePrice: "",
+    modeOfPayment: "",
+    printingChargesBase: "0",
+    mountingChargesBase: "0",
+    poRequired: "no",
+    poNotes: "",
+    expectedPoDate: "",
+    billingCompanyName: "",
+    billingPhone: "",
+    billingEmail: "",
+    gstin: "",
+    billingAddress: "",
+  });
 
   const [fitters, setFitters] = useState<any[]>([]);
   const [loadingFitters, setLoadingFitters] = useState(false);
@@ -170,6 +212,64 @@ export default function BookingTokenDetailPage() {
     }
 
     setSelectedDurationChoice((prev) => (prev ? prev : resolved));
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    setBillingForm((prev) => ({
+      paymentPlanType: prev.paymentPlanType || token?.paymentPlanType || "",
+      billingFrequency: prev.billingFrequency || token?.billingFrequency || "",
+      gstApplicable:
+        prev.gstApplicable ||
+        (typeof token?.gstApplicable === "boolean"
+          ? token.gstApplicable
+            ? "yes"
+            : "no"
+          : "yes"),
+      finalAgreedBasePrice:
+        prev.finalAgreedBasePrice ||
+        (token?.finalAgreedBasePrice !== undefined &&
+        token?.finalAgreedBasePrice !== null
+          ? String(token.finalAgreedBasePrice)
+          : ""),
+      modeOfPayment: prev.modeOfPayment || token?.modeOfPayment || "",
+      printingChargesBase:
+        prev.printingChargesBase ||
+        (token?.printingChargesBase !== undefined &&
+        token?.printingChargesBase !== null
+          ? String(token.printingChargesBase)
+          : "0"),
+      mountingChargesBase:
+        prev.mountingChargesBase ||
+        (token?.mountingChargesBase !== undefined &&
+        token?.mountingChargesBase !== null
+          ? String(token.mountingChargesBase)
+          : "0"),
+      poRequired:
+        prev.poRequired ||
+        (typeof token?.poRequired === "boolean"
+          ? token.poRequired
+            ? "yes"
+            : "no"
+          : "no"),
+      poNotes: prev.poNotes || token?.poNotes || "",
+      expectedPoDate:
+        prev.expectedPoDate ||
+        (token?.expectedPoDate
+          ? String(token.expectedPoDate).slice(0, 10)
+          : ""),
+      billingCompanyName:
+        prev.billingCompanyName ||
+        token?.client?.billingCompanyName ||
+        token?.client?.companyName ||
+        "",
+      billingPhone:
+        prev.billingPhone || token?.client?.billingPhone || token?.client?.phone || "",
+      billingEmail:
+        prev.billingEmail || token?.client?.billingEmail || token?.client?.email || "",
+      gstin: prev.gstin || token?.client?.gstin || "",
+      billingAddress: prev.billingAddress || token?.client?.billingAddress || "",
+    }));
   }, [token]);
 
   useEffect(() => {
@@ -508,6 +608,21 @@ export default function BookingTokenDetailPage() {
         executionType: selectedExecutionType,
         plannedLiveDate:
           plannedLiveDateDraft || new Date().toISOString().slice(0, 10),
+        paymentPlanType: billingForm.paymentPlanType,
+        billingFrequency: billingForm.billingFrequency,
+        gstApplicable: billingForm.gstApplicable === "yes",
+        finalAgreedBasePrice: Number(billingForm.finalAgreedBasePrice || 0),
+        modeOfPayment: billingForm.modeOfPayment,
+        printingChargesBase: Number(billingForm.printingChargesBase || 0),
+        mountingChargesBase: Number(billingForm.mountingChargesBase || 0),
+        poRequired: billingForm.poRequired === "yes",
+        poNotes: billingForm.poNotes || undefined,
+        expectedPoDate: billingForm.expectedPoDate || undefined,
+        billingCompanyName: billingForm.billingCompanyName || undefined,
+        billingPhone: billingForm.billingPhone || undefined,
+        billingEmail: billingForm.billingEmail || undefined,
+        gstin: billingForm.gstin || undefined,
+        billingAddress: billingForm.billingAddress || undefined,
         ...durationPayload,
       };
       const resp = await bookingTokensAPI.confirm(tokenId, payload);
@@ -560,6 +675,26 @@ export default function BookingTokenDetailPage() {
     }
     if (!selectedDurationChoice) {
       showError("Please select a duration");
+      return;
+    }
+    if (!plannedLiveDateDraft) {
+      showError("Please select a live date");
+      return;
+    }
+    if (!billingForm.paymentPlanType) {
+      showError("Please select a payment plan type");
+      return;
+    }
+    if (!billingForm.billingFrequency) {
+      showError("Please select a billing frequency");
+      return;
+    }
+    if (!billingForm.finalAgreedBasePrice) {
+      showError("Please enter final agreed base price");
+      return;
+    }
+    if (!billingForm.modeOfPayment) {
+      showError("Please select a mode of payment");
       return;
     }
     setShowFinalizeConfirm(true);
@@ -1390,13 +1525,13 @@ export default function BookingTokenDetailPage() {
                   !actionsDisabledByHoardingStatus && (
                     <div
                       style={{
-                        display: "flex",
-                        gap: 10,
-                        alignItems: "center",
-                        flexWrap: "wrap",
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                        gap: 12,
+                        width: "100%",
                       }}
                     >
-                      <div style={{ minWidth: 260 }}>
+                      <div>
                         <label
                           style={{
                             display: "block",
@@ -1417,7 +1552,7 @@ export default function BookingTokenDetailPage() {
                           }
                         />
                       </div>
-                      <div style={{ minWidth: 200 }}>
+                      <div>
                         <label
                           style={{
                             display: "block",
@@ -1438,6 +1573,389 @@ export default function BookingTokenDetailPage() {
                           }
                         />
                       </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Planned Live Date
+                        </label>
+                        <input
+                          className="input"
+                          type="date"
+                          value={plannedLiveDateDraft}
+                          onChange={(e) => setPlannedLiveDateDraft(e.target.value)}
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Payment Plan Type
+                        </label>
+                        <CustomSelect
+                          value={billingForm.paymentPlanType}
+                          onChange={(value) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              paymentPlanType: value,
+                            }))
+                          }
+                          options={paymentPlanOptions}
+                          placeholder="Select payment plan"
+                          openDirection="down"
+                          className={
+                            submitting ? "opacity-60 pointer-events-none" : ""
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Billing Frequency
+                        </label>
+                        <CustomSelect
+                          value={billingForm.billingFrequency}
+                          onChange={(value) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              billingFrequency: value,
+                            }))
+                          }
+                          options={billingFrequencyOptions}
+                          placeholder="Select frequency"
+                          openDirection="down"
+                          className={
+                            submitting ? "opacity-60 pointer-events-none" : ""
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          GST Applicable
+                        </label>
+                        <select
+                          className="input"
+                          value={billingForm.gstApplicable}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              gstApplicable: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        >
+                          <option value="yes">Yes</option>
+                          <option value="no">No</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Final Agreed Base Price
+                        </label>
+                        <input
+                          className="input"
+                          type="number"
+                          min="0"
+                          value={billingForm.finalAgreedBasePrice}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              finalAgreedBasePrice: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Mode of Payment
+                        </label>
+                        <select
+                          className="input"
+                          value={billingForm.modeOfPayment}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              modeOfPayment: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        >
+                          <option value="">Select mode</option>
+                          {modeOfPaymentOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Printing Charges
+                        </label>
+                        <input
+                          className="input"
+                          type="number"
+                          min="0"
+                          value={billingForm.printingChargesBase}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              printingChargesBase: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Mounting Charges
+                        </label>
+                        <input
+                          className="input"
+                          type="number"
+                          min="0"
+                          value={billingForm.mountingChargesBase}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              mountingChargesBase: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          PO Required
+                        </label>
+                        <select
+                          className="input"
+                          value={billingForm.poRequired}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              poRequired: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        >
+                          <option value="no">No</option>
+                          <option value="yes">Yes</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Expected PO Date
+                        </label>
+                        <input
+                          className="input"
+                          type="date"
+                          value={billingForm.expectedPoDate}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              expectedPoDate: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Billing Company
+                        </label>
+                        <input
+                          className="input"
+                          type="text"
+                          value={billingForm.billingCompanyName}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              billingCompanyName: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Billing Phone
+                        </label>
+                        <input
+                          className="input"
+                          type="text"
+                          value={billingForm.billingPhone}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              billingPhone: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Billing Email
+                        </label>
+                        <input
+                          className="input"
+                          type="email"
+                          value={billingForm.billingEmail}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              billingEmail: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          GSTIN
+                        </label>
+                        <input
+                          className="input"
+                          type="text"
+                          value={billingForm.gstin}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              gstin: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Billing Address
+                        </label>
+                        <textarea
+                          className="input"
+                          value={billingForm.billingAddress}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              billingAddress: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                          rows={2}
+                        />
+                      </div>
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            marginBottom: 4,
+                          }}
+                        >
+                          PO Notes
+                        </label>
+                        <textarea
+                          className="input"
+                          value={billingForm.poNotes}
+                          onChange={(e) =>
+                            setBillingForm((prev) => ({
+                              ...prev,
+                              poNotes: e.target.value,
+                            }))
+                          }
+                          disabled={submitting}
+                          rows={2}
+                        />
+                      </div>
+                      <div style={{ display: "flex", alignItems: "end" }}>
                       <button
                         className="btn btn-primary"
                         onClick={handleOpenFinalizeConfirm}
@@ -1445,6 +1963,7 @@ export default function BookingTokenDetailPage() {
                       >
                         {isFinalizing ? "Booking..." : "Book Hoarding"}
                       </button>
+                      </div>
                     </div>
                   )}
               </div>
