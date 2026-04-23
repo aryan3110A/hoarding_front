@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
 import CustomSelect from "@/components/CustomSelect";
@@ -54,6 +54,17 @@ function DashboardContent() {
   );
   const [assigningById, setAssigningById] = useState<Record<string, boolean>>(
     {},
+  );
+  const [selectedSupervisorClient, setSelectedSupervisorClient] =
+    useState<string>("all");
+  const [clientExecDraft, setClientExecDraft] = useState<
+    Record<string, string>
+  >({});
+  const [clientDesignerDraft, setClientDesignerDraft] = useState<
+    Record<string, string>
+  >({});
+  const [assigningClientKey, setAssigningClientKey] = useState<string | null>(
+    null,
   );
 
   const user = useUser();
@@ -327,7 +338,7 @@ function DashboardContent() {
       else if (userRole === "supervisor") {
         try {
           const [hoardingsRes, designersRes] = await Promise.allSettled([
-            supervisorAPI.listHoardings({ limit: 100 }),
+            supervisorAPI.listHoardings({ limit: 1000 }),
             supervisorAPI.listDesigners(),
           ]);
 
@@ -431,6 +442,105 @@ function DashboardContent() {
     })),
   ];
 
+  const getSupervisorClientKey = (h: any) =>
+    String(
+      h?.clientId ||
+        h?.latestClientId ||
+        h?.client?.id ||
+        h?.clientName ||
+        h?.latestClientName ||
+        "unknown-client",
+    );
+
+  const getSupervisorClientName = (h: any) =>
+    String(
+      h?.clientName ||
+        h?.latestClientName ||
+        h?.client?.name ||
+        h?.client?.companyName ||
+        "Unknown Client",
+    );
+
+  const getSupervisorClientPhone = (h: any) =>
+    String(
+      h?.clientPhone ||
+        h?.latestClientPhone ||
+        h?.client?.phone ||
+        h?.clientContact ||
+        "",
+    );
+
+  const getSupervisorDesignerId = (h: any) =>
+    String(h?.designerId || h?.latestDesignerId || h?.designer?.id || "");
+
+  const isSupervisorAssignmentLocked = (h: any) => {
+    const statusLower = String(h?.status || "").toLowerCase();
+    const designStatusLower = String(
+      h?.latestDesignStatus || h?.designStatus || "",
+    ).toLowerCase();
+    return (
+      designStatusLower === "in_progress" ||
+      (statusLower === "live" && designStatusLower === "completed")
+    );
+  };
+
+  const getSupervisorLockReason = (h: any) => {
+    const designStatusLower = String(
+      h?.latestDesignStatus || h?.designStatus || "",
+    ).toLowerCase();
+    if (designStatusLower === "in_progress") {
+      return "Assignment locked because design is in progress";
+    }
+    return "Assignment locked for Live + Completed hoarding";
+  };
+
+  const supervisorClientGroups = useMemo(() => {
+    const groups = new Map<
+      string,
+      { key: string; name: string; phone: string; rows: any[] }
+    >();
+
+    (supervisorHoardings || []).forEach((h: any) => {
+      const key = getSupervisorClientKey(h);
+      const existing = groups.get(key);
+      if (existing) {
+        existing.rows.push(h);
+        if (!existing.phone) existing.phone = getSupervisorClientPhone(h);
+        return;
+      }
+
+      groups.set(key, {
+        key,
+        name: getSupervisorClientName(h),
+        phone: getSupervisorClientPhone(h),
+        rows: [h],
+      });
+    });
+
+    return Array.from(groups.values()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+  }, [supervisorHoardings]);
+
+  const supervisorClientOptions = [
+    { value: "all", label: "All Clients" },
+    ...supervisorClientGroups.map((group) => ({
+      value: group.key,
+      label: `${group.name} (${group.rows.length})`,
+    })),
+  ];
+
+  const selectedSupervisorGroup =
+    selectedSupervisorClient === "all"
+      ? null
+      : supervisorClientGroups.find(
+          (group) => group.key === selectedSupervisorClient,
+        ) || null;
+
+  const visibleSupervisorGroups = selectedSupervisorGroup
+    ? [selectedSupervisorGroup]
+    : [];
+
   // Debug: Log user object to see what we're working with
   useEffect(() => {
     if (user) {
@@ -447,6 +557,14 @@ function DashboardContent() {
       setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (selectedSupervisorClient === "all") return;
+    const stillExists = supervisorClientGroups.some(
+      (group) => group.key === selectedSupervisorClient,
+    );
+    if (!stillExists) setSelectedSupervisorClient("all");
+  }, [selectedSupervisorClient, supervisorClientGroups]);
 
   // Real-time: keep fitter task statuses updated
   useEffect(() => {
@@ -595,21 +713,31 @@ function DashboardContent() {
     hoardingId: string,
     hoardingStatus?: string | null,
     latestDesignStatus?: string | null,
+    currentExecutionType?: string | null,
+    currentDesignerId?: string | null,
   ) => {
     if (!hoardingId) return;
     const statusLower = String(hoardingStatus || "").toLowerCase();
     const designStatusLower = String(latestDesignStatus || "").toLowerCase();
-    if (statusLower === "live" && designStatusLower === "completed") {
-      showError("Cannot assign when hoarding is Live and design is Completed.");
+    if (
+      designStatusLower === "in_progress" ||
+      (statusLower === "live" && designStatusLower === "completed")
+    ) {
+      showError(
+        designStatusLower === "in_progress"
+          ? "Cannot assign while design is in progress."
+          : "Cannot assign when hoarding is Live and design is Completed.",
+      );
       return;
     }
-    const execType = execTypeDraft[hoardingId];
+    const execType = execTypeDraft[hoardingId] || currentExecutionType || "";
     const requiresDesigner = execType !== "CLIENT_DIRECT_FLEX";
+    const designerId = designerDraft[hoardingId] || currentDesignerId || "";
     if (!execType) {
       showError("Please select an execution type");
       return;
     }
-    if (requiresDesigner && !designerDraft[hoardingId]) {
+    if (requiresDesigner && !designerId) {
       showError("Please select a designer");
       return;
     }
@@ -619,7 +747,7 @@ function DashboardContent() {
         executionType: execType,
       };
       if (requiresDesigner) {
-        payload.designerId = designerDraft[hoardingId];
+        payload.designerId = designerId;
       }
       const resp = await supervisorAPI.setExecutionType(hoardingId, payload);
       if (resp?.success !== false) {
@@ -640,6 +768,199 @@ function DashboardContent() {
       setAssigningById((prev) => ({ ...prev, [hoardingId]: false }));
     }
   };
+
+  const handleAssignClientHoardings = async (clientKey: string) => {
+    const group = supervisorClientGroups.find((g) => g.key === clientKey);
+    if (!group) {
+      showError("Please select a client");
+      return;
+    }
+
+    const execType = clientExecDraft[clientKey] || "";
+    const requiresDesigner = execType !== "CLIENT_DIRECT_FLEX";
+    const designerId = clientDesignerDraft[clientKey] || "";
+
+    if (!execType) {
+      showError("Please select an execution type for this client");
+      return;
+    }
+
+    if (requiresDesigner && !designerId) {
+      showError("Please select a designer for this client");
+      return;
+    }
+
+    const assignableRows = group.rows.filter(
+      (h: any) => !isSupervisorAssignmentLocked(h),
+    );
+    if (assignableRows.length === 0) {
+      showError("No unlocked hoardings available for this client");
+      return;
+    }
+
+    try {
+      setAssigningClientKey(clientKey);
+      setAssigningById((prev) => {
+        const next = { ...(prev || {}) };
+        assignableRows.forEach((h: any) => {
+          if (h?.id) next[String(h.id)] = true;
+        });
+        return next;
+      });
+
+      const payload: { executionType: string; designerId?: string } = {
+        executionType: execType,
+      };
+      if (requiresDesigner) {
+        payload.designerId = designerId;
+      }
+
+      const results = await Promise.allSettled(
+        assignableRows.map((h: any) =>
+          supervisorAPI.setExecutionType(String(h.id), payload),
+        ),
+      );
+      const successCount = results.filter(
+        (result) =>
+          result.status === "fulfilled" && result.value?.success !== false,
+      ).length;
+      const failedCount = assignableRows.length - successCount;
+
+      if (successCount > 0) {
+        showSuccess(`Assigned ${successCount} hoarding(s) for ${group.name}`);
+        await fetchDashboardData();
+      }
+      if (failedCount > 0) {
+        showError(`${failedCount} hoarding(s) could not be assigned`);
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to assign client rows");
+    } finally {
+      setAssigningClientKey(null);
+      setAssigningById((prev) => {
+        const next = { ...(prev || {}) };
+        assignableRows.forEach((h: any) => {
+          if (h?.id) next[String(h.id)] = false;
+        });
+        return next;
+      });
+    }
+  };
+
+  const renderSupervisorHoardingRows = (rows: any[]) =>
+    rows.map((h: any) => {
+      const hid = String(h.id);
+      const lockAssignAction = isSupervisorAssignmentLocked(h);
+      const currentExec = h.executionType || "";
+      const selectedExec = execTypeDraft[hid] || currentExec || "";
+      const requiresDesigner =
+        !!selectedExec && selectedExec !== "CLIENT_DIRECT_FLEX";
+      const selectedDesigner = designerDraft[hid] || getSupervisorDesignerId(h);
+      const saving = assigningById[hid] || false;
+      const isClientFlex = selectedExec === "CLIENT_DIRECT_FLEX";
+
+      return (
+        <tr key={hid}>
+          <td>
+            <div className="supervisor-hoarding-code">{h.code || hid}</div>
+            <div className="supervisor-hoarding-location">
+              {[h.city, h.area].filter(Boolean).join(", ") || "-"}
+            </div>
+          </td>
+          <td>
+            <span className="supervisor-pill status-pill">
+              {(h.status || "unknown").replace(/_/g, " ").toUpperCase()}
+            </span>
+          </td>
+          <td>
+            <span className="supervisor-pill design-pill">
+              {h.latestDesignStatus
+                ? String(h.latestDesignStatus).replace(/_/g, " ").toUpperCase()
+                : "-"}
+            </span>
+          </td>
+          <td className="supervisor-text-cell">
+            {currentExec ? currentExec.replace(/_/g, " ") : "-"}
+          </td>
+          <td>
+            <CustomSelect
+              value={selectedExec}
+              onChange={(value) => {
+                setExecTypeDraft((prev) => ({
+                  ...prev,
+                  [hid]: value,
+                }));
+                if (value === "CLIENT_DIRECT_FLEX") {
+                  setDesignerDraft((prev) => {
+                    const next = { ...(prev || {}) };
+                    delete next[hid];
+                    return next;
+                  });
+                }
+              }}
+              options={executionTypeOptions}
+              placeholder="Select..."
+              className="supervisor-custom-select"
+              disabled={saving || lockAssignAction}
+            />
+          </td>
+          <td>
+            {requiresDesigner ? (
+              <CustomSelect
+                value={selectedDesigner}
+                onChange={(value) =>
+                  setDesignerDraft((prev) => ({
+                    ...prev,
+                    [hid]: value,
+                  }))
+                }
+                options={designerOptions}
+                placeholder="Select designer..."
+                className="supervisor-custom-select"
+                disabled={saving || lockAssignAction}
+              />
+            ) : (
+              <span className="supervisor-muted">N/A</span>
+            )}
+          </td>
+          <td>
+            <button
+              className="btn btn-primary supervisor-assign-btn"
+              disabled={
+                lockAssignAction ||
+                saving ||
+                !selectedExec ||
+                (requiresDesigner && !selectedDesigner)
+              }
+              onClick={() =>
+                handleAssignExecution(
+                  hid,
+                  h.status,
+                  h.latestDesignStatus,
+                  currentExec,
+                  selectedDesigner,
+                )
+              }
+              title={
+                lockAssignAction
+                  ? getSupervisorLockReason(h)
+                  : isClientFlex
+                    ? "Confirm Client Direct Flex"
+                    : "Assign execution/designer"
+              }
+            >
+              {lockAssignAction
+                ? "Locked"
+                : saving
+                  ? "Saving..."
+                  : isClientFlex
+                    ? "Confirm"
+                    : "Assign"}
+            </button>
+          </td>
+        </tr>
+      );
+    });
 
   const LoadingAnimation = ({ label }: { label: string }) => (
     <div
@@ -1772,7 +2093,8 @@ function DashboardContent() {
                     Booked Hoardings — Assign Execution &amp; Designer
                   </h3>
                   <p className="supervisor-assignment-subtitle">
-                    Select execution type and assign designer where required.
+                    Assign execution type and designer from each client row,
+                    then open a client to manage hoardings one by one.
                   </p>
                 </div>
                 <button
@@ -1786,152 +2108,178 @@ function DashboardContent() {
               {loading ? (
                 <LoadingAnimation label="Loading hoardings..." />
               ) : supervisorHoardings.length > 0 ? (
-                <div className="supervisor-assignment-table-wrap">
-                  <table className="table supervisor-assignment-table">
-                    <thead>
-                      <tr>
-                        <th>Hoarding</th>
-                        <th>Status</th>
-                        <th>Design Status</th>
-                        <th>Current Execution</th>
-                        <th>New Execution</th>
-                        <th>Designer</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {supervisorHoardings.map((h: any) => {
-                        const hid = String(h.id);
-                        const statusLower = String(
-                          h.status || "",
-                        ).toLowerCase();
-                        const designStatusLower = String(
-                          h.latestDesignStatus || "",
-                        ).toLowerCase();
-                        const lockAssignAction =
-                          statusLower === "live" &&
-                          designStatusLower === "completed";
-                        const currentExec = h.executionType || "";
-                        const selectedExec =
-                          execTypeDraft[hid] || currentExec || "";
-                        const requiresDesigner =
-                          !!selectedExec &&
-                          selectedExec !== "CLIENT_DIRECT_FLEX";
-                        const selectedDesigner = designerDraft[hid] || "";
-                        const saving = assigningById[hid] || false;
-                        const isClientFlex =
-                          selectedExec === "CLIENT_DIRECT_FLEX";
-                        return (
-                          <tr key={hid}>
-                            <td>
-                              <div className="supervisor-hoarding-code">
-                                {h.code || hid}
-                              </div>
-                              <div className="supervisor-hoarding-location">
-                                {[h.city, h.area].filter(Boolean).join(", ") ||
-                                  "-"}
-                              </div>
-                            </td>
-                            <td>
-                              <span className="supervisor-pill status-pill">
-                                {(h.status || "unknown")
-                                  .replace(/_/g, " ")
-                                  .toUpperCase()}
-                              </span>
-                            </td>
-                            <td>
-                              <span className="supervisor-pill design-pill">
-                                {h.latestDesignStatus
-                                  ? String(h.latestDesignStatus)
-                                      .replace(/_/g, " ")
-                                      .toUpperCase()
-                                  : "-"}
-                              </span>
-                            </td>
-                            <td className="supervisor-text-cell">
-                              {currentExec
-                                ? currentExec.replace(/_/g, " ")
-                                : "-"}
-                            </td>
-                            <td>
-                              <CustomSelect
-                                value={selectedExec}
-                                onChange={(value) => {
-                                  setExecTypeDraft((prev) => ({
-                                    ...prev,
-                                    [hid]: value,
-                                  }));
-                                  if (value === "CLIENT_DIRECT_FLEX") {
-                                    setDesignerDraft((prev) => {
-                                      const next = { ...(prev || {}) };
-                                      delete next[hid];
-                                      return next;
-                                    });
-                                  }
-                                }}
-                                options={executionTypeOptions}
-                                placeholder="Select..."
-                                className="supervisor-custom-select"
-                                disabled={saving}
-                              />
-                            </td>
-                            <td>
-                              {requiresDesigner ? (
-                                <CustomSelect
-                                  value={selectedDesigner}
-                                  onChange={(value) =>
-                                    setDesignerDraft((prev) => ({
-                                      ...prev,
-                                      [hid]: value,
-                                    }))
-                                  }
-                                  options={designerOptions}
-                                  placeholder="Select designer..."
-                                  className="supervisor-custom-select"
-                                  disabled={saving}
-                                />
-                              ) : (
-                                <span className="supervisor-muted">N/A</span>
-                              )}
-                            </td>
-                            <td>
-                              <button
-                                className="btn btn-primary supervisor-assign-btn"
-                                disabled={
-                                  lockAssignAction ||
-                                  saving ||
-                                  !selectedExec ||
-                                  (requiresDesigner && !selectedDesigner)
-                                }
-                                onClick={() =>
-                                  handleAssignExecution(
-                                    hid,
-                                    h.status,
-                                    h.latestDesignStatus,
-                                  )
-                                }
-                                title={
-                                  lockAssignAction
-                                    ? "Assignment locked for Live + Completed hoarding"
-                                    : isClientFlex
-                                      ? "Confirm Client Direct Flex"
-                                      : "Assign execution/designer"
+                <div className="supervisor-client-section">
+                  <div className="supervisor-assignment-table-wrap">
+                    <table className="table supervisor-assignment-table supervisor-client-table">
+                      <thead>
+                        <tr>
+                          <th>Client Name</th>
+                          <th>Client Phone</th>
+                          <th>Booked Hoardings</th>
+                          <th>Unlocked</th>
+                          <th>Execution Type</th>
+                          <th>Designer</th>
+                          <th>Assign</th>
+                          <th>Expand / View</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {supervisorClientGroups.map((group) => {
+                          const unlockedCount = group.rows.filter(
+                            (h: any) => !isSupervisorAssignmentLocked(h),
+                          ).length;
+                          const clientExec = clientExecDraft[group.key] || "";
+                          const clientRequiresDesigner =
+                            !!clientExec &&
+                            clientExec !== "CLIENT_DIRECT_FLEX";
+                          const clientDesigner =
+                            clientDesignerDraft[group.key] || "";
+                          const clientSaving = assigningClientKey === group.key;
+                          const isViewing =
+                            selectedSupervisorClient === group.key;
+                          return (
+                            <Fragment key={group.key}>
+                              <tr
+                                className={
+                                  isViewing
+                                    ? "supervisor-client-row-active"
+                                    : undefined
                                 }
                               >
-                                {lockAssignAction
-                                  ? "Locked"
-                                  : saving
-                                    ? "Saving..."
-                                    : isClientFlex
-                                      ? "Confirm"
-                                      : "Assign"}
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                                <td>
+                                  <div className="supervisor-hoarding-code">
+                                    {group.name}
+                                  </div>
+                                </td>
+                                <td className="supervisor-text-cell">
+                                  {group.phone || "-"}
+                                </td>
+                                <td className="supervisor-text-cell">
+                                  {group.rows.length}
+                                </td>
+                                <td className="supervisor-text-cell">
+                                  {unlockedCount}
+                                </td>
+                                <td className="supervisor-client-control-cell">
+                                  <CustomSelect
+                                    value={clientExec}
+                                    onChange={(value) => {
+                                      setClientExecDraft((prev) => ({
+                                        ...prev,
+                                        [group.key]: value,
+                                      }));
+                                      if (value === "CLIENT_DIRECT_FLEX") {
+                                        setClientDesignerDraft((prev) => {
+                                          const next = { ...(prev || {}) };
+                                          delete next[group.key];
+                                          return next;
+                                        });
+                                      }
+                                    }}
+                                    options={executionTypeOptions}
+                                    placeholder="Select..."
+                                    className="supervisor-custom-select"
+                                    disabled={clientSaving || unlockedCount === 0}
+                                  />
+                                </td>
+                                <td className="supervisor-client-control-cell">
+                                  <CustomSelect
+                                    value={clientDesigner}
+                                    onChange={(value) =>
+                                      setClientDesignerDraft((prev) => ({
+                                        ...prev,
+                                        [group.key]: value,
+                                      }))
+                                    }
+                                    options={designerOptions}
+                                    placeholder={
+                                      clientRequiresDesigner
+                                        ? "Select designer..."
+                                        : clientExec === "CLIENT_DIRECT_FLEX"
+                                          ? "Not needed"
+                                          : "Select execution first"
+                                    }
+                                    className="supervisor-custom-select"
+                                    disabled={
+                                      clientSaving ||
+                                      unlockedCount === 0 ||
+                                      !clientRequiresDesigner
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <button
+                                    className="btn btn-primary supervisor-assign-btn"
+                                    disabled={
+                                      clientSaving ||
+                                      unlockedCount === 0 ||
+                                      !clientExec ||
+                                      (clientRequiresDesigner && !clientDesigner)
+                                    }
+                                    onClick={() =>
+                                      handleAssignClientHoardings(group.key)
+                                    }
+                                    title={`${unlockedCount} unlocked hoarding(s) can be assigned`}
+                                  >
+                                    {clientSaving ? "Assigning..." : "Assign"}
+                                  </button>
+                                </td>
+                                <td>
+                                  <button
+                                    className="btn btn-primary supervisor-assign-btn"
+                                    onClick={() =>
+                                      setSelectedSupervisorClient(
+                                        isViewing ? "all" : group.key,
+                                      )
+                                    }
+                                  >
+                                    {isViewing ? "Hide" : "View"}
+                                  </button>
+                                </td>
+                              </tr>
+                              {isViewing ? (
+                                <tr className="supervisor-inline-detail-row">
+                                  <td colSpan={8}>
+                                    <div className="supervisor-selected-client-card supervisor-inline-detail-card">
+                                      <div className="supervisor-selected-client-header">
+                                        <div>
+                                          <h4>{group.name}</h4>
+                                          <p>
+                                            {group.phone || "No phone"} -{" "}
+                                            {group.rows.length} booked hoarding(s)
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div className="supervisor-assignment-table-wrap">
+                                        <table className="table supervisor-assignment-table">
+                                          <thead>
+                                            <tr>
+                                              <th>Hoarding</th>
+                                              <th>Status</th>
+                                              <th>Design Status</th>
+                                              <th>Current Execution</th>
+                                              <th>New Execution</th>
+                                              <th>Designer</th>
+                                              <th>Action</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {renderSupervisorHoardingRows(
+                                              group.rows,
+                                            )}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ) : null}
+                            </Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : (
                 <div className="supervisor-empty">
@@ -2042,6 +2390,93 @@ function DashboardContent() {
           line-height: 1.4;
         }
 
+        .supervisor-client-section {
+          margin-top: 20px;
+        }
+
+        .supervisor-client-toolbar {
+          display: grid;
+          grid-template-columns: minmax(240px, 1.25fr) minmax(190px, 1fr) minmax(
+              190px,
+              1fr
+            ) auto;
+          align-items: end;
+          gap: 14px;
+          padding: 16px;
+          border: 1px solid color-mix(in srgb, var(--border-color) 60%, white);
+          border-radius: var(--radius-lg);
+          background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--primary-color) 9%, white),
+            #fff 62%
+          );
+          box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+        }
+
+        .supervisor-toolbar-field {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          min-width: 0;
+        }
+
+        .supervisor-toolbar-field label {
+          color: var(--text-primary);
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+        }
+
+        .supervisor-client-assign-btn {
+          min-height: 40px;
+          min-width: 150px;
+          padding: 10px 16px;
+          white-space: nowrap;
+        }
+
+        .supervisor-disabled-value {
+          display: flex;
+          align-items: center;
+          min-height: 40px;
+          padding: 0 12px;
+          border: 1px solid color-mix(in srgb, var(--border-color) 65%, white);
+          border-radius: var(--radius-sm);
+          background: color-mix(in srgb, var(--bg-secondary) 70%, white);
+          color: var(--text-secondary);
+          font-size: 14px;
+        }
+
+        .supervisor-selected-client-card {
+          margin-top: 18px;
+          padding: 16px;
+          border: 1px solid color-mix(in srgb, var(--border-color) 58%, white);
+          border-radius: var(--radius-lg);
+          background: #fff;
+        }
+
+        .supervisor-selected-client-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+          margin-bottom: 14px;
+        }
+
+        .supervisor-selected-client-header h4 {
+          margin: 0;
+          color: var(--text-primary);
+          font-size: 18px;
+          font-weight: 800;
+        }
+
+        .supervisor-selected-client-header p {
+          margin: 4px 0 0;
+          color: var(--text-secondary);
+          font-size: 13px;
+        }
+
         .supervisor-assignment-table-wrap {
           margin-top: 18px;
           overflow-x: auto;
@@ -2115,6 +2550,47 @@ function DashboardContent() {
           text-transform: capitalize;
         }
 
+        .supervisor-client-control-cell {
+          min-width: 210px;
+        }
+
+        .supervisor-client-table :global(td .supervisor-custom-select) {
+          min-width: 170px;
+        }
+
+        :global(.supervisor-client-table tbody tr.supervisor-client-row-active) {
+          background: color-mix(in srgb, var(--primary-color) 10%, white);
+        }
+
+        :global(
+            .supervisor-client-table tbody tr.supervisor-client-row-active td
+          ) {
+          box-shadow: inset 0 -1px 0
+            color-mix(in srgb, var(--primary-color) 18%, white);
+        }
+
+        :global(.supervisor-client-table tbody tr.supervisor-inline-detail-row) {
+          background: transparent;
+        }
+
+        :global(
+            .supervisor-client-table tbody tr.supervisor-inline-detail-row td
+          ) {
+          padding: 0;
+          border: 0;
+        }
+
+        .supervisor-inline-detail-card {
+          margin: 0;
+          border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+          border-top: 0;
+          background: linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--primary-color) 6%, white),
+            #fff 26%
+          );
+        }
+
         .supervisor-select {
           width: 100%;
           min-width: 180px;
@@ -2136,6 +2612,10 @@ function DashboardContent() {
 
         .supervisor-custom-select {
           min-width: 180px;
+        }
+
+        .supervisor-client-toolbar .supervisor-custom-select {
+          min-width: 0;
         }
 
         .supervisor-muted {
@@ -2165,6 +2645,14 @@ function DashboardContent() {
             padding: 20px;
           }
 
+          .supervisor-client-toolbar {
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+          }
+
+          .supervisor-client-assign-btn {
+            width: 100%;
+          }
+
           .supervisor-select {
             min-width: 160px;
           }
@@ -2181,6 +2669,11 @@ function DashboardContent() {
 
           .supervisor-assignment-header :global(.btn) {
             width: 100%;
+          }
+
+          .supervisor-client-toolbar {
+            grid-template-columns: 1fr;
+            padding: 14px;
           }
 
           .supervisor-select {

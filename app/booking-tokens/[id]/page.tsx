@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import CustomSelect from "@/components/CustomSelect";
 import { bookingTokensAPI, hoardingsAPI } from "@/lib/api";
@@ -49,6 +50,16 @@ const modeOfPaymentOptions = [
   "Card",
   "In Hand",
 ];
+
+const yesNoOptions = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+];
+
+const modeOfPaymentSelectOptions = modeOfPaymentOptions.map((option) => ({
+  value: option,
+  label: option,
+}));
 
 export default function BookingTokenDetailPage() {
   const params = useParams<{ id: string }>();
@@ -1523,35 +1534,53 @@ export default function BookingTokenDetailPage() {
                 {canConfirmThisToken &&
                   isActiveToken &&
                   !actionsDisabledByHoardingStatus && (
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                        gap: 12,
-                        width: "100%",
-                      }}
-                    >
-                      <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: 12,
-                            marginBottom: 4,
-                          }}
-                        >
-                          Execution Type
-                        </label>
-                        <CustomSelect
-                          value={selectedExecutionType}
-                          onChange={setSelectedExecutionType}
-                          options={executionTypeOptions}
-                          placeholder="Select execution type"
-                          openDirection="down"
-                          className={
-                            submitting ? "opacity-60 pointer-events-none" : ""
-                          }
-                        />
+                    <div className="booking-finalize-panel">
+                      <div className="booking-finalize-header">
+                        <div>
+                          <span className="booking-eyebrow">
+                            Booking information
+                          </span>
+                          <h3>Finalize hoarding booking</h3>
+                          <p>
+                            Review execution, pricing, PO and billing details
+                            before confirming this booking.
+                          </p>
+                        </div>
+                        <span className="booking-highlight-pill">
+                          Booking form
+                        </span>
                       </div>
+                      <div
+                        className="booking-finalize-grid"
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(220px, 1fr))",
+                          gap: 12,
+                          width: "100%",
+                        }}
+                      >
+                        <div>
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: 12,
+                              marginBottom: 4,
+                            }}
+                          >
+                            Execution Type
+                          </label>
+                          <CustomSelect
+                            value={selectedExecutionType}
+                            onChange={setSelectedExecutionType}
+                            options={executionTypeOptions}
+                            placeholder="Select execution type"
+                            openDirection="down"
+                            className={
+                              submitting ? "opacity-60 pointer-events-none" : ""
+                            }
+                          />
+                        </div>
                       <div>
                         <label
                           style={{
@@ -1653,20 +1682,21 @@ export default function BookingTokenDetailPage() {
                         >
                           GST Applicable
                         </label>
-                        <select
-                          className="input"
+                        <CustomSelect
                           value={billingForm.gstApplicable}
-                          onChange={(e) =>
+                          onChange={(value) =>
                             setBillingForm((prev) => ({
                               ...prev,
-                              gstApplicable: e.target.value,
+                              gstApplicable: value,
                             }))
                           }
-                          disabled={submitting}
-                        >
-                          <option value="yes">Yes</option>
-                          <option value="no">No</option>
-                        </select>
+                          options={yesNoOptions}
+                          placeholder="Select GST"
+                          openDirection="down"
+                          className={
+                            submitting ? "opacity-60 pointer-events-none" : ""
+                          }
+                        />
                       </div>
                       <div>
                         <label
@@ -1702,24 +1732,21 @@ export default function BookingTokenDetailPage() {
                         >
                           Mode of Payment
                         </label>
-                        <select
-                          className="input"
+                        <CustomSelect
                           value={billingForm.modeOfPayment}
-                          onChange={(e) =>
+                          onChange={(value) =>
                             setBillingForm((prev) => ({
                               ...prev,
-                              modeOfPayment: e.target.value,
+                              modeOfPayment: value,
                             }))
                           }
-                          disabled={submitting}
-                        >
-                          <option value="">Select mode</option>
-                          {modeOfPaymentOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
+                          options={modeOfPaymentSelectOptions}
+                          placeholder="Select mode"
+                          openDirection="down"
+                          className={
+                            submitting ? "opacity-60 pointer-events-none" : ""
+                          }
+                        />
                       </div>
                       <div>
                         <label
@@ -1779,20 +1806,21 @@ export default function BookingTokenDetailPage() {
                         >
                           PO Required
                         </label>
-                        <select
-                          className="input"
+                        <CustomSelect
                           value={billingForm.poRequired}
-                          onChange={(e) =>
+                          onChange={(value) =>
                             setBillingForm((prev) => ({
                               ...prev,
-                              poRequired: e.target.value,
+                              poRequired: value,
                             }))
                           }
-                          disabled={submitting}
-                        >
-                          <option value="no">No</option>
-                          <option value="yes">Yes</option>
-                        </select>
+                          options={yesNoOptions}
+                          placeholder="Select PO"
+                          openDirection="down"
+                          className={
+                            submitting ? "opacity-60 pointer-events-none" : ""
+                          }
+                        />
                       </div>
                       <div>
                         <label
@@ -1955,72 +1983,213 @@ export default function BookingTokenDetailPage() {
                           rows={2}
                         />
                       </div>
-                      <div style={{ display: "flex", alignItems: "end" }}>
-                      <button
-                        className="btn btn-primary"
-                        onClick={handleOpenFinalizeConfirm}
-                        disabled={submitting || isFinalizing}
+                      <div
+                        className="booking-submit-cell"
+                        style={{ display: "flex", alignItems: "end" }}
                       >
-                        {isFinalizing ? "Booking..." : "Book Hoarding"}
-                      </button>
+                        <button
+                          className="btn btn-primary"
+                          onClick={handleOpenFinalizeConfirm}
+                          disabled={submitting || isFinalizing}
+                        >
+                          {isFinalizing ? "Booking..." : "Book Hoarding"}
+                        </button>
                       </div>
+                    </div>
                     </div>
                   )}
               </div>
 
-              {showFinalizeConfirm && (
-                <div
-                  className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/45 p-4"
-                  onClick={() => setShowFinalizeConfirm(false)}
-                >
+              <style>{`
+                .booking-finalize-panel {
+                  width: 100%;
+                  margin-top: 18px;
+                  padding: 24px;
+                  border-radius: 18px;
+                  border: 1px solid #e2e8f0;
+                  background: #ffffff;
+                  box-shadow: 0 16px 34px rgba(8, 28, 64, 0.08);
+                }
+
+                .booking-finalize-header {
+                  display: flex;
+                  align-items: flex-start;
+                  justify-content: space-between;
+                  gap: 16px;
+                  margin-bottom: 22px;
+                  padding-bottom: 16px;
+                  border-bottom: 1px solid #e5e7eb;
+                }
+
+                .booking-finalize-header h3 {
+                  margin: 6px 0 4px;
+                  color: #0f172a;
+                  font-size: 22px;
+                  letter-spacing: -0.02em;
+                }
+
+                .booking-finalize-header p {
+                  margin: 0;
+                  color: #64748b;
+                  font-size: 14px;
+                  max-width: 640px;
+                }
+
+                .booking-eyebrow {
+                  color: #1f5ca9;
+                  font-size: 11px;
+                  font-weight: 800;
+                  letter-spacing: 0.12em;
+                  text-transform: uppercase;
+                }
+
+                .booking-highlight-pill {
+                  display: inline-flex;
+                  align-items: center;
+                  white-space: nowrap;
+                  border-radius: 999px;
+                  border: 1px solid #dbeafe;
+                  background: #f8fafc;
+                  color: #1e3a8a;
+                  font-size: 12px;
+                  font-weight: 700;
+                  padding: 7px 11px;
+                }
+
+                .booking-finalize-grid {
+                  align-items: start;
+                }
+
+                .booking-finalize-grid > div {
+                  min-width: 0;
+                }
+
+                .booking-finalize-grid label {
+                  display: block !important;
+                  margin-bottom: 7px !important;
+                  color: #475569;
+                  font-size: 12px !important;
+                  font-weight: 700;
+                  letter-spacing: 0.02em;
+                }
+
+                .booking-finalize-grid .input,
+                .booking-finalize-grid select,
+                .booking-finalize-grid textarea,
+                .booking-finalize-grid .cool-dropdown-button {
+                  width: 100%;
+                  min-height: 46px;
+                  padding-left: 16px;
+                  padding-right: 16px;
+                  border-radius: 10px;
+                  border: 1px solid #cbd5e1;
+                  background: #ffffff;
+                  color: #0f172a;
+                  font-size: 15px;
+                  font-weight: 500;
+                  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+                }
+
+                .booking-finalize-grid textarea.input {
+                  min-height: 88px;
+                  padding-top: 12px;
+                  padding-bottom: 12px;
+                  resize: vertical;
+                }
+
+                .booking-finalize-grid .input:focus,
+                .booking-finalize-grid select:focus,
+                .booking-finalize-grid textarea:focus,
+                .booking-finalize-grid .cool-dropdown-button:focus {
+                  outline: none;
+                  border-color: #1f5ca9;
+                  box-shadow: 0 0 0 3px rgba(31, 92, 169, 0.12);
+                }
+
+                .booking-submit-cell {
+                  align-self: end;
+                }
+
+                .booking-submit-cell .btn {
+                  width: 100%;
+                  min-height: 46px;
+                  border-radius: 10px;
+                  font-size: 15px;
+                  font-weight: 700;
+                }
+
+                @media (max-width: 768px) {
+                  .booking-finalize-panel {
+                    padding: 16px;
+                    border-radius: 14px;
+                  }
+
+                  .booking-finalize-header {
+                    flex-direction: column;
+                  }
+
+                  .booking-highlight-pill {
+                    white-space: normal;
+                  }
+                }
+              `}</style>
+
+              {showFinalizeConfirm &&
+                typeof document !== "undefined" &&
+                createPortal(
                   <div
-                    className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl"
-                    onClick={(e) => e.stopPropagation()}
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
+                    onClick={() => setShowFinalizeConfirm(false)}
                   >
-                    <h3
-                      style={{
-                        marginBottom: 8,
-                        fontSize: 20,
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      Confirm Booking
-                    </h3>
-                    <p
-                      style={{
-                        marginBottom: 16,
-                        color: "var(--text-secondary)",
-                      }}
-                    >
-                      Are you sure you want to book this hoarding?
-                    </p>
                     <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        gap: 10,
-                      }}
+                      className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <button
-                        type="button"
-                        className="btn btn-secondary !px-3 !py-2 !text-sm"
-                        onClick={() => setShowFinalizeConfirm(false)}
-                        disabled={submitting}
+                      <h3
+                        style={{
+                          marginBottom: 8,
+                          fontSize: 20,
+                          color: "var(--text-primary)",
+                        }}
                       >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-primary !px-3 !py-2 !text-sm"
-                        onClick={handleConfirm}
-                        disabled={submitting || isFinalizing}
+                        Confirm Booking
+                      </h3>
+                      <p
+                        style={{
+                          marginBottom: 16,
+                          color: "var(--text-secondary)",
+                        }}
                       >
-                        {isFinalizing ? "Booking..." : "Confirm Booking"}
-                      </button>
+                        Are you sure you want to book this hoarding?
+                      </p>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          gap: 10,
+                        }}
+                      >
+                        <button
+                          type="button"
+                          className="btn btn-secondary !px-3 !py-2 !text-sm"
+                          onClick={() => setShowFinalizeConfirm(false)}
+                          disabled={submitting}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-primary !px-3 !py-2 !text-sm"
+                          onClick={handleConfirm}
+                          disabled={submitting || isFinalizing}
+                        >
+                          {isFinalizing ? "Booking..." : "Confirm Booking"}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )}
+                  </div>,
+                  document.body,
+                )}
             </>
           )}
         </div>
