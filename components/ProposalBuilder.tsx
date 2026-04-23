@@ -63,6 +63,8 @@ type SelectedHoarding = {
   area?: string | null;
   location?: string | null;
   sizeLabel?: string | null;
+  widthCm?: number | null;
+  heightCm?: number | null;
   type?: string | null;
   status?: string | null;
   discountPct: number;
@@ -73,6 +75,33 @@ type SelectedHoarding = {
 const toFtLabel = (widthCm?: number | null, heightCm?: number | null) => {
   if (!widthCm || !heightCm) return "—";
   return `${Math.round(widthCm / 30.48)}ft x ${Math.round(heightCm / 30.48)}ft`;
+};
+
+const getAreaSqFtFromSelection = (row: {
+  widthCm?: number | null;
+  heightCm?: number | null;
+  sizeLabel?: string | null;
+}) => {
+  const widthFt =
+    row.widthCm && Number.isFinite(Number(row.widthCm))
+      ? Math.round(Number(row.widthCm) / 30.48)
+      : null;
+  const heightFt =
+    row.heightCm && Number.isFinite(Number(row.heightCm))
+      ? Math.round(Number(row.heightCm) / 30.48)
+      : null;
+
+  if (widthFt && heightFt) return Math.max(0, widthFt * heightFt);
+
+  const size = String(row.sizeLabel || "")
+    .toLowerCase()
+    .replace(/\s+/g, "");
+  const match = size.match(/(\d+)ftx(\d+)ft/);
+  if (!match) return 0;
+  const parsedWidth = Number(match[1] || 0);
+  const parsedHeight = Number(match[2] || 0);
+  if (!Number.isFinite(parsedWidth) || !Number.isFinite(parsedHeight)) return 0;
+  return Math.max(0, parsedWidth * parsedHeight);
 };
 
 const toMoney = (v: unknown) => {
@@ -153,6 +182,39 @@ const computeProposalPricing = (args: {
     finalWithGst,
     grandTotal,
   };
+};
+
+const toProposalFilenamePart = (value?: string | null) => {
+  const raw = String(value || "")
+    .trim()
+    .toLowerCase();
+  const sanitized = raw.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  return sanitized || "client";
+};
+
+const toProposalTimestampPart = (value?: string | Date | null) => {
+  const date = value ? new Date(value) : new Date();
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${safeDate.getFullYear()}${pad(safeDate.getMonth() + 1)}${pad(safeDate.getDate())}_${pad(
+    safeDate.getHours(),
+  )}${pad(safeDate.getMinutes())}${pad(safeDate.getSeconds())}`;
+};
+
+const buildProposalFilename = (proposal?: {
+  client?: { name?: string | null } | null;
+  clientName?: string | null;
+  pdfGeneratedAt?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}) => {
+  const clientPart = toProposalFilenamePart(
+    proposal?.client?.name || proposal?.clientName,
+  );
+  const timestampPart = toProposalTimestampPart(
+    proposal?.pdfGeneratedAt || proposal?.updatedAt || proposal?.createdAt,
+  );
+  return `proposal_${clientPart}_${timestampPart}.pdf`;
 };
 
 const SIZE_PRESETS = [
@@ -256,6 +318,17 @@ export default function ProposalBuilder({
   const [total, setTotal] = useState<number>(0);
 
   const [selected, setSelected] = useState<SelectedHoarding[]>([]);
+
+  const selectedAreaSqFt = useMemo(
+    () =>
+      (selected || []).reduce(
+        (sum, row) => sum + getAreaSqFtFromSelection(row),
+        0,
+      ),
+    [selected],
+  );
+  const printingChargesTotal = Math.max(0, printingCharges) * selectedAreaSqFt;
+  const mountingChargesTotal = Math.max(0, mountingCharges) * selectedAreaSqFt;
 
   const persistDraftToLocal = () => {
     try {
@@ -411,7 +484,7 @@ export default function ProposalBuilder({
         finalWithoutGst: 0,
         gstAmount: 0,
         finalWithGst: 0,
-        grandTotal: Math.max(0, printingCharges) + Math.max(0, mountingCharges),
+        grandTotal: printingChargesTotal + mountingChargesTotal,
       };
     }
 
@@ -431,8 +504,8 @@ export default function ProposalBuilder({
       discountValue,
       includeGst,
       gstRatePct,
-      printingCharges,
-      mountingCharges,
+      printingCharges: printingChargesTotal,
+      mountingCharges: mountingChargesTotal,
     });
   }, [
     selected,
@@ -441,8 +514,8 @@ export default function ProposalBuilder({
     discountValue,
     includeGst,
     gstRatePct,
-    printingCharges,
-    mountingCharges,
+    printingChargesTotal,
+    mountingChargesTotal,
   ]);
 
   // Debounced client search
@@ -635,8 +708,6 @@ export default function ProposalBuilder({
         );
         setDiscountValue(toMoney(p.discountValue ?? 0));
         setGlobalDiscountPct(Number(p.globalDiscountPct ?? 0));
-        setPrintingCharges(toMoney(p.printingCharges ?? 0));
-        setMountingCharges(toMoney(p.mountingCharges ?? 0));
         setIncludeGst(!!p.includeGst);
         setGstRatePct(Number(p.gstRatePct ?? 18));
         if (p.client?.id) {
@@ -651,24 +722,42 @@ export default function ProposalBuilder({
           setClientInput(`${c.name}${c.phone ? ` (${c.phone})` : ""}`);
         }
         const rows = Array.isArray(p.hoardings) ? p.hoardings : [];
+        const restoredSelection = rows
+          .filter((h: any) => !!h?.hoardingId)
+          .map((h: any) => ({
+            hoardingId: String(h.hoardingId),
+            hoardingCode: h.hoardingCode ?? null,
+            baseRate: Math.max(0, toMoney(h.baseRate)),
+            minimumRate: 0,
+            city: h.city ?? null,
+            area: h.area ?? null,
+            location: h.location ?? null,
+            sizeLabel: h.sizeLabel ?? null,
+            widthCm: h.hoarding?.widthCm ?? null,
+            heightCm: h.hoarding?.heightCm ?? null,
+            type: h.type ?? null,
+            status: h.hoarding?.status ?? null,
+            discountPct: toMoney(h.discountPct),
+            illumination: !!h.illumination,
+            illuminationCost: toMoney(h.illuminationCost),
+          }));
+        const restoredAreaSqFt = restoredSelection.reduce(
+          (sum: number, row: SelectedHoarding) =>
+            sum + getAreaSqFtFromSelection(row),
+          0,
+        );
+        setPrintingCharges(
+          restoredAreaSqFt > 0
+            ? toMoney(p.printingCharges ?? 0) / restoredAreaSqFt
+            : toMoney(p.printingCharges ?? 0),
+        );
+        setMountingCharges(
+          restoredAreaSqFt > 0
+            ? toMoney(p.mountingCharges ?? 0) / restoredAreaSqFt
+            : toMoney(p.mountingCharges ?? 0),
+        );
         setSelected(
-          rows
-            .filter((h: any) => !!h?.hoardingId)
-            .map((h: any) => ({
-              hoardingId: String(h.hoardingId),
-              hoardingCode: h.hoardingCode ?? null,
-              baseRate: Math.max(0, toMoney(h.baseRate)),
-              minimumRate: 0,
-              city: h.city ?? null,
-              area: h.area ?? null,
-              location: h.location ?? null,
-              sizeLabel: h.sizeLabel ?? null,
-              type: h.type ?? null,
-              status: h.hoarding?.status ?? null,
-              discountPct: toMoney(h.discountPct),
-              illumination: !!h.illumination,
-              illuminationCost: toMoney(h.illuminationCost),
-            })),
+          restoredSelection,
         );
       } catch {
         // ignore
@@ -710,6 +799,8 @@ export default function ProposalBuilder({
             area: h.area ?? null,
             location: locationLabel(h),
             sizeLabel: toFtLabel(h.widthCm, h.heightCm),
+            widthCm: h.widthCm ?? null,
+            heightCm: h.heightCm ?? null,
             type: h.type ?? null,
             status: h.status ?? null,
             discountPct: 0,
@@ -766,6 +857,8 @@ export default function ProposalBuilder({
           area: h.area ?? null,
           location: locationLabel(h),
           sizeLabel: toFtLabel(h.widthCm, h.heightCm),
+          widthCm: h.widthCm ?? null,
+          heightCm: h.heightCm ?? null,
           type: h.type ?? null,
           status: h.status ?? null,
           discountPct: 0,
@@ -846,8 +939,8 @@ export default function ProposalBuilder({
         discountType,
         discountValue: Math.max(0, toMoney(discountValue)),
         globalDiscountPct: clampPctLocal(globalDiscountPct),
-        printingCharges: Math.max(0, toMoney(printingCharges)),
-        mountingCharges: Math.max(0, toMoney(mountingCharges)),
+        printingCharges: printingChargesTotal,
+        mountingCharges: mountingChargesTotal,
         includeGst,
         gstRatePct: clampPctLocal(gstRatePct),
         hoardings: selected.map((s) => ({
@@ -934,7 +1027,10 @@ export default function ProposalBuilder({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `proposal-${id}.pdf`;
+      a.download = buildProposalFilename({
+        client: selectedClient ? { name: selectedClient.name } : undefined,
+        pdfGeneratedAt: new Date().toISOString(),
+      });
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -1205,7 +1301,7 @@ export default function ProposalBuilder({
                   </div>
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">
-                      Printing Charges
+                      Printing Charges / sq ft
                     </label>
                     <input
                       type="number"
@@ -1216,10 +1312,15 @@ export default function ProposalBuilder({
                       }
                       className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                     />
+                    <div className="mt-1 text-xs text-slate-500">
+                      {selectedAreaSqFt > 0
+                        ? `Area: ${selectedAreaSqFt} sq ft · Total: ${printingChargesTotal.toFixed(2)}`
+                        : "Select hoardings to calculate total"}
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">
-                      Mounting Charges
+                      Mounting Charges / sq ft
                     </label>
                     <input
                       type="number"
@@ -1230,6 +1331,11 @@ export default function ProposalBuilder({
                       }
                       className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                     />
+                    <div className="mt-1 text-xs text-slate-500">
+                      {selectedAreaSqFt > 0
+                        ? `Area: ${selectedAreaSqFt} sq ft · Total: ${mountingChargesTotal.toFixed(2)}`
+                        : "Select hoardings to calculate total"}
+                    </div>
                   </div>
                   <div className="col-span-2 flex items-center justify-between border rounded px-3 py-2">
                     <label className="text-sm">With GST</label>
@@ -1279,11 +1385,11 @@ export default function ProposalBuilder({
                     ) : null}
                     <div className="flex justify-between mt-1">
                       <span className="text-gray-600">Printing</span>
-                      <span>{Math.max(0, printingCharges).toFixed(2)}</span>
+                      <span>{printingChargesTotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between mt-1">
                       <span className="text-gray-600">Mounting</span>
-                      <span>{Math.max(0, mountingCharges).toFixed(2)}</span>
+                      <span>{mountingChargesTotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between mt-1 font-semibold">
                       <span>Grand Total</span>

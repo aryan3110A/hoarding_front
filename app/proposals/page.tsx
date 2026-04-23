@@ -4,6 +4,33 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { proposalsAPI } from "@/lib/api";
 
+const toProposalFilenamePart = (value?: string | null) => {
+  const raw = String(value || "")
+    .trim()
+    .toLowerCase();
+  const sanitized = raw.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  return sanitized || "client";
+};
+
+const toProposalTimestampPart = (value?: string | null) => {
+  const date = value ? new Date(value) : new Date();
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${safeDate.getFullYear()}${pad(safeDate.getMonth() + 1)}${pad(safeDate.getDate())}_${pad(
+    safeDate.getHours(),
+  )}${pad(safeDate.getMinutes())}${pad(safeDate.getSeconds())}`;
+};
+
+const buildProposalFilename = (proposal?: any) => {
+  const clientPart = toProposalFilenamePart(
+    proposal?.client?.name || proposal?.clientName,
+  );
+  const timestampPart = toProposalTimestampPart(
+    proposal?.pdfGeneratedAt || proposal?.updatedAt || proposal?.createdAt,
+  );
+  return `proposal_${clientPart}_${timestampPart}.pdf`;
+};
+
 export default function ProposalsListPage() {
   const [proposals, setProposals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -187,7 +214,7 @@ export default function ProposalsListPage() {
                                 const url = window.URL.createObjectURL(blob);
                                 const a = document.createElement("a");
                                 a.href = url;
-                                a.download = `proposal-${p.id}.pdf`;
+                                a.download = buildProposalFilename(p);
                                 document.body.appendChild(a);
                                 a.click();
                                 window.URL.revokeObjectURL(url);

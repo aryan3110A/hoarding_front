@@ -61,6 +61,30 @@ const modeOfPaymentSelectOptions = modeOfPaymentOptions.map((option) => ({
   label: option,
 }));
 
+const cmToRoundedFt = (value?: number | null) => {
+  const numeric = Number(value || 0);
+  if (!numeric || Number.isNaN(numeric)) return 0;
+  return Math.round(numeric / 30.48);
+};
+
+const getHoardingAreaSqFt = (
+  hoarding?: { widthCm?: number | null; heightCm?: number | null } | null,
+) => {
+  const widthFt = cmToRoundedFt(hoarding?.widthCm);
+  const heightFt = cmToRoundedFt(hoarding?.heightCm);
+  if (!widthFt || !heightFt) return 0;
+  return widthFt * heightFt;
+};
+
+const getHoardingSizeLabelFt = (
+  hoarding?: { widthCm?: number | null; heightCm?: number | null } | null,
+) => {
+  const widthFt = cmToRoundedFt(hoarding?.widthCm);
+  const heightFt = cmToRoundedFt(hoarding?.heightCm);
+  if (!widthFt || !heightFt) return "—";
+  return `${widthFt}ft x ${heightFt}ft`;
+};
+
 export default function BookingTokenDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -148,6 +172,20 @@ export default function BookingTokenDetailPage() {
 
   const isDesigner = useMemo(() => roleLower === "designer", [roleLower]);
   const isFitter = false;
+  const hoardingAreaSqFt = useMemo(
+    () => getHoardingAreaSqFt(token?.hoarding),
+    [token?.hoarding],
+  );
+  const hoardingSizeLabelFt = useMemo(
+    () => getHoardingSizeLabelFt(token?.hoarding),
+    [token?.hoarding],
+  );
+  const printingRatePerSqFt = Number(billingForm.printingChargesBase || 0);
+  const mountingRatePerSqFt = Number(billingForm.mountingChargesBase || 0);
+  const printingChargesTotal =
+    hoardingAreaSqFt > 0 ? printingRatePerSqFt * hoardingAreaSqFt : 0;
+  const mountingChargesTotal =
+    hoardingAreaSqFt > 0 ? mountingRatePerSqFt * hoardingAreaSqFt : 0;
 
   const canCancel = useMemo(() => {
     return (
@@ -248,13 +286,21 @@ export default function BookingTokenDetailPage() {
         prev.printingChargesBase ||
         (token?.printingChargesBase !== undefined &&
         token?.printingChargesBase !== null
-          ? String(token.printingChargesBase)
+          ? String(
+              hoardingAreaSqFt > 0
+                ? Number(token.printingChargesBase) / hoardingAreaSqFt
+                : token.printingChargesBase,
+            )
           : "0"),
       mountingChargesBase:
         prev.mountingChargesBase ||
         (token?.mountingChargesBase !== undefined &&
         token?.mountingChargesBase !== null
-          ? String(token.mountingChargesBase)
+          ? String(
+              hoardingAreaSqFt > 0
+                ? Number(token.mountingChargesBase) / hoardingAreaSqFt
+                : token.mountingChargesBase,
+            )
           : "0"),
       poRequired:
         prev.poRequired ||
@@ -281,7 +327,7 @@ export default function BookingTokenDetailPage() {
       gstin: prev.gstin || token?.client?.gstin || "",
       billingAddress: prev.billingAddress || token?.client?.billingAddress || "",
     }));
-  }, [token]);
+  }, [token, hoardingAreaSqFt]);
 
   useEffect(() => {
     fetchToken();
@@ -624,8 +670,8 @@ export default function BookingTokenDetailPage() {
         gstApplicable: billingForm.gstApplicable === "yes",
         finalAgreedBasePrice: Number(billingForm.finalAgreedBasePrice || 0),
         modeOfPayment: billingForm.modeOfPayment,
-        printingChargesBase: Number(billingForm.printingChargesBase || 0),
-        mountingChargesBase: Number(billingForm.mountingChargesBase || 0),
+        printingChargesBase: printingChargesTotal,
+        mountingChargesBase: mountingChargesTotal,
         poRequired: billingForm.poRequired === "yes",
         poNotes: billingForm.poNotes || undefined,
         expectedPoDate: billingForm.expectedPoDate || undefined,
@@ -1167,7 +1213,7 @@ export default function BookingTokenDetailPage() {
                   <div>
                     <strong>Size:</strong>{" "}
                     {token.hoarding?.widthCm && token.hoarding?.heightCm
-                      ? `${token.hoarding.widthCm}cm x ${token.hoarding.heightCm}cm`
+                      ? `${cmToRoundedFt(token.hoarding.widthCm)}ft x ${cmToRoundedFt(token.hoarding.heightCm)}ft`
                       : "—"}
                   </div>
                   <div>
@@ -1756,7 +1802,7 @@ export default function BookingTokenDetailPage() {
                             marginBottom: 4,
                           }}
                         >
-                          Printing Charges
+                          Printing Charges / sq ft
                         </label>
                         <input
                           className="input"
@@ -1771,6 +1817,17 @@ export default function BookingTokenDetailPage() {
                           }
                           disabled={submitting}
                         />
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "var(--text-secondary)",
+                            marginTop: 4,
+                          }}
+                        >
+                          {hoardingAreaSqFt > 0
+                            ? `Area: ${hoardingAreaSqFt} sq ft · Total: ₹${printingChargesTotal.toFixed(2)}`
+                            : "Area unavailable"}
+                        </div>
                       </div>
                       <div>
                         <label
@@ -1780,7 +1837,7 @@ export default function BookingTokenDetailPage() {
                             marginBottom: 4,
                           }}
                         >
-                          Mounting Charges
+                          Mounting Charges / sq ft
                         </label>
                         <input
                           className="input"
@@ -1795,6 +1852,17 @@ export default function BookingTokenDetailPage() {
                           }
                           disabled={submitting}
                         />
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "var(--text-secondary)",
+                            marginTop: 4,
+                          }}
+                        >
+                          {hoardingAreaSqFt > 0
+                            ? `Area: ${hoardingAreaSqFt} sq ft · Total: ₹${mountingChargesTotal.toFixed(2)}`
+                            : "Area unavailable"}
+                        </div>
                       </div>
                       <div>
                         <label

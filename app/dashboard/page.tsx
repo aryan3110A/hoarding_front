@@ -18,6 +18,33 @@ import {
 import { canViewRent, canAssignTasks } from "@/lib/rbac";
 import { showError, showSuccess } from "@/lib/toast";
 
+const toProposalFilenamePart = (value?: string | null) => {
+  const raw = String(value || "")
+    .trim()
+    .toLowerCase();
+  const sanitized = raw.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  return sanitized || "client";
+};
+
+const toProposalTimestampPart = (value?: string | null) => {
+  const date = value ? new Date(value) : new Date();
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${safeDate.getFullYear()}${pad(safeDate.getMonth() + 1)}${pad(safeDate.getDate())}_${pad(
+    safeDate.getHours(),
+  )}${pad(safeDate.getMinutes())}${pad(safeDate.getSeconds())}`;
+};
+
+const buildProposalFilename = (proposal?: any) => {
+  const clientPart = toProposalFilenamePart(
+    proposal?.client?.name || proposal?.clientName,
+  );
+  const timestampPart = toProposalTimestampPart(
+    proposal?.pdfGeneratedAt || proposal?.updatedAt || proposal?.createdAt,
+  );
+  return `proposal_${clientPart}_${timestampPart}.pdf`;
+};
+
 function DashboardContent() {
   const [stats, setStats] = useState<any>(null);
   const [upcomingDues, setUpcomingDues] = useState<any[]>([]);
@@ -337,17 +364,17 @@ function DashboardContent() {
       // Supervisor: Fetch booked hoardings + designers for assignment
       else if (userRole === "supervisor") {
         try {
-          const [hoardingsRes, designersRes] = await Promise.allSettled([
-            supervisorAPI.listHoardings({ limit: 1000 }),
+          const [boardRes, designersRes] = await Promise.allSettled([
+            supervisorAPI.getExecutionBoard({ tab: "pending", limit: 1000 }),
             supervisorAPI.listDesigners(),
           ]);
 
-          const hoardingsData =
-            hoardingsRes.status === "fulfilled" ? hoardingsRes.value : null;
+          const boardData =
+            boardRes.status === "fulfilled" ? boardRes.value : null;
           const designersData =
             designersRes.status === "fulfilled" ? designersRes.value : null;
 
-          const rows = hoardingsData?.rows || hoardingsData?.data?.rows || [];
+          const rows = boardData?.rows || boardData?.data?.rows || [];
           setSupervisorHoardings(Array.isArray(rows) ? rows : []);
 
           const dList = designersData?.data || designersData || [];
@@ -442,16 +469,6 @@ function DashboardContent() {
     })),
   ];
 
-  const getSupervisorClientKey = (h: any) =>
-    String(
-      h?.clientId ||
-        h?.latestClientId ||
-        h?.client?.id ||
-        h?.clientName ||
-        h?.latestClientName ||
-        "unknown-client",
-    );
-
   const getSupervisorClientName = (h: any) =>
     String(
       h?.clientName ||
@@ -466,9 +483,26 @@ function DashboardContent() {
       h?.clientPhone ||
         h?.latestClientPhone ||
         h?.client?.phone ||
+        h?.billingPhone ||
+        h?.client?.billingPhone ||
         h?.clientContact ||
         "",
     );
+
+  const getSupervisorClientId = (h: any) =>
+    String(h?.clientId || h?.latestClientId || h?.client?.id || "").trim();
+
+  const getSupervisorClientKey = (h: any) => {
+    const clientId = getSupervisorClientId(h);
+    if (clientId) return `client:${clientId}`;
+
+    const phone = getSupervisorClientPhone(h).trim();
+    const name = getSupervisorClientName(h).trim().toLowerCase();
+    if (phone && name) return `client-phone:${phone}:${name}`;
+    if (phone) return `client-phone:${phone}`;
+    if (name) return `client-name:${name}`;
+    return "unknown-client";
+  };
 
   const getSupervisorDesignerId = (h: any) =>
     String(h?.designerId || h?.latestDesignerId || h?.designer?.id || "");
@@ -497,7 +531,13 @@ function DashboardContent() {
   const supervisorClientGroups = useMemo(() => {
     const groups = new Map<
       string,
-      { key: string; name: string; phone: string; rows: any[] }
+      {
+        key: string;
+        clientId: string;
+        name: string;
+        phone: string;
+        rows: any[];
+      }
     >();
 
     (supervisorHoardings || []).forEach((h: any) => {
@@ -505,28 +545,32 @@ function DashboardContent() {
       const existing = groups.get(key);
       if (existing) {
         existing.rows.push(h);
+        if (!existing.clientId) existing.clientId = getSupervisorClientId(h);
         if (!existing.phone) existing.phone = getSupervisorClientPhone(h);
         return;
       }
 
       groups.set(key, {
         key,
+        clientId: getSupervisorClientId(h),
         name: getSupervisorClientName(h),
         phone: getSupervisorClientPhone(h),
         rows: [h],
       });
     });
 
-    return Array.from(groups.values()).sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
+    return Array.from(groups.values()).sort((a, b) => {
+      const nameCompare = a.name.localeCompare(b.name);
+      if (nameCompare !== 0) return nameCompare;
+      return (a.phone || "").localeCompare(b.phone || "");
+    });
   }, [supervisorHoardings]);
 
   const supervisorClientOptions = [
     { value: "all", label: "All Clients" },
     ...supervisorClientGroups.map((group) => ({
       value: group.key,
-      label: `${group.name} (${group.rows.length})`,
+      label: `${group.name}${group.phone ? ` - ${group.phone}` : ""} (${group.rows.length})`,
     })),
   ];
 
@@ -1679,7 +1723,7 @@ function DashboardContent() {
                                   const url = window.URL.createObjectURL(blob);
                                   const a = document.createElement("a");
                                   a.href = url;
-                                  a.download = `proposal-${p.id}.pdf`;
+                                  a.download = buildProposalFilename(p);
                                   document.body.appendChild(a);
                                   a.click();
                                   window.URL.revokeObjectURL(url);
@@ -2502,6 +2546,16 @@ function DashboardContent() {
           white-space: nowrap;
         }
 
+        .supervisor-inline-detail-card :global(.supervisor-assignment-table th),
+        .supervisor-inline-detail-card :global(.supervisor-assignment-table td) {
+          padding: 10px 10px;
+        }
+
+        .supervisor-inline-detail-card :global(.supervisor-assignment-table th) {
+          font-size: 10px;
+          letter-spacing: 0.3px;
+        }
+
         .supervisor-hoarding-code {
           font-weight: 700;
           font-size: 15px;
@@ -2515,6 +2569,17 @@ function DashboardContent() {
           font-size: 13px;
           line-height: 1.3;
           max-width: 280px;
+        }
+
+        .supervisor-inline-detail-card .supervisor-hoarding-code {
+          font-size: 11px;
+          line-height: 1.15;
+        }
+
+        .supervisor-inline-detail-card .supervisor-hoarding-location {
+          margin-top: 2px;
+          font-size: 10px;
+          line-height: 1.25;
         }
 
         .supervisor-pill {
@@ -2550,12 +2615,17 @@ function DashboardContent() {
           text-transform: capitalize;
         }
 
+        .supervisor-inline-detail-card .supervisor-text-cell {
+          font-size: 10px;
+          min-width: 110px;
+        }
+
         .supervisor-client-control-cell {
-          min-width: 210px;
+          min-width: 168px;
         }
 
         .supervisor-client-table :global(td .supervisor-custom-select) {
-          min-width: 170px;
+          min-width: 138px;
         }
 
         :global(.supervisor-client-table tbody tr.supervisor-client-row-active) {
@@ -2593,7 +2663,7 @@ function DashboardContent() {
 
         .supervisor-select {
           width: 100%;
-          min-width: 180px;
+          min-width: 150px;
           padding: 8px 10px;
           border: 1px solid color-mix(in srgb, var(--border-color) 65%, white);
           border-radius: var(--radius-sm);
@@ -2611,7 +2681,18 @@ function DashboardContent() {
         }
 
         .supervisor-custom-select {
-          min-width: 180px;
+          min-width: 150px;
+        }
+
+        .supervisor-inline-detail-card .supervisor-custom-select {
+          min-width: 120px;
+        }
+
+        .supervisor-inline-detail-card :global(.supervisor-custom-select button) {
+          height: 36px;
+          padding-left: 10px;
+          padding-right: 10px;
+          font-size: 12px;
         }
 
         .supervisor-client-toolbar .supervisor-custom-select {
@@ -2624,9 +2705,15 @@ function DashboardContent() {
         }
 
         .supervisor-assign-btn {
-          min-width: 96px;
-          padding: 9px 14px;
+          min-width: 78px;
+          padding: 8px 12px;
           font-size: 13px;
+        }
+
+        .supervisor-inline-detail-card .supervisor-assign-btn {
+          min-width: 66px;
+          padding: 7px 10px;
+          font-size: 12px;
         }
 
         .supervisor-empty {
