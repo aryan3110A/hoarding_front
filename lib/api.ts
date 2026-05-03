@@ -885,9 +885,12 @@ export const dashboardAPI = {
     endDate?: string;
     salespersonId?: string;
   }) => {
-    const response = await api.get("/dashboard/sales-performance/market-visits", {
-      params,
-    });
+    const response = await api.get(
+      "/dashboard/sales-performance/market-visits",
+      {
+        params,
+      },
+    );
     return response.data;
   },
 
@@ -1008,9 +1011,12 @@ export const supervisorAPI = {
       | "unmount_pending"
       | "unmounted",
   ) => {
-    const response = await api.put(`/supervisor/hoardings/${id}/execution-status`, {
-      status,
-    });
+    const response = await api.put(
+      `/supervisor/hoardings/${id}/execution-status`,
+      {
+        status,
+      },
+    );
     return response.data;
   },
   markFit: async (id: string) => {
@@ -1082,7 +1088,9 @@ export const accountantAPI = {
     return response.data;
   },
   markBillingEventPoPending: async (id: string) => {
-    const response = await api.post(`/accountant/billing-events/${id}/po-pending`);
+    const response = await api.post(
+      `/accountant/billing-events/${id}/po-pending`,
+    );
     return response.data;
   },
   generateBill: async (data: {
@@ -1145,7 +1153,10 @@ export const accountantAPI = {
     invoiceId: string,
     data: { reminderAt: string; reminderNote?: string },
   ) => {
-    const response = await api.post(`/accountant/invoices/${invoiceId}/reminder`, data);
+    const response = await api.post(
+      `/accountant/invoices/${invoiceId}/reminder`,
+      data,
+    );
     return response.data;
   },
   listPrintingExpenses: async (params?: {

@@ -1081,7 +1081,9 @@ export default function Enquiries() {
                           {isSalesRole ? (
                             salesCanEdit ? (
                               <StatusDropdown
-                                value={String(inquiry.performanceStage || "IN_PROCESS")}
+                                value={String(
+                                  inquiry.performanceStage || "IN_PROCESS",
+                                )}
                                 onChange={(v) =>
                                   handleUpdatePerformanceStage(inquiry.id, v)
                                 }
@@ -1095,7 +1097,9 @@ export default function Enquiries() {
                               />
                             ) : (
                               <StatusDropdown
-                                value={String(inquiry.performanceStage || "IN_PROCESS")}
+                                value={String(
+                                  inquiry.performanceStage || "IN_PROCESS",
+                                )}
                                 onChange={() => {}}
                                 placeholder={String(
                                   inquiry.performanceStage || "IN_PROCESS",
@@ -1109,7 +1113,9 @@ export default function Enquiries() {
                             )
                           ) : canUpdateInquiry ? (
                             <StatusDropdown
-                              value={String(inquiry.performanceStage || "IN_PROCESS")}
+                              value={String(
+                                inquiry.performanceStage || "IN_PROCESS",
+                              )}
                               onChange={(v) =>
                                 handleUpdatePerformanceStage(inquiry.id, v)
                               }
@@ -1122,7 +1128,9 @@ export default function Enquiries() {
                               buttonClassName="w-[180px]"
                             />
                           ) : (
-                            <span>{inquiry.performanceStage || "IN_PROCESS"}</span>
+                            <span>
+                              {inquiry.performanceStage || "IN_PROCESS"}
+                            </span>
                           )}
                         </td>
                         <td>

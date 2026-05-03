@@ -254,14 +254,24 @@ export default function ReportsPage() {
   const [salespersonId, setSalespersonId] = useState("");
   const [salesUsers, setSalesUsers] = useState<SalesUser[]>([]);
   const [overview, setOverview] = useState<SalesOverview | null>(null);
-  const [clientReport, setClientReport] = useState<SalesClientReport | null>(null);
+  const [clientReport, setClientReport] = useState<SalesClientReport | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "clients">("overview");
-  const [expandedClients, setExpandedClients] = useState<Record<string, boolean>>({});
-  const [expandedHoardings, setExpandedHoardings] = useState<Record<string, boolean>>({});
+  const [activeTab, setActiveTab] = useState<"overview" | "clients">(
+    "overview",
+  );
+  const [expandedClients, setExpandedClients] = useState<
+    Record<string, boolean>
+  >({});
+  const [expandedHoardings, setExpandedHoardings] = useState<
+    Record<string, boolean>
+  >({});
   const [loadError, setLoadError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
-  const [marketVisitDate, setMarketVisitDate] = useState(toDateInput(new Date()));
+  const [marketVisitDate, setMarketVisitDate] = useState(
+    toDateInput(new Date()),
+  );
   const [visitedMarket, setVisitedMarket] = useState(true);
   const [marketVisitNotes, setMarketVisitNotes] = useState("");
   const [savingMarketVisit, setSavingMarketVisit] = useState(false);
@@ -314,7 +324,9 @@ export default function ReportsPage() {
           dashboardAPI.getSalesPerformanceClients({
             startDate,
             endDate,
-            salespersonId: isManagement ? salespersonId || undefined : undefined,
+            salespersonId: isManagement
+              ? salespersonId || undefined
+              : undefined,
           }),
         ]);
 
@@ -358,7 +370,10 @@ export default function ReportsPage() {
   const clients = clientReport?.clients || [];
 
   const maxTimelineRevenue = useMemo(() => {
-    return Math.max(...timeline.map((item) => Number(item.recognizedRevenue || 0)), 0);
+    return Math.max(
+      ...timeline.map((item) => Number(item.recognizedRevenue || 0)),
+      0,
+    );
   }, [timeline]);
 
   const summaryCards = useMemo(
@@ -380,7 +395,9 @@ export default function ReportsPage() {
       },
       {
         label: "Remaining Scheduled",
-        value: formatCompactCurrency(overview?.summary?.remainingScheduledRevenue),
+        value: formatCompactCurrency(
+          overview?.summary?.remainingScheduledRevenue,
+        ),
         note: "Future cycle revenue still pending",
       },
       {
@@ -434,7 +451,10 @@ export default function ReportsPage() {
         ["Total Enquiries", String(enquiryFunnel.total || 0)],
         ["Won", String(enquiryFunnel.won || 0)],
         ["In Process", String(enquiryFunnel.inProcess || 0)],
-        ["Dead / Follow up later", String(enquiryFunnel.deadFollowUpLater || 0)],
+        [
+          "Dead / Follow up later",
+          String(enquiryFunnel.deadFollowUpLater || 0),
+        ],
         ["Not Interested", String(enquiryFunnel.notInterested || 0)],
         [],
         ["Enquiry Source", "Count"],
@@ -464,7 +484,9 @@ export default function ReportsPage() {
           client.clientName,
           hoarding.code,
           hoarding.salesUserName || "Unassigned",
-          String(hoarding.currentPeriodCredited || hoarding.recognizedRevenue || 0),
+          String(
+            hoarding.currentPeriodCredited || hoarding.recognizedRevenue || 0,
+          ),
           String(hoarding.futureScheduledRevenue || 0),
           String(hoarding.totalCreditedSoFar || 0),
           String(hoarding.remainingAmount || 0),
@@ -479,7 +501,9 @@ export default function ReportsPage() {
 
   const applyRange = (mode: "month" | "30d" | "90d") => {
     const range =
-      mode === "month" ? getCurrentMonthRange() : getLastNDaysRange(mode === "30d" ? 30 : 90);
+      mode === "month"
+        ? getCurrentMonthRange()
+        : getLastNDaysRange(mode === "30d" ? 30 : 90);
     setStartDate(range.startDate);
     setEndDate(range.endDate);
     setGroupBy(mode === "90d" ? "month" : "day");
@@ -524,7 +548,10 @@ export default function ReportsPage() {
 
   if (!user) {
     return (
-      <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
+      <div
+        className="card"
+        style={{ textAlign: "center", padding: "48px 24px" }}
+      >
         <h3>Loading reports</h3>
         <p>Preparing sales performance data.</p>
       </div>
@@ -550,20 +577,34 @@ export default function ReportsPage() {
         <div>
           <h1>Sales Performance</h1>
           <p style={{ maxWidth: "760px" }}>
-            Revenue recognition, enquiry activity, and client-wise performance using the live billing-event engine.
+            Revenue recognition, enquiry activity, and client-wise performance
+            using the live billing-event engine.
           </p>
         </div>
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-          <button className="btn btn-secondary" onClick={() => applyRange("month")}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => applyRange("month")}
+          >
             This Month
           </button>
-          <button className="btn btn-secondary" onClick={() => applyRange("30d")}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => applyRange("30d")}
+          >
             Last 30 Days
           </button>
-          <button className="btn btn-secondary" onClick={() => applyRange("90d")}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => applyRange("90d")}
+          >
             Last 90 Days
           </button>
-          <button className="btn btn-primary" onClick={exportCurrentView} disabled={loading}>
+          <button
+            className="btn btn-primary"
+            onClick={exportCurrentView}
+            disabled={loading}
+          >
             Export CSV
           </button>
         </div>
@@ -573,7 +614,9 @@ export default function ReportsPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: isManagement ? "repeat(4, minmax(0, 1fr))" : "repeat(3, minmax(0, 1fr))",
+            gridTemplateColumns: isManagement
+              ? "repeat(4, minmax(0, 1fr))"
+              : "repeat(3, minmax(0, 1fr))",
             gap: "16px",
           }}
         >
@@ -597,7 +640,9 @@ export default function ReportsPage() {
             <label>Group By</label>
             <select
               value={groupBy}
-              onChange={(event) => setGroupBy(event.target.value as "day" | "month")}
+              onChange={(event) =>
+                setGroupBy(event.target.value as "day" | "month")
+              }
             >
               <option value="day">Day</option>
               <option value="month">Month</option>
@@ -653,8 +698,13 @@ export default function ReportsPage() {
       </div>
 
       {loadError ? (
-        <div className="card" style={{ borderColor: "rgba(239, 68, 68, 0.35)" }}>
-          <h3 style={{ color: "var(--danger-color)" }}>Unable to load report</h3>
+        <div
+          className="card"
+          style={{ borderColor: "rgba(239, 68, 68, 0.35)" }}
+        >
+          <h3 style={{ color: "var(--danger-color)" }}>
+            Unable to load report
+          </h3>
           <p>{loadError}</p>
         </div>
       ) : null}
@@ -664,7 +714,13 @@ export default function ReportsPage() {
           <div key={card.label} className="stat-card">
             <h3>{card.value}</h3>
             <p>{card.label}</p>
-            <div style={{ marginTop: "10px", color: "var(--text-secondary)", fontSize: "13px" }}>
+            <div
+              style={{
+                marginTop: "10px",
+                color: "var(--text-secondary)",
+                fontSize: "13px",
+              }}
+            >
               {card.note}
             </div>
           </div>
@@ -672,7 +728,10 @@ export default function ReportsPage() {
       </div>
 
       {loading ? (
-        <div className="card" style={{ textAlign: "center", padding: "56px 24px" }}>
+        <div
+          className="card"
+          style={{ textAlign: "center", padding: "56px 24px" }}
+        >
           <h3>Refreshing sales performance</h3>
           <p>Pulling revenue, enquiry, and client rollups.</p>
         </div>
@@ -690,7 +749,10 @@ export default function ReportsPage() {
             >
               <div>
                 <h3>Revenue Timeline</h3>
-                <p>Recognized revenue and enquiry volume across the selected range.</p>
+                <p>
+                  Recognized revenue and enquiry volume across the selected
+                  range.
+                </p>
               </div>
               <div style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
                 Bucketed by {overview?.scope?.groupBy || groupBy}
@@ -702,7 +764,12 @@ export default function ReportsPage() {
                 {timeline.map((item) => {
                   const width =
                     maxTimelineRevenue > 0
-                      ? Math.max((Number(item.recognizedRevenue || 0) / maxTimelineRevenue) * 100, 4)
+                      ? Math.max(
+                          (Number(item.recognizedRevenue || 0) /
+                            maxTimelineRevenue) *
+                            100,
+                          4,
+                        )
                       : 4;
                   return (
                     <div
@@ -714,7 +781,14 @@ export default function ReportsPage() {
                         alignItems: "center",
                       }}
                     >
-                      <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>{item.key}</div>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {item.key}
+                      </div>
                       <div
                         style={{
                           height: "14px",
@@ -734,10 +808,20 @@ export default function ReportsPage() {
                         />
                       </div>
                       <div style={{ textAlign: "right" }}>
-                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            color: "var(--text-primary)",
+                          }}
+                        >
                           {formatCurrency(item.recognizedRevenue)}
                         </div>
-                        <div style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
+                        <div
+                          style={{
+                            color: "var(--text-secondary)",
+                            fontSize: "12px",
+                          }}
+                        >
                           {item.enquiries || 0} enquiries
                         </div>
                       </div>
@@ -767,7 +851,10 @@ export default function ReportsPage() {
                   ["Total enquiries", enquiryFunnel.total || 0],
                   ["Won", enquiryFunnel.won || 0],
                   ["In process", enquiryFunnel.inProcess || 0],
-                  ["Dead / Follow up later", enquiryFunnel.deadFollowUpLater || 0],
+                  [
+                    "Dead / Follow up later",
+                    enquiryFunnel.deadFollowUpLater || 0,
+                  ],
                   ["Not interested", enquiryFunnel.notInterested || 0],
                 ].map(([label, value]) => (
                   <div
@@ -782,8 +869,16 @@ export default function ReportsPage() {
                       background: "rgba(255, 255, 255, 0.72)",
                     }}
                   >
-                    <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>{label}</div>
-                    <div style={{ color: "var(--brand-blue)", fontWeight: 700 }}>{value}</div>
+                    <div
+                      style={{ fontWeight: 600, color: "var(--text-primary)" }}
+                    >
+                      {label}
+                    </div>
+                    <div
+                      style={{ color: "var(--brand-blue)", fontWeight: 700 }}
+                    >
+                      {value}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -792,7 +887,9 @@ export default function ReportsPage() {
             <div className="card" style={{ marginBottom: 0 }}>
               <h3>Enquiry Sources</h3>
               {enquirySources.length > 0 ? (
-                <div style={{ display: "grid", gap: "12px", marginTop: "16px" }}>
+                <div
+                  style={{ display: "grid", gap: "12px", marginTop: "16px" }}
+                >
                   {enquirySources.map((item) => (
                     <div
                       key={item.source}
@@ -807,7 +904,14 @@ export default function ReportsPage() {
                         background: "rgba(255, 255, 255, 0.72)",
                       }}
                     >
-                      <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>{item.source}</div>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {item.source}
+                      </div>
                       <div
                         style={{
                           minWidth: "44px",
@@ -825,20 +929,26 @@ export default function ReportsPage() {
                   ))}
                 </div>
               ) : (
-                <p style={{ marginTop: "16px" }}>No enquiry-source mix is available for this range.</p>
+                <p style={{ marginTop: "16px" }}>
+                  No enquiry-source mix is available for this range.
+                </p>
               )}
             </div>
 
             <div className="card" style={{ marginBottom: 0 }}>
               <h3>Market Visit Tracker</h3>
               {role === "sales" ? (
-                <div style={{ display: "grid", gap: "12px", marginTop: "16px" }}>
+                <div
+                  style={{ display: "grid", gap: "12px", marginTop: "16px" }}
+                >
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label>Visit Date</label>
                     <input
                       type="date"
                       value={marketVisitDate}
-                      onChange={(event) => setMarketVisitDate(event.target.value)}
+                      onChange={(event) =>
+                        setMarketVisitDate(event.target.value)
+                      }
                     />
                   </div>
                   <label
@@ -853,7 +963,9 @@ export default function ReportsPage() {
                     <input
                       type="checkbox"
                       checked={visitedMarket}
-                      onChange={(event) => setVisitedMarket(event.target.checked)}
+                      onChange={(event) =>
+                        setVisitedMarket(event.target.checked)
+                      }
                     />
                     Visited market today
                   </label>
@@ -862,7 +974,9 @@ export default function ReportsPage() {
                     <textarea
                       value={marketVisitNotes}
                       rows={3}
-                      onChange={(event) => setMarketVisitNotes(event.target.value)}
+                      onChange={(event) =>
+                        setMarketVisitNotes(event.target.value)
+                      }
                       placeholder="Optional market note or random-approach summary"
                     />
                   </div>
@@ -876,7 +990,8 @@ export default function ReportsPage() {
                 </div>
               ) : (
                 <p style={{ marginTop: "16px" }}>
-                  Market-visit logs are entered by each sales person and visible here for supervision.
+                  Market-visit logs are entered by each sales person and visible
+                  here for supervision.
                 </p>
               )}
               <div style={{ display: "grid", gap: "10px", marginTop: "16px" }}>
@@ -890,28 +1005,49 @@ export default function ReportsPage() {
                       background: "rgba(255,255,255,0.72)",
                     }}
                   >
-                    <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                    <div
+                      style={{ fontWeight: 700, color: "var(--text-primary)" }}
+                    >
                       {row.userName} · {formatDate(row.visitDate)}
                     </div>
-                    <div style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "4px" }}>
-                      {row.visitedMarket ? "Visited market" : "No market visit"} · {row.enquiriesCreated} enquiries · Walk In {row.walkInEnquiries} · Self Generated {row.selfGeneratedEnquiries}
+                    <div
+                      style={{
+                        color: "var(--text-secondary)",
+                        fontSize: "13px",
+                        marginTop: "4px",
+                      }}
+                    >
+                      {row.visitedMarket ? "Visited market" : "No market visit"}{" "}
+                      · {row.enquiriesCreated} enquiries · Walk In{" "}
+                      {row.walkInEnquiries} · Self Generated{" "}
+                      {row.selfGeneratedEnquiries}
                     </div>
                     {row.notes ? (
-                      <div style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "6px" }}>
+                      <div
+                        style={{
+                          color: "var(--text-secondary)",
+                          fontSize: "13px",
+                          marginTop: "6px",
+                        }}
+                      >
                         {row.notes}
                       </div>
                     ) : null}
                   </div>
                 ))}
                 {marketVisitRows.length === 0 ? (
-                  <p style={{ color: "var(--text-secondary)" }}>No market visits logged in this range.</p>
+                  <p style={{ color: "var(--text-secondary)" }}>
+                    No market visits logged in this range.
+                  </p>
                 ) : null}
               </div>
             </div>
           </div>
 
           <div className="card" style={{ marginTop: "24px" }}>
-            <h3>{isManagement ? "Salesperson Breakdown" : "Your Revenue Split"}</h3>
+            <h3>
+              {isManagement ? "Salesperson Breakdown" : "Your Revenue Split"}
+            </h3>
             {salespersonBreakdown.length > 0 ? (
               <div style={{ overflowX: "auto", marginTop: "16px" }}>
                 <table className="table">
@@ -950,7 +1086,9 @@ export default function ReportsPage() {
                 </table>
               </div>
             ) : (
-              <p style={{ marginTop: "16px" }}>No salesperson breakdown is available yet.</p>
+              <p style={{ marginTop: "16px" }}>
+                No salesperson breakdown is available yet.
+              </p>
             )}
           </div>
         </>
@@ -968,7 +1106,10 @@ export default function ReportsPage() {
           >
             <div>
               <h3>Client-First Revenue View</h3>
-              <p>Expand a client to inspect hoarding-level revenue and cycle-level recognition.</p>
+              <p>
+                Expand a client to inspect hoarding-level revenue and
+                cycle-level recognition.
+              </p>
             </div>
             <div style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
               {clients.length} client groups
@@ -986,7 +1127,8 @@ export default function ReportsPage() {
                       border: "1px solid rgba(31, 92, 169, 0.12)",
                       borderRadius: "18px",
                       overflow: "hidden",
-                      background: "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.94))",
+                      background:
+                        "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.94))",
                     }}
                   >
                     <button
@@ -998,39 +1140,102 @@ export default function ReportsPage() {
                         padding: "20px 22px",
                         cursor: "pointer",
                         display: "grid",
-                        gridTemplateColumns: "minmax(0, 1.4fr) repeat(4, minmax(120px, 1fr)) 48px",
+                        gridTemplateColumns:
+                          "minmax(0, 1.4fr) repeat(4, minmax(120px, 1fr)) 48px",
                         gap: "16px",
                         alignItems: "center",
                         textAlign: "left",
                       }}
                     >
                       <div>
-                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{client.clientName}</div>
-                        <div style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "6px" }}>
-                          {client.hoardingsCount} hoardings · {client.creditedCycles} credited cycles
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            color: "var(--text-primary)",
+                          }}
+                        >
+                          {client.clientName}
+                        </div>
+                        <div
+                          style={{
+                            color: "var(--text-secondary)",
+                            fontSize: "13px",
+                            marginTop: "6px",
+                          }}
+                        >
+                          {client.hoardingsCount} hoardings ·{" "}
+                          {client.creditedCycles} credited cycles
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Recognized</div>
-                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--text-secondary)",
+                          }}
+                        >
+                          Recognized
+                        </div>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            color: "var(--text-primary)",
+                          }}
+                        >
                           {formatCurrency(client.recognizedRevenue)}
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>New Business</div>
-                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--text-secondary)",
+                          }}
+                        >
+                          New Business
+                        </div>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            color: "var(--text-primary)",
+                          }}
+                        >
                           {formatCurrency(client.newBusinessRevenue)}
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Renewal</div>
-                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--text-secondary)",
+                          }}
+                        >
+                          Renewal
+                        </div>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            color: "var(--text-primary)",
+                          }}
+                        >
                           {formatCurrency(client.renewalRevenue)}
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Future</div>
-                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--text-secondary)",
+                          }}
+                        >
+                          Future
+                        </div>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            color: "var(--text-primary)",
+                          }}
+                        >
                           {formatCurrency(client.futureScheduledRevenue)}
                         </div>
                       </div>
@@ -1051,7 +1256,12 @@ export default function ReportsPage() {
                     </button>
 
                     {isExpanded ? (
-                      <div style={{ padding: "0 22px 22px", borderTop: "1px solid rgba(31, 92, 169, 0.08)" }}>
+                      <div
+                        style={{
+                          padding: "0 22px 22px",
+                          borderTop: "1px solid rgba(31, 92, 169, 0.08)",
+                        }}
+                      >
                         <div style={{ overflowX: "auto", marginTop: "16px" }}>
                           <table className="table">
                             <thead>
@@ -1071,203 +1281,498 @@ export default function ReportsPage() {
                             <tbody>
                               {client.hoardings.map((hoarding) => {
                                 const expandedKey = `${client.clientId}:${hoarding.hoardingId}`;
-                                const hoardingExpanded = Boolean(expandedHoardings[expandedKey]);
+                                const hoardingExpanded = Boolean(
+                                  expandedHoardings[expandedKey],
+                                );
                                 return (
                                   <>
                                     <tr key={expandedKey}>
                                       <td>
-                                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                                        <div
+                                          style={{
+                                            fontWeight: 700,
+                                            color: "var(--text-primary)",
+                                          }}
+                                        >
                                           {hoarding.code}
                                         </div>
-                                        <div style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
-                                          {[hoarding.city, hoarding.area].filter(Boolean).join(", ") || "Location pending"}
+                                        <div
+                                          style={{
+                                            color: "var(--text-secondary)",
+                                            fontSize: "12px",
+                                          }}
+                                        >
+                                          {[hoarding.city, hoarding.area]
+                                            .filter(Boolean)
+                                            .join(", ") || "Location pending"}
                                         </div>
                                       </td>
-                                      <td>{hoarding.salesUserName || "Unassigned"}</td>
-                                      <td>{formatDate(hoarding.liveDate)}</td>
-                                      <td>{hoarding.durationMonths || 0} months</td>
-                                      <td>{formatCurrency(hoarding.perCycleCreditAmount)}</td>
-                                      <td>{formatCurrency(hoarding.currentPeriodCredited)}</td>
-                                      <td>{formatCurrency(hoarding.totalCreditedSoFar)}</td>
-                                      <td>{formatCurrency(hoarding.remainingAmount)}</td>
                                       <td>
-                                        <div>{formatDate(hoarding.nextCycleDate || hoarding.nextRecognitionDate)}</div>
-                                        <div style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
-                                          {formatCurrency(hoarding.nextCycleAmount)}
+                                        {hoarding.salesUserName || "Unassigned"}
+                                      </td>
+                                      <td>{formatDate(hoarding.liveDate)}</td>
+                                      <td>
+                                        {hoarding.durationMonths || 0} months
+                                      </td>
+                                      <td>
+                                        {formatCurrency(
+                                          hoarding.perCycleCreditAmount,
+                                        )}
+                                      </td>
+                                      <td>
+                                        {formatCurrency(
+                                          hoarding.currentPeriodCredited,
+                                        )}
+                                      </td>
+                                      <td>
+                                        {formatCurrency(
+                                          hoarding.totalCreditedSoFar,
+                                        )}
+                                      </td>
+                                      <td>
+                                        {formatCurrency(
+                                          hoarding.remainingAmount,
+                                        )}
+                                      </td>
+                                      <td>
+                                        <div>
+                                          {formatDate(
+                                            hoarding.nextCycleDate ||
+                                              hoarding.nextRecognitionDate,
+                                          )}
+                                        </div>
+                                        <div
+                                          style={{
+                                            color: "var(--text-secondary)",
+                                            fontSize: "12px",
+                                          }}
+                                        >
+                                          {formatCurrency(
+                                            hoarding.nextCycleAmount,
+                                          )}
                                         </div>
                                       </td>
                                       <td style={{ textAlign: "right" }}>
                                         <button
                                           className="btn btn-secondary"
                                           style={{ padding: "8px 14px" }}
-                                          onClick={() => toggleHoarding(client.clientId, hoarding.hoardingId)}
+                                          onClick={() =>
+                                            toggleHoarding(
+                                              client.clientId,
+                                              hoarding.hoardingId,
+                                            )
+                                          }
                                         >
-                                          {hoardingExpanded ? "Hide Cycles" : "Show Cycles"}
+                                          {hoardingExpanded
+                                            ? "Hide Cycles"
+                                            : "Show Cycles"}
                                         </button>
                                       </td>
                                     </tr>
                                     {hoardingExpanded ? (
                                       <tr key={`${expandedKey}:cycles`}>
-                                        <td colSpan={9} style={{ background: "rgba(31, 92, 169, 0.03)" }}>
-                                          <div style={{ display: "grid", gap: "10px", padding: "12px 0" }}>
+                                        <td
+                                          colSpan={9}
+                                          style={{
+                                            background:
+                                              "rgba(31, 92, 169, 0.03)",
+                                          }}
+                                        >
+                                          <div
+                                            style={{
+                                              display: "grid",
+                                              gap: "10px",
+                                              padding: "12px 0",
+                                            }}
+                                          >
                                             <div
                                               style={{
                                                 display: "grid",
-                                                gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                                                gridTemplateColumns:
+                                                  "repeat(4, minmax(0, 1fr))",
                                                 gap: "12px",
                                               }}
                                             >
-                                              <div className="card" style={{ marginBottom: 0, padding: "16px" }}>
+                                              <div
+                                                className="card"
+                                                style={{
+                                                  marginBottom: 0,
+                                                  padding: "16px",
+                                                }}
+                                              >
                                                 <h4>Total Campaign Value</h4>
-                                                <div style={{ color: "var(--text-primary)", fontWeight: 700 }}>
-                                                  {formatCurrency(hoarding.totalCampaignValue)}
+                                                <div
+                                                  style={{
+                                                    color:
+                                                      "var(--text-primary)",
+                                                    fontWeight: 700,
+                                                  }}
+                                                >
+                                                  {formatCurrency(
+                                                    hoarding.totalCampaignValue,
+                                                  )}
                                                 </div>
                                               </div>
-                                              <div className="card" style={{ marginBottom: 0, padding: "16px" }}>
+                                              <div
+                                                className="card"
+                                                style={{
+                                                  marginBottom: 0,
+                                                  padding: "16px",
+                                                }}
+                                              >
                                                 <h4>Total Credited</h4>
-                                                <div style={{ color: "var(--text-primary)", fontWeight: 700 }}>
-                                                  {formatCurrency(hoarding.totalCreditedSoFar)}
+                                                <div
+                                                  style={{
+                                                    color:
+                                                      "var(--text-primary)",
+                                                    fontWeight: 700,
+                                                  }}
+                                                >
+                                                  {formatCurrency(
+                                                    hoarding.totalCreditedSoFar,
+                                                  )}
                                                 </div>
                                               </div>
-                                              <div className="card" style={{ marginBottom: 0, padding: "16px" }}>
+                                              <div
+                                                className="card"
+                                                style={{
+                                                  marginBottom: 0,
+                                                  padding: "16px",
+                                                }}
+                                              >
                                                 <h4>Remaining</h4>
-                                                <div style={{ color: "var(--text-primary)", fontWeight: 700 }}>
-                                                  {formatCurrency(hoarding.remainingAmount)}
+                                                <div
+                                                  style={{
+                                                    color:
+                                                      "var(--text-primary)",
+                                                    fontWeight: 700,
+                                                  }}
+                                                >
+                                                  {formatCurrency(
+                                                    hoarding.remainingAmount,
+                                                  )}
                                                 </div>
                                               </div>
-                                              <div className="card" style={{ marginBottom: 0, padding: "16px" }}>
+                                              <div
+                                                className="card"
+                                                style={{
+                                                  marginBottom: 0,
+                                                  padding: "16px",
+                                                }}
+                                              >
                                                 <h4>Cycle Credit</h4>
-                                                <div style={{ color: "var(--text-primary)", fontWeight: 700 }}>
-                                                  {formatCurrency(hoarding.perCycleCreditAmount)}
+                                                <div
+                                                  style={{
+                                                    color:
+                                                      "var(--text-primary)",
+                                                    fontWeight: 700,
+                                                  }}
+                                                >
+                                                  {formatCurrency(
+                                                    hoarding.perCycleCreditAmount,
+                                                  )}
                                                 </div>
                                               </div>
                                             </div>
 
-                                            {hoarding.currentCycles.length > 0 ? (
-                                              hoarding.currentCycles.map((cycle) => (
-                                                <div
-                                                  key={cycle.billingEventId}
-                                                  style={{
-                                                    display: "grid",
-                                                    gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-                                                    gap: "12px",
-                                                    padding: "14px 16px",
-                                                    border: "1px solid rgba(31, 92, 169, 0.08)",
-                                                    borderRadius: "14px",
-                                                    background: "white",
-                                                  }}
-                                                >
-                                                  <div>
-                                                    <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                                                      Cycle
+                                            {hoarding.currentCycles.length >
+                                            0 ? (
+                                              hoarding.currentCycles.map(
+                                                (cycle) => (
+                                                  <div
+                                                    key={cycle.billingEventId}
+                                                    style={{
+                                                      display: "grid",
+                                                      gridTemplateColumns:
+                                                        "repeat(5, minmax(0, 1fr))",
+                                                      gap: "12px",
+                                                      padding: "14px 16px",
+                                                      border:
+                                                        "1px solid rgba(31, 92, 169, 0.08)",
+                                                      borderRadius: "14px",
+                                                      background: "white",
+                                                    }}
+                                                  >
+                                                    <div>
+                                                      <div
+                                                        style={{
+                                                          fontSize: "12px",
+                                                          color:
+                                                            "var(--text-secondary)",
+                                                        }}
+                                                      >
+                                                        Cycle
+                                                      </div>
+                                                      <div
+                                                        style={{
+                                                          fontWeight: 700,
+                                                          color:
+                                                            "var(--text-primary)",
+                                                        }}
+                                                      >
+                                                        {cycle.cycleNumber}
+                                                      </div>
                                                     </div>
-                                                    <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                                                      {cycle.cycleNumber}
+                                                    <div>
+                                                      <div
+                                                        style={{
+                                                          fontSize: "12px",
+                                                          color:
+                                                            "var(--text-secondary)",
+                                                        }}
+                                                      >
+                                                        Revenue Type
+                                                      </div>
+                                                      <div
+                                                        style={{
+                                                          fontWeight: 700,
+                                                          color:
+                                                            "var(--text-primary)",
+                                                        }}
+                                                      >
+                                                        {cycle.revenueType ===
+                                                        "new_business"
+                                                          ? "New Business"
+                                                          : "Renewal"}
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <div
+                                                        style={{
+                                                          fontSize: "12px",
+                                                          color:
+                                                            "var(--text-secondary)",
+                                                        }}
+                                                      >
+                                                        Status
+                                                      </div>
+                                                      <div
+                                                        style={{
+                                                          fontWeight: 700,
+                                                          color:
+                                                            "var(--text-primary)",
+                                                        }}
+                                                      >
+                                                        {cycle.status}
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <div
+                                                        style={{
+                                                          fontSize: "12px",
+                                                          color:
+                                                            "var(--text-secondary)",
+                                                        }}
+                                                      >
+                                                        Recognition Date
+                                                      </div>
+                                                      <div
+                                                        style={{
+                                                          fontWeight: 700,
+                                                          color:
+                                                            "var(--text-primary)",
+                                                        }}
+                                                      >
+                                                        {formatDate(
+                                                          cycle.recognitionDate,
+                                                        )}
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <div
+                                                        style={{
+                                                          fontSize: "12px",
+                                                          color:
+                                                            "var(--text-secondary)",
+                                                        }}
+                                                      >
+                                                        Revenue
+                                                      </div>
+                                                      <div
+                                                        style={{
+                                                          fontWeight: 700,
+                                                          color:
+                                                            "var(--text-primary)",
+                                                        }}
+                                                      >
+                                                        {formatCurrency(
+                                                          cycle.revenue,
+                                                        )}
+                                                      </div>
                                                     </div>
                                                   </div>
-                                                  <div>
-                                                    <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                                                      Revenue Type
-                                                    </div>
-                                                    <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                                                      {cycle.revenueType === "new_business" ? "New Business" : "Renewal"}
-                                                    </div>
-                                                  </div>
-                                                  <div>
-                                                    <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                                                      Status
-                                                    </div>
-                                                    <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                                                      {cycle.status}
-                                                    </div>
-                                                  </div>
-                                                  <div>
-                                                    <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                                                      Recognition Date
-                                                    </div>
-                                                    <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                                                      {formatDate(cycle.recognitionDate)}
-                                                    </div>
-                                                  </div>
-                                                  <div>
-                                                    <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                                                      Revenue
-                                                    </div>
-                                                    <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                                                      {formatCurrency(cycle.revenue)}
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              ))
+                                                ),
+                                              )
                                             ) : (
-                                              <div style={{ padding: "12px 0", color: "var(--text-secondary)" }}>
-                                                No credited cycles were found for this selected period.
+                                              <div
+                                                style={{
+                                                  padding: "12px 0",
+                                                  color:
+                                                    "var(--text-secondary)",
+                                                }}
+                                              >
+                                                No credited cycles were found
+                                                for this selected period.
                                               </div>
                                             )}
 
                                             <div style={{ paddingTop: "8px" }}>
-                                              <h4 style={{ marginBottom: "12px" }}>Future Schedule Preview</h4>
-                                              {hoarding.schedulePreview.length > 0 ? (
-                                                <div style={{ display: "grid", gap: "10px" }}>
-                                                  {hoarding.schedulePreview.map((schedule) => (
-                                                    <div
-                                                      key={schedule.billingEventId}
-                                                      style={{
-                                                        display: "grid",
-                                                        gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-                                                        gap: "12px",
-                                                        padding: "14px 16px",
-                                                        border: "1px solid rgba(31, 92, 169, 0.08)",
-                                                        borderRadius: "14px",
-                                                        background: "white",
-                                                      }}
-                                                    >
-                                                      <div>
-                                                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                                                          Cycle
+                                              <h4
+                                                style={{ marginBottom: "12px" }}
+                                              >
+                                                Future Schedule Preview
+                                              </h4>
+                                              {hoarding.schedulePreview.length >
+                                              0 ? (
+                                                <div
+                                                  style={{
+                                                    display: "grid",
+                                                    gap: "10px",
+                                                  }}
+                                                >
+                                                  {hoarding.schedulePreview.map(
+                                                    (schedule) => (
+                                                      <div
+                                                        key={
+                                                          schedule.billingEventId
+                                                        }
+                                                        style={{
+                                                          display: "grid",
+                                                          gridTemplateColumns:
+                                                            "repeat(5, minmax(0, 1fr))",
+                                                          gap: "12px",
+                                                          padding: "14px 16px",
+                                                          border:
+                                                            "1px solid rgba(31, 92, 169, 0.08)",
+                                                          borderRadius: "14px",
+                                                          background: "white",
+                                                        }}
+                                                      >
+                                                        <div>
+                                                          <div
+                                                            style={{
+                                                              fontSize: "12px",
+                                                              color:
+                                                                "var(--text-secondary)",
+                                                            }}
+                                                          >
+                                                            Cycle
+                                                          </div>
+                                                          <div
+                                                            style={{
+                                                              fontWeight: 700,
+                                                              color:
+                                                                "var(--text-primary)",
+                                                            }}
+                                                          >
+                                                            {
+                                                              schedule.cycleNumber
+                                                            }
+                                                          </div>
                                                         </div>
-                                                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                                                          {schedule.cycleNumber}
+                                                        <div>
+                                                          <div
+                                                            style={{
+                                                              fontSize: "12px",
+                                                              color:
+                                                                "var(--text-secondary)",
+                                                            }}
+                                                          >
+                                                            Credit Month
+                                                          </div>
+                                                          <div
+                                                            style={{
+                                                              fontWeight: 700,
+                                                              color:
+                                                                "var(--text-primary)",
+                                                            }}
+                                                          >
+                                                            {schedule.monthKey}
+                                                          </div>
+                                                        </div>
+                                                        <div>
+                                                          <div
+                                                            style={{
+                                                              fontSize: "12px",
+                                                              color:
+                                                                "var(--text-secondary)",
+                                                            }}
+                                                          >
+                                                            Recognition Date
+                                                          </div>
+                                                          <div
+                                                            style={{
+                                                              fontWeight: 700,
+                                                              color:
+                                                                "var(--text-primary)",
+                                                            }}
+                                                          >
+                                                            {formatDate(
+                                                              schedule.recognitionDate,
+                                                            )}
+                                                          </div>
+                                                        </div>
+                                                        <div>
+                                                          <div
+                                                            style={{
+                                                              fontSize: "12px",
+                                                              color:
+                                                                "var(--text-secondary)",
+                                                            }}
+                                                          >
+                                                            Period
+                                                          </div>
+                                                          <div
+                                                            style={{
+                                                              fontWeight: 700,
+                                                              color:
+                                                                "var(--text-primary)",
+                                                            }}
+                                                          >
+                                                            {formatDate(
+                                                              schedule.periodStart,
+                                                            )}{" "}
+                                                            -{" "}
+                                                            {formatDate(
+                                                              schedule.periodEnd,
+                                                            )}
+                                                          </div>
+                                                        </div>
+                                                        <div>
+                                                          <div
+                                                            style={{
+                                                              fontSize: "12px",
+                                                              color:
+                                                                "var(--text-secondary)",
+                                                            }}
+                                                          >
+                                                            Amount
+                                                          </div>
+                                                          <div
+                                                            style={{
+                                                              fontWeight: 700,
+                                                              color:
+                                                                "var(--text-primary)",
+                                                            }}
+                                                          >
+                                                            {formatCurrency(
+                                                              schedule.amount,
+                                                            )}
+                                                          </div>
                                                         </div>
                                                       </div>
-                                                      <div>
-                                                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                                                          Credit Month
-                                                        </div>
-                                                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                                                          {schedule.monthKey}
-                                                        </div>
-                                                      </div>
-                                                      <div>
-                                                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                                                          Recognition Date
-                                                        </div>
-                                                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                                                          {formatDate(schedule.recognitionDate)}
-                                                        </div>
-                                                      </div>
-                                                      <div>
-                                                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                                                          Period
-                                                        </div>
-                                                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                                                          {formatDate(schedule.periodStart)} - {formatDate(schedule.periodEnd)}
-                                                        </div>
-                                                      </div>
-                                                      <div>
-                                                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                                                          Amount
-                                                        </div>
-                                                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                                                          {formatCurrency(schedule.amount)}
-                                                        </div>
-                                                      </div>
-                                                    </div>
-                                                  ))}
+                                                    ),
+                                                  )}
                                                 </div>
                                               ) : (
-                                                <div style={{ color: "var(--text-secondary)" }}>
-                                                  No future schedule remains for this hoarding.
+                                                <div
+                                                  style={{
+                                                    color:
+                                                      "var(--text-secondary)",
+                                                  }}
+                                                >
+                                                  No future schedule remains for
+                                                  this hoarding.
                                                 </div>
                                               )}
                                             </div>
@@ -1290,7 +1795,10 @@ export default function ReportsPage() {
           ) : (
             <div style={{ textAlign: "center", padding: "56px 24px" }}>
               <h3>No client revenue groups yet</h3>
-              <p>No recognized or future revenue events matched the current filters.</p>
+              <p>
+                No recognized or future revenue events matched the current
+                filters.
+              </p>
             </div>
           )}
         </div>

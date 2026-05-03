@@ -6,8 +6,7 @@ import { useUser } from "@/components/AppLayout";
 import { accountantAPI, clientsAPI, contractsAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 const paymentMethods = [
   "CASH",
@@ -67,12 +66,14 @@ export default function AccountantDashboardPage() {
   const [queueGroups, setQueueGroups] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
-  const [firmOptions, setFirmOptions] = useState<string[]>(defaultBillFirmOptions);
+  const [firmOptions, setFirmOptions] = useState<string[]>(
+    defaultBillFirmOptions,
+  );
   const [queueSearch, setQueueSearch] = useState("");
   const [paymentSearch, setPaymentSearch] = useState("");
-  const [activeTab, setActiveTab] = useState<"invoices" | "payments" | "printing">(
-    "invoices",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "invoices" | "payments" | "printing"
+  >("invoices");
   const [activeQueueTab, setActiveQueueTab] = useState<
     "to_be_generated" | "pending" | "overdue" | "completed"
   >("to_be_generated");
@@ -80,7 +81,9 @@ export default function AccountantDashboardPage() {
   const [selectedEventsByClient, setSelectedEventsByClient] = useState<
     Record<string, string[]>
   >({});
-  const [expandedPaymentGroups, setExpandedPaymentGroups] = useState<string[]>([]);
+  const [expandedPaymentGroups, setExpandedPaymentGroups] = useState<string[]>(
+    [],
+  );
   const [expandedBills, setExpandedBills] = useState<string[]>([]);
   const [billModal, setBillModal] = useState<{
     open: boolean;
@@ -198,17 +201,21 @@ export default function AccountantDashboardPage() {
   const fetchLists = async () => {
     try {
       setLoading(true);
-      const [invoiceRes, paymentRes, expenseRes, trackingRes] = await Promise.all([
-        accountantAPI.listInvoices({ page: 1, limit: 50 }),
-        accountantAPI.listPayments({ page: 1, limit: 50 }),
-        accountantAPI.listPrintingExpenses({ page: 1, limit: 50 }),
-        accountantAPI.getPaymentTracking({ search: paymentSearch || undefined }),
-      ]);
+      const [invoiceRes, paymentRes, expenseRes, trackingRes] =
+        await Promise.all([
+          accountantAPI.listInvoices({ page: 1, limit: 50 }),
+          accountantAPI.listPayments({ page: 1, limit: 50 }),
+          accountantAPI.listPrintingExpenses({ page: 1, limit: 50 }),
+          accountantAPI.getPaymentTracking({
+            search: paymentSearch || undefined,
+          }),
+        ]);
 
       if (invoiceRes?.success) setInvoices(invoiceRes.data?.rows || []);
       if (paymentRes?.success) setPayments(paymentRes.data?.rows || []);
       if (expenseRes?.success) setExpenses(expenseRes.data?.rows || []);
-      if (trackingRes?.success) setPaymentTrackingGroups(trackingRes.data?.groups || []);
+      if (trackingRes?.success)
+        setPaymentTrackingGroups(trackingRes.data?.groups || []);
     } catch (e: any) {
       showError(e?.response?.data?.message || "Failed to load finance data");
     } finally {
@@ -309,7 +316,10 @@ export default function AccountantDashboardPage() {
         reference: paymentForm.reference || undefined,
         notes: paymentForm.notes || undefined,
       };
-      const resp = await accountantAPI.recordPayment(paymentForm.invoiceId, payload);
+      const resp = await accountantAPI.recordPayment(
+        paymentForm.invoiceId,
+        payload,
+      );
       if (resp?.success) {
         showSuccess("Payment recorded");
         setPaymentForm({
@@ -403,10 +413,13 @@ export default function AccountantDashboardPage() {
     }
 
     try {
-      const resp = await accountantAPI.scheduleInvoiceReminder(reminderForm.invoiceId, {
-        reminderAt: reminderForm.reminderAt,
-        reminderNote: reminderForm.reminderNote || undefined,
-      });
+      const resp = await accountantAPI.scheduleInvoiceReminder(
+        reminderForm.invoiceId,
+        {
+          reminderAt: reminderForm.reminderAt,
+          reminderNote: reminderForm.reminderNote || undefined,
+        },
+      );
       if (resp?.success) {
         showSuccess("Payment reminder scheduled");
         closeReminderModal();
@@ -464,7 +477,9 @@ export default function AccountantDashboardPage() {
         showError(resp?.message || "Failed to update billing status");
       }
     } catch (e: any) {
-      showError(e?.response?.data?.message || "Failed to update billing status");
+      showError(
+        e?.response?.data?.message || "Failed to update billing status",
+      );
     }
   };
 
@@ -694,7 +709,10 @@ export default function AccountantDashboardPage() {
       };
 
       if (Object.values(billingProfilePayload).some(Boolean)) {
-        await clientsAPI.upsertBillingProfile(billModal.clientId, billingProfilePayload);
+        await clientsAPI.upsertBillingProfile(
+          billModal.clientId,
+          billingProfilePayload,
+        );
       }
 
       setGeneratingBill(true);
@@ -796,13 +814,13 @@ export default function AccountantDashboardPage() {
             <div>
               <h2 style={{ marginBottom: 6 }}>Billing Queue</h2>
               <p style={{ color: "var(--text-secondary)", margin: 0 }}>
-                Grouped by client by default. Bills become due only after the hoarding
-                goes live.
+                Grouped by client by default. Bills become due only after the
+                hoarding goes live.
               </p>
             </div>
             <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-              PO Pending {billingSummary?.pending?.poPending?.count || 0} | Upcoming{" "}
-              {billingSummary?.pending?.upcomingScheduled?.count || 0}
+              PO Pending {billingSummary?.pending?.poPending?.count || 0} |
+              Upcoming {billingSummary?.pending?.upcomingScheduled?.count || 0}
             </div>
           </div>
 
@@ -821,7 +839,9 @@ export default function AccountantDashboardPage() {
                 <button
                   key={tab.value}
                   className={
-                    activeQueueTab === tab.value ? "tab-button active" : "tab-button"
+                    activeQueueTab === tab.value
+                      ? "tab-button active"
+                      : "tab-button"
                   }
                   onClick={() => setActiveQueueTab(tab.value as any)}
                 >
@@ -852,7 +872,11 @@ export default function AccountantDashboardPage() {
               const generatedBillNumbers = Array.from(
                 new Set(
                   (group.rows || [])
-                    .map((row: any) => row.billingDetails?.billNumber || row.billingDetails?.invoiceNumber)
+                    .map(
+                      (row: any) =>
+                        row.billingDetails?.billNumber ||
+                        row.billingDetails?.invoiceNumber,
+                    )
                     .filter(Boolean),
                 ),
               );
@@ -876,12 +900,21 @@ export default function AccountantDashboardPage() {
                     }}
                   >
                     <div>
-                      <h3 style={{ marginBottom: 6 }}>{group.partyName || group.clientName}</h3>
-                      {group.partyName && group.clientName && group.partyName !== group.clientName && (
-                        <p style={{ margin: "0 0 6px", color: "var(--text-secondary)" }}>
-                          Client: {group.clientName}
-                        </p>
-                      )}
+                      <h3 style={{ marginBottom: 6 }}>
+                        {group.partyName || group.clientName}
+                      </h3>
+                      {group.partyName &&
+                        group.clientName &&
+                        group.partyName !== group.clientName && (
+                          <p
+                            style={{
+                              margin: "0 0 6px",
+                              color: "var(--text-secondary)",
+                            }}
+                          >
+                            Client: {group.clientName}
+                          </p>
+                        )}
                       <p style={{ margin: 0, color: "var(--text-secondary)" }}>
                         Base {formatCurrency(group.totals?.base)} | GST{" "}
                         {formatCurrency(group.totals?.gst)} | With GST{" "}
@@ -924,7 +957,9 @@ export default function AccountantDashboardPage() {
                         </button>
                       )}
                       <button
-                        className={expanded ? "tab-button active" : "tab-button"}
+                        className={
+                          expanded ? "tab-button active" : "tab-button"
+                        }
                         onClick={() => toggleClient(group.clientId)}
                       >
                         {expanded ? "Collapse" : "Expand"}
@@ -955,14 +990,16 @@ export default function AccountantDashboardPage() {
                           background: "rgba(59, 130, 246, 0.08)",
                           marginBottom: 14,
                           display: "grid",
-                          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(200px, 1fr))",
                           gap: 10,
                         }}
                       >
                         <div>
                           <strong>Party / Billing Name:</strong>{" "}
                           {normalizeDisplayText(
-                            group.partyDetails?.billingCompanyName || group.partyName,
+                            group.partyDetails?.billingCompanyName ||
+                              group.partyName,
                           )}
                         </div>
                         <div>
@@ -971,15 +1008,21 @@ export default function AccountantDashboardPage() {
                         </div>
                         <div>
                           <strong>Contact:</strong>{" "}
-                          {normalizeDisplayText(group.partyDetails?.billingPhone)}
+                          {normalizeDisplayText(
+                            group.partyDetails?.billingPhone,
+                          )}
                         </div>
                         <div>
                           <strong>Email:</strong>{" "}
-                          {normalizeDisplayText(group.partyDetails?.billingEmail)}
+                          {normalizeDisplayText(
+                            group.partyDetails?.billingEmail,
+                          )}
                         </div>
                         <div style={{ gridColumn: "1 / -1" }}>
                           <strong>Address:</strong>{" "}
-                          {normalizeDisplayText(group.partyDetails?.billingAddress)}
+                          {normalizeDisplayText(
+                            group.partyDetails?.billingAddress,
+                          )}
                         </div>
                       </div>
 
@@ -987,14 +1030,17 @@ export default function AccountantDashboardPage() {
                         <div style={{ marginBottom: 14 }}>
                           <button
                             className="tab-button active"
-                            disabled={!(selectedEventsByClient[group.clientId] || []).length}
+                            disabled={
+                              !(selectedEventsByClient[group.clientId] || [])
+                                .length
+                            }
                             onClick={() =>
                               openBillModal(
                                 group,
                                 (group.rows || []).filter((row: any) =>
-                                  (selectedEventsByClient[group.clientId] || []).includes(
-                                    row.id,
-                                  ),
+                                  (
+                                    selectedEventsByClient[group.clientId] || []
+                                  ).includes(row.id),
                                 ),
                               )
                             }
@@ -1030,8 +1076,15 @@ export default function AccountantDashboardPage() {
                                 }}
                               >
                                 <div>
-                                  <h4 style={{ marginBottom: 6 }}>{row.code}</h4>
-                                  <p style={{ margin: 0, color: "var(--text-secondary)" }}>
+                                  <h4 style={{ marginBottom: 6 }}>
+                                    {row.code}
+                                  </h4>
+                                  <p
+                                    style={{
+                                      margin: 0,
+                                      color: "var(--text-secondary)",
+                                    }}
+                                  >
                                     {normalizeDisplayText(row.city)} |{" "}
                                     {normalizeDisplayText(row.area)} |{" "}
                                     {normalizeDisplayText(row.landmark)}
@@ -1049,15 +1102,22 @@ export default function AccountantDashboardPage() {
                                     <input
                                       type="checkbox"
                                       checked={(
-                                        selectedEventsByClient[group.clientId] || []
+                                        selectedEventsByClient[
+                                          group.clientId
+                                        ] || []
                                       ).includes(row.id)}
                                       onChange={() =>
-                                        toggleEventSelection(group.clientId, row.id)
+                                        toggleEventSelection(
+                                          group.clientId,
+                                          row.id,
+                                        )
                                       }
                                     />
                                   )}
                                   <span className="status-badge">
-                                    {formatEnumLabel(row.billingDetails?.status)}
+                                    {formatEnumLabel(
+                                      row.billingDetails?.status,
+                                    )}
                                   </span>
                                   {(row.billingDetails?.billNumber ||
                                     row.billingDetails?.invoiceNumber) && (
@@ -1071,7 +1131,8 @@ export default function AccountantDashboardPage() {
                                         fontWeight: 700,
                                       }}
                                     >
-                                      Bill {String(
+                                      Bill{" "}
+                                      {String(
                                         row.billingDetails?.billNumber ||
                                           row.billingDetails?.invoiceNumber,
                                       )}
@@ -1091,11 +1152,15 @@ export default function AccountantDashboardPage() {
                                       Hoarding not live yet
                                     </span>
                                   )}
-                                  {String(row.billingDetails?.status) !== "PO_PENDING" &&
-                                    String(row.billingDetails?.status) !== "COMPLETED" && (
+                                  {String(row.billingDetails?.status) !==
+                                    "PO_PENDING" &&
+                                    String(row.billingDetails?.status) !==
+                                      "COMPLETED" && (
                                       <button
                                         className="tab-button"
-                                        onClick={() => handleMarkPoPending(row.id)}
+                                        onClick={() =>
+                                          handleMarkPoPending(row.id)
+                                        }
                                       >
                                         Mark PO Pending
                                       </button>
@@ -1113,31 +1178,44 @@ export default function AccountantDashboardPage() {
                               >
                                 <div>
                                   <strong>Base Price:</strong>{" "}
-                                  {formatCurrency(row.billingDetails?.finalAgreedPriceBase)}
+                                  {formatCurrency(
+                                    row.billingDetails?.finalAgreedPriceBase,
+                                  )}
                                 </div>
                                 <div>
                                   <strong>GST:</strong>{" "}
-                                  {row.billingDetails?.gstApplicable ? "Yes" : "No"}
+                                  {row.billingDetails?.gstApplicable
+                                    ? "Yes"
+                                    : "No"}
                                 </div>
                                 <div>
                                   <strong>Total With GST:</strong>{" "}
-                                  {formatCurrency(row.billingDetails?.totalWithGst)}
+                                  {formatCurrency(
+                                    row.billingDetails?.totalWithGst,
+                                  )}
                                 </div>
                                 <div>
                                   <strong>Duration:</strong>{" "}
-                                  {row.billingDetails?.durationMonths || 0} month(s)
+                                  {row.billingDetails?.durationMonths || 0}{" "}
+                                  month(s)
                                 </div>
                                 <div>
                                   <strong>Billing Frequency:</strong>{" "}
-                                  {formatEnumLabel(row.billingDetails?.billingFrequency)}
+                                  {formatEnumLabel(
+                                    row.billingDetails?.billingFrequency,
+                                  )}
                                 </div>
                                 <div>
                                   <strong>Payment Plan:</strong>{" "}
-                                  {formatEnumLabel(row.billingDetails?.paymentPlanType)}
+                                  {formatEnumLabel(
+                                    row.billingDetails?.paymentPlanType,
+                                  )}
                                 </div>
                                 <div>
                                   <strong>Mode of Payment:</strong>{" "}
-                                  {formatEnumLabel(row.billingDetails?.modeOfPayment)}
+                                  {formatEnumLabel(
+                                    row.billingDetails?.modeOfPayment,
+                                  )}
                                 </div>
                                 <div>
                                   <strong>Printing:</strong>{" "}
@@ -1147,7 +1225,8 @@ export default function AccountantDashboardPage() {
                                       )} + GST ${formatCurrency(
                                         row.billingDetails?.printingChargesGst,
                                       )} = ${formatCurrency(
-                                        row.billingDetails?.printingChargesTotal,
+                                        row.billingDetails
+                                          ?.printingChargesTotal,
                                       )}`
                                     : formatCurrency(
                                         row.billingDetails?.printingChargesBase,
@@ -1161,7 +1240,8 @@ export default function AccountantDashboardPage() {
                                       )} + GST ${formatCurrency(
                                         row.billingDetails?.mountingChargesGst,
                                       )} = ${formatCurrency(
-                                        row.billingDetails?.mountingChargesTotal,
+                                        row.billingDetails
+                                          ?.mountingChargesTotal,
                                       )}`
                                     : formatCurrency(
                                         row.billingDetails?.mountingChargesBase,
@@ -1169,15 +1249,23 @@ export default function AccountantDashboardPage() {
                                 </div>
                                 <div>
                                   <strong>Billing Period:</strong>{" "}
-                                  {formatDate(row.billingDetails?.billingPeriodStart)} -{" "}
-                                  {formatDate(row.billingDetails?.billingPeriodEnd)}
+                                  {formatDate(
+                                    row.billingDetails?.billingPeriodStart,
+                                  )}{" "}
+                                  -{" "}
+                                  {formatDate(
+                                    row.billingDetails?.billingPeriodEnd,
+                                  )}
                                 </div>
                                 <div>
                                   <strong>Next Due Trigger:</strong>{" "}
-                                  {formatDate(row.billingDetails?.nextDueTriggerDate)}
+                                  {formatDate(
+                                    row.billingDetails?.nextDueTriggerDate,
+                                  )}
                                 </div>
                                 <div>
-                                  <strong>City:</strong> {normalizeDisplayText(row.city)}
+                                  <strong>City:</strong>{" "}
+                                  {normalizeDisplayText(row.city)}
                                 </div>
                                 <div>
                                   <strong>Area / Zone:</strong>{" "}
@@ -1193,7 +1281,9 @@ export default function AccountantDashboardPage() {
                                 </div>
                                 <div>
                                   <strong>Size:</strong>{" "}
-                                  {normalizeDisplayText(row.sizeSquareFeet || row.size)}
+                                  {normalizeDisplayText(
+                                    row.sizeSquareFeet || row.size,
+                                  )}
                                   {row.sizeSquareFeet && row.size && (
                                     <small
                                       style={{
@@ -1253,7 +1343,9 @@ export default function AccountantDashboardPage() {
                                     </div>
                                     <div>
                                       <strong>Generated On:</strong>{" "}
-                                      {formatDate(row.billingDetails?.generatedAt)}
+                                      {formatDate(
+                                        row.billingDetails?.generatedAt,
+                                      )}
                                     </div>
                                     <div>
                                       <strong>Invoice Status:</strong>{" "}
@@ -1263,7 +1355,9 @@ export default function AccountantDashboardPage() {
                                     </div>
                                     <div>
                                       <strong>Paid Amount:</strong>{" "}
-                                      {formatCurrency(row.billingDetails?.paidAmount)}
+                                      {formatCurrency(
+                                        row.billingDetails?.paidAmount,
+                                      )}
                                     </div>
                                     <div>
                                       <strong>Remarks:</strong>{" "}
@@ -1278,7 +1372,9 @@ export default function AccountantDashboardPage() {
                                           href={billPdfUrl}
                                           target="_blank"
                                           rel="noreferrer"
-                                          style={{ color: "var(--primary-color)" }}
+                                          style={{
+                                            color: "var(--primary-color)",
+                                          }}
                                         >
                                           Open PDF
                                         </a>
@@ -1312,8 +1408,8 @@ export default function AccountantDashboardPage() {
             <div>
               <h2 style={{ marginBottom: 6 }}>Finance Workspace</h2>
               <p style={{ color: "var(--text-secondary)", margin: 0 }}>
-                Existing invoice, payment, and printing expense tools stay available
-                here.
+                Existing invoice, payment, and printing expense tools stay
+                available here.
               </p>
             </div>
             <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
@@ -1325,19 +1421,25 @@ export default function AccountantDashboardPage() {
 
           <div className="tab-bar">
             <button
-              className={activeTab === "invoices" ? "tab-button active" : "tab-button"}
+              className={
+                activeTab === "invoices" ? "tab-button active" : "tab-button"
+              }
               onClick={() => setActiveTab("invoices")}
             >
               Invoices
             </button>
             <button
-              className={activeTab === "payments" ? "tab-button active" : "tab-button"}
+              className={
+                activeTab === "payments" ? "tab-button active" : "tab-button"
+              }
               onClick={() => setActiveTab("payments")}
             >
               Payments
             </button>
             <button
-              className={activeTab === "printing" ? "tab-button active" : "tab-button"}
+              className={
+                activeTab === "printing" ? "tab-button active" : "tab-button"
+              }
               onClick={() => setActiveTab("printing")}
             >
               Printing Expenses
@@ -1489,9 +1591,12 @@ export default function AccountantDashboardPage() {
                 }}
               >
                 <div>
-                  <h3 style={{ marginBottom: 6 }}>Bill-wise Payment Tracking</h3>
+                  <h3 style={{ marginBottom: 6 }}>
+                    Bill-wise Payment Tracking
+                  </h3>
                   <p style={{ margin: 0, color: "var(--text-secondary)" }}>
-                    First level shows party name and total pending amount. Expand to see bill numbers and actions.
+                    First level shows party name and total pending amount.
+                    Expand to see bill numbers and actions.
                   </p>
                 </div>
                 <input
@@ -1505,7 +1610,9 @@ export default function AccountantDashboardPage() {
 
               <div style={{ display: "grid", gap: 14 }}>
                 {(filteredPaymentGroups || []).map((group: any) => {
-                  const expanded = expandedPaymentGroups.includes(group.clientId);
+                  const expanded = expandedPaymentGroups.includes(
+                    group.clientId,
+                  );
                   return (
                     <div
                       key={group.clientId}
@@ -1528,16 +1635,29 @@ export default function AccountantDashboardPage() {
                         <div>
                           <h3 style={{ marginBottom: 6 }}>{group.partyName}</h3>
                           {group.partyName !== group.clientName && (
-                            <p style={{ margin: "0 0 6px", color: "var(--text-secondary)" }}>
+                            <p
+                              style={{
+                                margin: "0 0 6px",
+                                color: "var(--text-secondary)",
+                              }}
+                            >
                               Client: {group.clientName}
                             </p>
                           )}
-                          <p style={{ margin: 0, color: "var(--text-secondary)" }}>
-                            Pending Amount {formatCurrency(group.totalPendingAmount)}
+                          <p
+                            style={{
+                              margin: 0,
+                              color: "var(--text-secondary)",
+                            }}
+                          >
+                            Pending Amount{" "}
+                            {formatCurrency(group.totalPendingAmount)}
                           </p>
                         </div>
                         <button
-                          className={expanded ? "tab-button active" : "tab-button"}
+                          className={
+                            expanded ? "tab-button active" : "tab-button"
+                          }
                           onClick={() => togglePaymentGroup(group.clientId)}
                         >
                           {expanded ? "Collapse" : "Expand Bills"}
@@ -1545,10 +1665,15 @@ export default function AccountantDashboardPage() {
                       </div>
 
                       {expanded && (
-                        <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
+                        <div
+                          style={{ marginTop: 16, display: "grid", gap: 12 }}
+                        >
                           {(group.bills || []).map((bill: any) => {
-                            const billExpanded = expandedBills.includes(bill.invoiceId);
-                            const isPending = Number(bill.remainingAmount || 0) > 0;
+                            const billExpanded = expandedBills.includes(
+                              bill.invoiceId,
+                            );
+                            const isPending =
+                              Number(bill.remainingAmount || 0) > 0;
                             return (
                               <div
                                 key={bill.invoiceId}
@@ -1570,7 +1695,14 @@ export default function AccountantDashboardPage() {
                                     alignItems: "center",
                                   }}
                                 >
-                                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: 10,
+                                      alignItems: "center",
+                                      flexWrap: "wrap",
+                                    }}
+                                  >
                                     <strong>{bill.invoiceNumber}</strong>
                                     <span
                                       style={{
@@ -1579,32 +1711,67 @@ export default function AccountantDashboardPage() {
                                         background: isPending
                                           ? "rgba(239, 68, 68, 0.12)"
                                           : "rgba(34, 197, 94, 0.12)",
-                                        color: isPending ? "#b91c1c" : "#15803d",
+                                        color: isPending
+                                          ? "#b91c1c"
+                                          : "#15803d",
                                         fontSize: 12,
                                         fontWeight: 700,
                                       }}
                                     >
                                       {isPending ? "Pending" : "Cleared"}
                                     </span>
-                                    <span style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-                                      Remaining {formatCurrency(bill.remainingAmount)}
+                                    <span
+                                      style={{
+                                        color: "var(--text-secondary)",
+                                        fontSize: 14,
+                                      }}
+                                    >
+                                      Remaining{" "}
+                                      {formatCurrency(bill.remainingAmount)}
                                     </span>
                                   </div>
-                                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                    <button className="tab-button" onClick={() => openPaymentModal(bill, group)}>
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: 8,
+                                      flexWrap: "wrap",
+                                    }}
+                                  >
+                                    <button
+                                      className="tab-button"
+                                      onClick={() =>
+                                        openPaymentModal(bill, group)
+                                      }
+                                    >
                                       Payment Received
                                     </button>
-                                    <button className="tab-button" onClick={() => openReminderModal(bill, group, 7)}>
+                                    <button
+                                      className="tab-button"
+                                      onClick={() =>
+                                        openReminderModal(bill, group, 7)
+                                      }
+                                    >
                                       Remind in 7 Days
                                     </button>
-                                    <button className="tab-button" onClick={() => openReminderModal(bill, group)}>
+                                    <button
+                                      className="tab-button"
+                                      onClick={() =>
+                                        openReminderModal(bill, group)
+                                      }
+                                    >
                                       Custom Reminder
                                     </button>
                                     <button
-                                      className={billExpanded ? "tab-button active" : "tab-button"}
+                                      className={
+                                        billExpanded
+                                          ? "tab-button active"
+                                          : "tab-button"
+                                      }
                                       onClick={() => toggleBill(bill.invoiceId)}
                                     >
-                                      {billExpanded ? "Hide Details" : "Show Details"}
+                                      {billExpanded
+                                        ? "Hide Details"
+                                        : "Show Details"}
                                     </button>
                                   </div>
                                 </div>
@@ -1614,29 +1781,67 @@ export default function AccountantDashboardPage() {
                                     <div
                                       style={{
                                         display: "grid",
-                                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                                        gridTemplateColumns:
+                                          "repeat(auto-fit, minmax(220px, 1fr))",
                                         gap: 10,
                                         marginBottom: 14,
                                       }}
                                     >
-                                      <div><strong>Bill Created:</strong> {formatDate(bill.billCreatedDate)}</div>
-                                      <div><strong>Total Bill Amount:</strong> {formatCurrency(bill.totalAmount)}</div>
+                                      <div>
+                                        <strong>Bill Created:</strong>{" "}
+                                        {formatDate(bill.billCreatedDate)}
+                                      </div>
+                                      <div>
+                                        <strong>Total Bill Amount:</strong>{" "}
+                                        {formatCurrency(bill.totalAmount)}
+                                      </div>
                                       <div>
                                         <strong>Remaining Amount:</strong>{" "}
-                                        <span style={{ color: isPending ? "#b91c1c" : "#15803d", fontWeight: 700 }}>
+                                        <span
+                                          style={{
+                                            color: isPending
+                                              ? "#b91c1c"
+                                              : "#15803d",
+                                            fontWeight: 700,
+                                          }}
+                                        >
                                           {formatCurrency(bill.remainingAmount)}
                                         </span>
                                       </div>
-                                      <div><strong>Days Due:</strong> {bill.daysDue}</div>
-                                      <div><strong>Last Payment Received:</strong> {formatDate(bill.lastPaymentReceivedDate)}</div>
-                                      <div><strong>Reminder Date:</strong> {formatDate(bill.reminderAt)}</div>
-                                      <div><strong>Reminder Note:</strong> {normalizeDisplayText(bill.reminderNote)}</div>
-                                      <div><strong>Contract:</strong> {normalizeDisplayText(bill.contractNumber)}</div>
+                                      <div>
+                                        <strong>Days Due:</strong>{" "}
+                                        {bill.daysDue}
+                                      </div>
+                                      <div>
+                                        <strong>Last Payment Received:</strong>{" "}
+                                        {formatDate(
+                                          bill.lastPaymentReceivedDate,
+                                        )}
+                                      </div>
+                                      <div>
+                                        <strong>Reminder Date:</strong>{" "}
+                                        {formatDate(bill.reminderAt)}
+                                      </div>
+                                      <div>
+                                        <strong>Reminder Note:</strong>{" "}
+                                        {normalizeDisplayText(
+                                          bill.reminderNote,
+                                        )}
+                                      </div>
+                                      <div>
+                                        <strong>Contract:</strong>{" "}
+                                        {normalizeDisplayText(
+                                          bill.contractNumber,
+                                        )}
+                                      </div>
                                     </div>
 
                                     <div>
                                       <strong>Payment History</strong>
-                                      <table className="table" style={{ marginTop: 10 }}>
+                                      <table
+                                        className="table"
+                                        style={{ marginTop: 10 }}
+                                      >
                                         <thead>
                                           <tr>
                                             <th>Date</th>
@@ -1648,19 +1853,47 @@ export default function AccountantDashboardPage() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          {(bill.paymentHistory || []).map((payment: any) => (
-                                            <tr key={payment.id}>
-                                              <td>{formatDate(payment.paidAt)}</td>
-                                              <td>{formatCurrency(payment.amount)}</td>
-                                              <td>{formatEnumLabel(payment.method)}</td>
-                                              <td>{formatEnumLabel(payment.status)}</td>
-                                              <td>{normalizeDisplayText(payment.reference)}</td>
-                                              <td>{normalizeDisplayText(payment.notes)}</td>
-                                            </tr>
-                                          ))}
-                                          {(!bill.paymentHistory || bill.paymentHistory.length === 0) && (
+                                          {(bill.paymentHistory || []).map(
+                                            (payment: any) => (
+                                              <tr key={payment.id}>
+                                                <td>
+                                                  {formatDate(payment.paidAt)}
+                                                </td>
+                                                <td>
+                                                  {formatCurrency(
+                                                    payment.amount,
+                                                  )}
+                                                </td>
+                                                <td>
+                                                  {formatEnumLabel(
+                                                    payment.method,
+                                                  )}
+                                                </td>
+                                                <td>
+                                                  {formatEnumLabel(
+                                                    payment.status,
+                                                  )}
+                                                </td>
+                                                <td>
+                                                  {normalizeDisplayText(
+                                                    payment.reference,
+                                                  )}
+                                                </td>
+                                                <td>
+                                                  {normalizeDisplayText(
+                                                    payment.notes,
+                                                  )}
+                                                </td>
+                                              </tr>
+                                            ),
+                                          )}
+                                          {(!bill.paymentHistory ||
+                                            bill.paymentHistory.length ===
+                                              0) && (
                                             <tr>
-                                              <td colSpan={6}>No payment history yet.</td>
+                                              <td colSpan={6}>
+                                                No payment history yet.
+                                              </td>
                                             </tr>
                                           )}
                                         </tbody>
@@ -1677,7 +1910,8 @@ export default function AccountantDashboardPage() {
                   );
                 })}
 
-                {(!filteredPaymentGroups || filteredPaymentGroups.length === 0) && (
+                {(!filteredPaymentGroups ||
+                  filteredPaymentGroups.length === 0) && (
                   <div className="empty-state">
                     No bills found for the current payment filters.
                   </div>
@@ -1704,7 +1938,9 @@ export default function AccountantDashboardPage() {
                       <tr key={exp.id}>
                         <td>{normalizeDisplayText(exp.description)}</td>
                         <td>{normalizeDisplayText(exp.client?.name)}</td>
-                        <td>{normalizeDisplayText(exp.contract?.contractNumber)}</td>
+                        <td>
+                          {normalizeDisplayText(exp.contract?.contractNumber)}
+                        </td>
                         <td>{formatCurrency(exp.amount)}</td>
                         <td>{formatDate(exp.incurredOn)}</td>
                       </tr>
@@ -1854,7 +2090,11 @@ export default function AccountantDashboardPage() {
                       {paymentForm.partyName} | {paymentForm.invoiceNumber}
                     </p>
                   </div>
-                  <button type="button" className="tab-button" onClick={closePaymentModal}>
+                  <button
+                    type="button"
+                    className="tab-button"
+                    onClick={closePaymentModal}
+                  >
                     Close
                   </button>
                 </div>
@@ -1867,7 +2107,10 @@ export default function AccountantDashboardPage() {
                     step="0.01"
                     value={paymentForm.amount}
                     onChange={(e) =>
-                      setPaymentForm((prev) => ({ ...prev, amount: e.target.value }))
+                      setPaymentForm((prev) => ({
+                        ...prev,
+                        amount: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -1877,7 +2120,10 @@ export default function AccountantDashboardPage() {
                     type="date"
                     value={paymentForm.paidAt}
                     onChange={(e) =>
-                      setPaymentForm((prev) => ({ ...prev, paidAt: e.target.value }))
+                      setPaymentForm((prev) => ({
+                        ...prev,
+                        paidAt: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -1886,7 +2132,10 @@ export default function AccountantDashboardPage() {
                   <select
                     value={paymentForm.method}
                     onChange={(e) =>
-                      setPaymentForm((prev) => ({ ...prev, method: e.target.value }))
+                      setPaymentForm((prev) => ({
+                        ...prev,
+                        method: e.target.value,
+                      }))
                     }
                   >
                     {paymentMethods.map((m) => (
@@ -1902,7 +2151,10 @@ export default function AccountantDashboardPage() {
                     type="text"
                     value={paymentForm.reference}
                     onChange={(e) =>
-                      setPaymentForm((prev) => ({ ...prev, reference: e.target.value }))
+                      setPaymentForm((prev) => ({
+                        ...prev,
+                        reference: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -1911,7 +2163,10 @@ export default function AccountantDashboardPage() {
                   <textarea
                     value={paymentForm.notes}
                     onChange={(e) =>
-                      setPaymentForm((prev) => ({ ...prev, notes: e.target.value }))
+                      setPaymentForm((prev) => ({
+                        ...prev,
+                        notes: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -1948,7 +2203,11 @@ export default function AccountantDashboardPage() {
                       {reminderForm.partyName} | {reminderForm.invoiceNumber}
                     </p>
                   </div>
-                  <button type="button" className="tab-button" onClick={closeReminderModal}>
+                  <button
+                    type="button"
+                    className="tab-button"
+                    onClick={closeReminderModal}
+                  >
                     Close
                   </button>
                 </div>
@@ -1960,7 +2219,10 @@ export default function AccountantDashboardPage() {
                     min={new Date().toISOString().slice(0, 10)}
                     value={reminderForm.reminderAt}
                     onChange={(e) =>
-                      setReminderForm((prev) => ({ ...prev, reminderAt: e.target.value }))
+                      setReminderForm((prev) => ({
+                        ...prev,
+                        reminderAt: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -1969,7 +2231,10 @@ export default function AccountantDashboardPage() {
                   <textarea
                     value={reminderForm.reminderNote}
                     onChange={(e) =>
-                      setReminderForm((prev) => ({ ...prev, reminderNote: e.target.value }))
+                      setReminderForm((prev) => ({
+                        ...prev,
+                        reminderNote: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -2002,12 +2267,18 @@ export default function AccountantDashboardPage() {
                 <div>
                   <h3 style={{ marginBottom: 6 }}>Create Bill</h3>
                   <p style={{ color: "var(--text-secondary)", margin: 0 }}>
-                    {billModal.partyName || billModal.clientName} | {billModal.rows.length} item(s) selected
+                    {billModal.partyName || billModal.clientName} |{" "}
+                    {billModal.rows.length} item(s) selected
                   </p>
                   {billModal.partyName &&
                     billModal.clientName &&
                     billModal.partyName !== billModal.clientName && (
-                      <p style={{ color: "var(--text-secondary)", margin: "6px 0 0" }}>
+                      <p
+                        style={{
+                          color: "var(--text-secondary)",
+                          margin: "6px 0 0",
+                        }}
+                      >
                         Client: {billModal.clientName}
                       </p>
                     )}
@@ -2016,7 +2287,10 @@ export default function AccountantDashboardPage() {
                   Close
                 </button>
               </div>
-              <div className="grid" style={{ gridTemplateColumns: "2fr 1fr", gap: 20 }}>
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: "2fr 1fr", gap: 20 }}
+              >
                 <div>
                   <div
                     style={{
@@ -2052,7 +2326,10 @@ export default function AccountantDashboardPage() {
                                     marginTop: 4,
                                   }}
                                 >
-                                  Size: {normalizeDisplayText(row.sizeSquareFeet || row.size)}
+                                  Size:{" "}
+                                  {normalizeDisplayText(
+                                    row.sizeSquareFeet || row.size,
+                                  )}
                                 </small>
                               )}
                               {row.warningNotLive && (
@@ -2069,12 +2346,23 @@ export default function AccountantDashboardPage() {
                               )}
                             </td>
                             <td>
-                              {formatDate(row.billingDetails?.billingPeriodStart)} -{" "}
+                              {formatDate(
+                                row.billingDetails?.billingPeriodStart,
+                              )}{" "}
+                              -{" "}
                               {formatDate(row.billingDetails?.billingPeriodEnd)}
                             </td>
-                            <td>{formatCurrency(row.billingDetails?.finalAgreedPriceBase)}</td>
-                            <td>{formatCurrency(row.billingDetails?.gstAmount)}</td>
-                            <td>{formatCurrency(row.billingDetails?.totalWithGst)}</td>
+                            <td>
+                              {formatCurrency(
+                                row.billingDetails?.finalAgreedPriceBase,
+                              )}
+                            </td>
+                            <td>
+                              {formatCurrency(row.billingDetails?.gstAmount)}
+                            </td>
+                            <td>
+                              {formatCurrency(row.billingDetails?.totalWithGst)}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -2089,7 +2377,8 @@ export default function AccountantDashboardPage() {
                       background: "rgba(15, 23, 42, 0.04)",
                     }}
                   >
-                    <strong>Totals:</strong> Base {formatCurrency(billTotals.base)} | GST{" "}
+                    <strong>Totals:</strong> Base{" "}
+                    {formatCurrency(billTotals.base)} | GST{" "}
                     {formatCurrency(billTotals.gst)} | With GST{" "}
                     {formatCurrency(billTotals.total)}
                   </div>
@@ -2109,7 +2398,8 @@ export default function AccountantDashboardPage() {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(220px, 1fr))",
                         gap: 10,
                         marginTop: 10,
                       }}
@@ -2125,7 +2415,9 @@ export default function AccountantDashboardPage() {
                               billingCompanyName: e.target.value,
                             }))
                           }
-                          placeholder={billModal.partyName || billModal.clientName}
+                          placeholder={
+                            billModal.partyName || billModal.clientName
+                          }
                         />
                       </div>
                       <div className="form-group" style={{ marginBottom: 0 }}>
@@ -2162,7 +2454,10 @@ export default function AccountantDashboardPage() {
                           type="text"
                           value={billForm.gstin}
                           onChange={(e) =>
-                            setBillForm((prev) => ({ ...prev, gstin: e.target.value }))
+                            setBillForm((prev) => ({
+                              ...prev,
+                              gstin: e.target.value,
+                            }))
                           }
                           placeholder="GST number"
                         />
@@ -2188,7 +2483,11 @@ export default function AccountantDashboardPage() {
                   <div className="form-group">
                     <label>Firm</label>
                     <select
-                      value={billForm.useCustomFirm ? "__custom__" : billForm.firmName}
+                      value={
+                        billForm.useCustomFirm
+                          ? "__custom__"
+                          : billForm.firmName
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         if (value === "__custom__") {
@@ -2206,13 +2505,14 @@ export default function AccountantDashboardPage() {
                         }));
                       }}
                     >
-                      {(firmOptions.length ? firmOptions : defaultBillFirmOptions).map(
-                        (option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ),
-                      )}
+                      {(firmOptions.length
+                        ? firmOptions
+                        : defaultBillFirmOptions
+                      ).map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
                       <option value="__custom__">Custom firm...</option>
                     </select>
                   </div>
@@ -2238,7 +2538,10 @@ export default function AccountantDashboardPage() {
                       type="text"
                       value={billForm.billNumber}
                       onChange={(e) =>
-                        setBillForm((prev) => ({ ...prev, billNumber: e.target.value }))
+                        setBillForm((prev) => ({
+                          ...prev,
+                          billNumber: e.target.value,
+                        }))
                       }
                     />
                   </div>
@@ -2247,7 +2550,10 @@ export default function AccountantDashboardPage() {
                     <textarea
                       value={billForm.remarks}
                       onChange={(e) =>
-                        setBillForm((prev) => ({ ...prev, remarks: e.target.value }))
+                        setBillForm((prev) => ({
+                          ...prev,
+                          remarks: e.target.value,
+                        }))
                       }
                     />
                   </div>
@@ -2270,7 +2576,9 @@ export default function AccountantDashboardPage() {
                     disabled={generatingBill}
                     type="button"
                   >
-                    {generatingBill ? "Generating..." : "Mark Bill as Generated"}
+                    {generatingBill
+                      ? "Generating..."
+                      : "Mark Bill as Generated"}
                   </button>
                 </div>
               </div>
