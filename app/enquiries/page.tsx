@@ -174,6 +174,7 @@ export default function Enquiries() {
     area: "",
     location: "",
     status: "",
+    performanceStage: "",
     categoryId: "",
     assignedSalesId: "",
     assignedToMe: false,
@@ -190,6 +191,7 @@ export default function Enquiries() {
     purpose: "",
     firstContactDate: "",
     nextFollowupDate: "",
+    performanceStage: "IN_PROCESS",
     source: "WALK_IN",
     categoryId: "",
     assignedSalesId: "",
@@ -295,6 +297,7 @@ export default function Enquiries() {
         area: filters.area || undefined,
         location: filters.location || undefined,
         status: filters.status || undefined,
+        performanceStage: filters.performanceStage || undefined,
         categoryId: filters.categoryId || undefined,
         assignedSalesId: filters.assignedSalesId || undefined,
         assignedToMe: filters.assignedToMe || undefined,
@@ -337,6 +340,7 @@ export default function Enquiries() {
         purpose: formData.purpose || undefined,
         firstContactDate: formData.firstContactDate || undefined,
         nextFollowupDate: formData.nextFollowupDate || undefined,
+        performanceStage: formData.performanceStage,
         source: formData.source,
         categoryId: formData.categoryId || undefined,
         assignedSalesId: formData.assignedSalesId || undefined,
@@ -363,6 +367,7 @@ export default function Enquiries() {
         purpose: "",
         firstContactDate: "",
         nextFollowupDate: "",
+        performanceStage: "IN_PROCESS",
         source: "WALK_IN",
         categoryId: "",
         assignedSalesId: "",
@@ -492,6 +497,51 @@ export default function Enquiries() {
     }
   };
 
+  const handleUpdatePerformanceStage = async (
+    id: string,
+    performanceStage: string,
+  ) => {
+    try {
+      const res = await enquiriesAPI.update(id, { performanceStage } as any);
+      const updated = res?.data;
+
+      setInquiries((prev) => {
+        const rows = Array.isArray(prev) ? prev : [];
+        if (
+          filters.performanceStage &&
+          String(filters.performanceStage).toUpperCase() !==
+            String(performanceStage).toUpperCase()
+        ) {
+          return rows.filter((r) => r?.id !== id);
+        }
+
+        return rows.map((r) => {
+          if (r?.id !== id) return r;
+          if (updated && typeof updated === "object") {
+            return { ...r, ...updated };
+          }
+          return { ...r, performanceStage };
+        });
+      });
+
+      if (
+        filters.performanceStage &&
+        String(filters.performanceStage).toUpperCase() !==
+          String(performanceStage).toUpperCase()
+      ) {
+        setTotal((t) => (typeof t === "number" && t > 0 ? t - 1 : t));
+      }
+      showSuccess("Funnel stage updated");
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to update funnel stage";
+      showError(msg);
+    }
+  };
+
   if (!user) {
     return (
       <div style={{ textAlign: "center", padding: "40px" }}>
@@ -546,6 +596,18 @@ export default function Enquiries() {
       { value: "VIA_WHATSAPP", label: "Via WhatsApp" },
       { value: "REFERENCE", label: "Reference" },
       { value: "OTHERS", label: "Others" },
+    ],
+    [],
+  );
+
+  const performanceStageOptions = useMemo(
+    () => [
+      { value: "", label: "All Funnel Stages" },
+      { value: "IN_PROCESS", label: "In Process" },
+      { value: "WON", label: "Won" },
+      { value: "FOLLOW_UP_LATER", label: "Follow Up Later" },
+      { value: "DEAD", label: "Dead" },
+      { value: "NOT_INTERESTED", label: "Not Interested" },
     ],
     [],
   );
@@ -656,6 +718,21 @@ export default function Enquiries() {
                     onChange={(v) => setFormData({ ...formData, source: v })}
                     placeholder="Select Source"
                     options={sourceOptions}
+                    buttonClassName="w-full"
+                    matchButtonWidth
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Funnel Stage</label>
+                  <StatusDropdown
+                    value={formData.performanceStage}
+                    onChange={(v) =>
+                      setFormData({ ...formData, performanceStage: v })
+                    }
+                    placeholder="Select funnel stage"
+                    options={performanceStageOptions.filter(
+                      (option) => option.value !== "",
+                    )}
                     buttonClassName="w-full"
                     matchButtonWidth
                   />
@@ -867,6 +944,15 @@ export default function Enquiries() {
                 options={statusOptions}
               />
               <StatusDropdown
+                value={filters.performanceStage}
+                onChange={(v) =>
+                  setFilters({ ...filters, performanceStage: v })
+                }
+                placeholder="All Funnel Stages"
+                options={performanceStageOptions}
+                buttonClassName="w-[190px]"
+              />
+              <StatusDropdown
                 value={filters.categoryId}
                 onChange={(v) => setFilters({ ...filters, categoryId: v })}
                 placeholder="All Categories"
@@ -931,6 +1017,7 @@ export default function Enquiries() {
                     <th>Category</th>
                     <th>Assigned Sales</th>
                     <th>Status</th>
+                    <th>Funnel Stage</th>
                     <th>Created By</th>
                     <th>Created</th>
                     <th>Actions</th>
@@ -990,6 +1077,54 @@ export default function Enquiries() {
                           )}
                         </td>
                         <td>{inquiry.status}</td>
+                        <td>
+                          {isSalesRole ? (
+                            salesCanEdit ? (
+                              <StatusDropdown
+                                value={String(inquiry.performanceStage || "IN_PROCESS")}
+                                onChange={(v) =>
+                                  handleUpdatePerformanceStage(inquiry.id, v)
+                                }
+                                placeholder={String(
+                                  inquiry.performanceStage || "IN_PROCESS",
+                                )}
+                                options={performanceStageOptions.filter(
+                                  (o) => o.value !== "",
+                                )}
+                                buttonClassName="w-[180px]"
+                              />
+                            ) : (
+                              <StatusDropdown
+                                value={String(inquiry.performanceStage || "IN_PROCESS")}
+                                onChange={() => {}}
+                                placeholder={String(
+                                  inquiry.performanceStage || "IN_PROCESS",
+                                )}
+                                options={performanceStageOptions.filter(
+                                  (o) => o.value !== "",
+                                )}
+                                buttonClassName="w-[180px]"
+                                disabled
+                              />
+                            )
+                          ) : canUpdateInquiry ? (
+                            <StatusDropdown
+                              value={String(inquiry.performanceStage || "IN_PROCESS")}
+                              onChange={(v) =>
+                                handleUpdatePerformanceStage(inquiry.id, v)
+                              }
+                              placeholder={String(
+                                inquiry.performanceStage || "IN_PROCESS",
+                              )}
+                              options={performanceStageOptions.filter(
+                                (o) => o.value !== "",
+                              )}
+                              buttonClassName="w-[180px]"
+                            />
+                          ) : (
+                            <span>{inquiry.performanceStage || "IN_PROCESS"}</span>
+                          )}
+                        </td>
                         <td>
                           {inquiry?.createdBy?.name || "-"}
                           {createdByRole ? ` (${createdByRole})` : ""}

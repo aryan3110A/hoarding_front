@@ -62,12 +62,14 @@ export default function AccountantDashboardPage() {
   const [queueLoading, setQueueLoading] = useState(false);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [paymentTrackingGroups, setPaymentTrackingGroups] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [queueGroups, setQueueGroups] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
   const [firmOptions, setFirmOptions] = useState<string[]>(defaultBillFirmOptions);
   const [queueSearch, setQueueSearch] = useState("");
+  const [paymentSearch, setPaymentSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"invoices" | "payments" | "printing">(
     "invoices",
   );
@@ -78,15 +80,28 @@ export default function AccountantDashboardPage() {
   const [selectedEventsByClient, setSelectedEventsByClient] = useState<
     Record<string, string[]>
   >({});
+  const [expandedPaymentGroups, setExpandedPaymentGroups] = useState<string[]>([]);
+  const [expandedBills, setExpandedBills] = useState<string[]>([]);
   const [billModal, setBillModal] = useState<{
     open: boolean;
     clientId: string;
     clientName: string;
+    partyName: string;
+    partyDetails: {
+      billingCompanyName?: string | null;
+      clientName?: string | null;
+      gstin?: string | null;
+      billingPhone?: string | null;
+      billingEmail?: string | null;
+      billingAddress?: string | null;
+    };
     rows: any[];
   }>({
     open: false,
     clientId: "",
     clientName: "",
+    partyName: "",
+    partyDetails: {},
     rows: [],
   });
   const [billForm, setBillForm] = useState({
@@ -95,6 +110,11 @@ export default function AccountantDashboardPage() {
     customFirmName: "",
     billNumber: "",
     remarks: "",
+    billingCompanyName: "",
+    billingPhone: "",
+    billingEmail: "",
+    gstin: "",
+    billingAddress: "",
     billPdf: null as File | null,
   });
   const [generatingBill, setGeneratingBill] = useState(false);
@@ -110,11 +130,23 @@ export default function AccountantDashboardPage() {
 
   const [paymentForm, setPaymentForm] = useState({
     invoiceId: "",
+    invoiceNumber: "",
+    partyName: "",
     amount: "",
+    paidAt: new Date().toISOString().slice(0, 10),
     method: "UPI",
     reference: "",
     notes: "",
   });
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [reminderForm, setReminderForm] = useState({
+    invoiceId: "",
+    invoiceNumber: "",
+    partyName: "",
+    reminderAt: "",
+    reminderNote: "",
+  });
+  const [reminderModalOpen, setReminderModalOpen] = useState(false);
 
   const [expenseForm, setExpenseForm] = useState({
     clientId: "",
@@ -166,15 +198,17 @@ export default function AccountantDashboardPage() {
   const fetchLists = async () => {
     try {
       setLoading(true);
-      const [invoiceRes, paymentRes, expenseRes] = await Promise.all([
+      const [invoiceRes, paymentRes, expenseRes, trackingRes] = await Promise.all([
         accountantAPI.listInvoices({ page: 1, limit: 50 }),
         accountantAPI.listPayments({ page: 1, limit: 50 }),
         accountantAPI.listPrintingExpenses({ page: 1, limit: 50 }),
+        accountantAPI.getPaymentTracking({ search: paymentSearch || undefined }),
       ]);
 
       if (invoiceRes?.success) setInvoices(invoiceRes.data?.rows || []);
       if (paymentRes?.success) setPayments(paymentRes.data?.rows || []);
       if (expenseRes?.success) setExpenses(expenseRes.data?.rows || []);
+      if (trackingRes?.success) setPaymentTrackingGroups(trackingRes.data?.groups || []);
     } catch (e: any) {
       showError(e?.response?.data?.message || "Failed to load finance data");
     } finally {
@@ -226,6 +260,12 @@ export default function AccountantDashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeQueueTab]);
 
+  useEffect(() => {
+    if (!canAccess) return;
+    fetchLists();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentSearch]);
+
   const handleCreateInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -264,6 +304,7 @@ export default function AccountantDashboardPage() {
     try {
       const payload = {
         amount: Number(paymentForm.amount || 0),
+        paidAt: paymentForm.paidAt || undefined,
         method: paymentForm.method,
         reference: paymentForm.reference || undefined,
         notes: paymentForm.notes || undefined,
@@ -273,11 +314,15 @@ export default function AccountantDashboardPage() {
         showSuccess("Payment recorded");
         setPaymentForm({
           invoiceId: "",
+          invoiceNumber: "",
+          partyName: "",
           amount: "",
+          paidAt: new Date().toISOString().slice(0, 10),
           method: "UPI",
           reference: "",
           notes: "",
         });
+        setPaymentModalOpen(false);
         fetchSummary();
         fetchLists();
       } else {
@@ -285,6 +330,92 @@ export default function AccountantDashboardPage() {
       }
     } catch (e: any) {
       showError(e?.response?.data?.message || "Failed to record payment");
+    }
+  };
+
+  const openPaymentModal = (bill: any, group: any) => {
+    setPaymentForm({
+      invoiceId: bill.invoiceId,
+      invoiceNumber: bill.invoiceNumber,
+      partyName: group.partyName || group.clientName,
+      amount: String(bill.remainingAmount || ""),
+      paidAt: new Date().toISOString().slice(0, 10),
+      method: "UPI",
+      reference: "",
+      notes: "",
+    });
+    setPaymentModalOpen(true);
+  };
+
+  const closePaymentModal = () => {
+    setPaymentModalOpen(false);
+    setPaymentForm({
+      invoiceId: "",
+      invoiceNumber: "",
+      partyName: "",
+      amount: "",
+      paidAt: new Date().toISOString().slice(0, 10),
+      method: "UPI",
+      reference: "",
+      notes: "",
+    });
+  };
+
+  const openReminderModal = (bill: any, group: any, daysAhead?: number) => {
+    const reminderDate = new Date();
+    if (daysAhead) {
+      reminderDate.setDate(reminderDate.getDate() + daysAhead);
+    }
+    setReminderForm({
+      invoiceId: bill.invoiceId,
+      invoiceNumber: bill.invoiceNumber,
+      partyName: group.partyName || group.clientName,
+      reminderAt: daysAhead
+        ? reminderDate.toISOString().slice(0, 10)
+        : bill.reminderAt
+          ? new Date(bill.reminderAt).toISOString().slice(0, 10)
+          : "",
+      reminderNote: bill.reminderNote || "",
+    });
+    setReminderModalOpen(true);
+  };
+
+  const closeReminderModal = () => {
+    setReminderModalOpen(false);
+    setReminderForm({
+      invoiceId: "",
+      invoiceNumber: "",
+      partyName: "",
+      reminderAt: "",
+      reminderNote: "",
+    });
+  };
+
+  const handleScheduleReminder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reminderForm.invoiceId) {
+      showError("Select a bill first");
+      return;
+    }
+    if (!reminderForm.reminderAt) {
+      showError("Please select a reminder date");
+      return;
+    }
+
+    try {
+      const resp = await accountantAPI.scheduleInvoiceReminder(reminderForm.invoiceId, {
+        reminderAt: reminderForm.reminderAt,
+        reminderNote: reminderForm.reminderNote || undefined,
+      });
+      if (resp?.success) {
+        showSuccess("Payment reminder scheduled");
+        closeReminderModal();
+        fetchLists();
+      } else {
+        showError(resp?.message || "Failed to schedule reminder");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to schedule reminder");
     }
   };
 
@@ -355,6 +486,22 @@ export default function AccountantDashboardPage() {
     });
   };
 
+  const togglePaymentGroup = (clientId: string) => {
+    setExpandedPaymentGroups((prev) =>
+      prev.includes(clientId)
+        ? prev.filter((value) => value !== clientId)
+        : [...prev, clientId],
+    );
+  };
+
+  const toggleBill = (invoiceId: string) => {
+    setExpandedBills((prev) =>
+      prev.includes(invoiceId)
+        ? prev.filter((value) => value !== invoiceId)
+        : [...prev, invoiceId],
+    );
+  };
+
   const openBillModal = (group: any, rows: any[]) => {
     const now = new Date();
     const billNumber = `BILL-${now.getFullYear()}${String(
@@ -368,6 +515,8 @@ export default function AccountantDashboardPage() {
       open: true,
       clientId: group.clientId,
       clientName: group.clientName,
+      partyName: group.partyName || group.clientName,
+      partyDetails: group.partyDetails || {},
       rows,
     });
     setBillForm({
@@ -376,18 +525,35 @@ export default function AccountantDashboardPage() {
       customFirmName: "",
       billNumber,
       remarks: "",
+      billingCompanyName: group.partyDetails?.billingCompanyName || "",
+      billingPhone: group.partyDetails?.billingPhone || "",
+      billingEmail: group.partyDetails?.billingEmail || "",
+      gstin: group.partyDetails?.gstin || "",
+      billingAddress: group.partyDetails?.billingAddress || "",
       billPdf: null,
     });
   };
 
   const closeBillModal = () => {
-    setBillModal({ open: false, clientId: "", clientName: "", rows: [] });
+    setBillModal({
+      open: false,
+      clientId: "",
+      clientName: "",
+      partyName: "",
+      partyDetails: {},
+      rows: [],
+    });
     setBillForm({
       firmName: firmOptions[0] || defaultBillFirmOptions[0],
       useCustomFirm: false,
       customFirmName: "",
       billNumber: "",
       remarks: "",
+      billingCompanyName: "",
+      billingPhone: "",
+      billingEmail: "",
+      gstin: "",
+      billingAddress: "",
       billPdf: null,
     });
   };
@@ -412,9 +578,17 @@ export default function AccountantDashboardPage() {
 
     return (queueGroups || [])
       .map((group: any) => {
-        const clientMatches = String(group.clientName || "")
-          .toLowerCase()
-          .includes(term);
+        const clientMatches = [
+          group.partyName,
+          group.clientName,
+          group.partyDetails?.gstin,
+          group.partyDetails?.billingPhone,
+          group.partyDetails?.billingEmail,
+        ].some((value) =>
+          String(value || "")
+            .toLowerCase()
+            .includes(term),
+        );
 
         const rows = (group.rows || []).filter((row: any) => {
           if (clientMatches) return true;
@@ -425,6 +599,8 @@ export default function AccountantDashboardPage() {
             row.landmark,
             row.position,
             row.hoardingType,
+            row.billingDetails?.billNumber,
+            row.billingDetails?.invoiceNumber,
           ].some((value) =>
             String(value || "")
               .toLowerCase()
@@ -449,6 +625,51 @@ export default function AccountantDashboardPage() {
       .filter(Boolean);
   }, [queueGroups, queueSearch]);
 
+  const filteredPaymentGroups = useMemo(() => {
+    const term = paymentSearch.trim().toLowerCase();
+    if (!term) return paymentTrackingGroups;
+
+    return (paymentTrackingGroups || [])
+      .map((group: any) => {
+        const partyMatch = [
+          group.partyName,
+          group.clientName,
+          group.partyDetails?.billingPhone,
+          group.partyDetails?.billingEmail,
+          group.partyDetails?.gstin,
+        ].some((value) =>
+          String(value || "")
+            .toLowerCase()
+            .includes(term),
+        );
+
+        const bills = (group.bills || []).filter((bill: any) => {
+          if (partyMatch) return true;
+          return [
+            bill.invoiceNumber,
+            bill.contractNumber,
+            bill.firm,
+            bill.status,
+          ].some((value) =>
+            String(value || "")
+              .toLowerCase()
+              .includes(term),
+          );
+        });
+
+        if (!bills.length) return null;
+        return {
+          ...group,
+          bills,
+          totalPendingAmount: bills.reduce(
+            (sum: number, bill: any) => sum + Number(bill.remainingAmount || 0),
+            0,
+          ),
+        };
+      })
+      .filter(Boolean);
+  }, [paymentSearch, paymentTrackingGroups]);
+
   const handleGenerateBill = async () => {
     try {
       if (!billModal.rows.length) {
@@ -462,6 +683,18 @@ export default function AccountantDashboardPage() {
       if (!billForm.billNumber.trim()) {
         showError("Please enter bill number");
         return;
+      }
+
+      const billingProfilePayload = {
+        billingCompanyName: billForm.billingCompanyName.trim() || undefined,
+        billingPhone: billForm.billingPhone.trim() || undefined,
+        billingEmail: billForm.billingEmail.trim() || undefined,
+        gstin: billForm.gstin.trim() || undefined,
+        billingAddress: billForm.billingAddress.trim() || undefined,
+      };
+
+      if (Object.values(billingProfilePayload).some(Boolean)) {
+        await clientsAPI.upsertBillingProfile(billModal.clientId, billingProfilePayload);
       }
 
       setGeneratingBill(true);
@@ -616,6 +849,13 @@ export default function AccountantDashboardPage() {
           {!queueLoading &&
             filteredQueueGroups.map((group: any) => {
               const expanded = expandedClients.includes(group.clientId);
+              const generatedBillNumbers = Array.from(
+                new Set(
+                  (group.rows || [])
+                    .map((row: any) => row.billingDetails?.billNumber || row.billingDetails?.invoiceNumber)
+                    .filter(Boolean),
+                ),
+              );
               return (
                 <div
                   key={group.clientId}
@@ -636,12 +876,43 @@ export default function AccountantDashboardPage() {
                     }}
                   >
                     <div>
-                      <h3 style={{ marginBottom: 6 }}>{group.clientName}</h3>
+                      <h3 style={{ marginBottom: 6 }}>{group.partyName || group.clientName}</h3>
+                      {group.partyName && group.clientName && group.partyName !== group.clientName && (
+                        <p style={{ margin: "0 0 6px", color: "var(--text-secondary)" }}>
+                          Client: {group.clientName}
+                        </p>
+                      )}
                       <p style={{ margin: 0, color: "var(--text-secondary)" }}>
                         Base {formatCurrency(group.totals?.base)} | GST{" "}
                         {formatCurrency(group.totals?.gst)} | With GST{" "}
                         {formatCurrency(group.totals?.withGst)}
                       </p>
+                      {!!generatedBillNumbers.length && (
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            marginTop: 10,
+                          }}
+                        >
+                          {generatedBillNumbers.map((billNumber) => (
+                            <span
+                              key={String(billNumber)}
+                              style={{
+                                padding: "6px 10px",
+                                borderRadius: 999,
+                                background: "rgba(37, 99, 235, 0.10)",
+                                color: "#1d4ed8",
+                                fontSize: 12,
+                                fontWeight: 700,
+                              }}
+                            >
+                              Bill {String(billNumber)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                       {activeQueueTab !== "completed" && (
@@ -675,6 +946,41 @@ export default function AccountantDashboardPage() {
                         {formatCurrency(group.totals?.base)} | GST{" "}
                         {formatCurrency(group.totals?.gst)} | With GST{" "}
                         {formatCurrency(group.totals?.withGst)}
+                      </div>
+
+                      <div
+                        style={{
+                          padding: 12,
+                          borderRadius: 12,
+                          background: "rgba(59, 130, 246, 0.08)",
+                          marginBottom: 14,
+                          display: "grid",
+                          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                          gap: 10,
+                        }}
+                      >
+                        <div>
+                          <strong>Party / Billing Name:</strong>{" "}
+                          {normalizeDisplayText(
+                            group.partyDetails?.billingCompanyName || group.partyName,
+                          )}
+                        </div>
+                        <div>
+                          <strong>GSTIN:</strong>{" "}
+                          {normalizeDisplayText(group.partyDetails?.gstin)}
+                        </div>
+                        <div>
+                          <strong>Contact:</strong>{" "}
+                          {normalizeDisplayText(group.partyDetails?.billingPhone)}
+                        </div>
+                        <div>
+                          <strong>Email:</strong>{" "}
+                          {normalizeDisplayText(group.partyDetails?.billingEmail)}
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <strong>Address:</strong>{" "}
+                          {normalizeDisplayText(group.partyDetails?.billingAddress)}
+                        </div>
                       </div>
 
                       {activeQueueTab !== "completed" && (
@@ -753,6 +1059,24 @@ export default function AccountantDashboardPage() {
                                   <span className="status-badge">
                                     {formatEnumLabel(row.billingDetails?.status)}
                                   </span>
+                                  {(row.billingDetails?.billNumber ||
+                                    row.billingDetails?.invoiceNumber) && (
+                                    <span
+                                      style={{
+                                        padding: "6px 10px",
+                                        borderRadius: 999,
+                                        background: "rgba(2, 132, 199, 0.12)",
+                                        color: "#0f766e",
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      Bill {String(
+                                        row.billingDetails?.billNumber ||
+                                          row.billingDetails?.invoiceNumber,
+                                      )}
+                                    </span>
+                                  )}
                                   {row.warningNotLive && (
                                     <span
                                       style={{
@@ -868,7 +1192,18 @@ export default function AccountantDashboardPage() {
                                   {normalizeDisplayText(row.facingDirection)}
                                 </div>
                                 <div>
-                                  <strong>Size:</strong> {normalizeDisplayText(row.size)}
+                                  <strong>Size:</strong>{" "}
+                                  {normalizeDisplayText(row.sizeSquareFeet || row.size)}
+                                  {row.sizeSquareFeet && row.size && (
+                                    <small
+                                      style={{
+                                        display: "block",
+                                        color: "var(--text-secondary)",
+                                      }}
+                                    >
+                                      Stored as {normalizeDisplayText(row.size)}
+                                    </small>
+                                  )}
                                 </div>
                                 <div>
                                   <strong>Position:</strong>{" "}
@@ -904,9 +1239,10 @@ export default function AccountantDashboardPage() {
                                     }}
                                   >
                                     <div>
-                                      <strong>Invoice Number:</strong>{" "}
+                                      <strong>Bill / Invoice Number:</strong>{" "}
                                       {normalizeDisplayText(
-                                        row.billingDetails?.invoiceNumber,
+                                        row.billingDetails?.billNumber ||
+                                          row.billingDetails?.invoiceNumber,
                                       )}
                                     </div>
                                     <div>
@@ -1141,117 +1477,212 @@ export default function AccountantDashboardPage() {
           )}
 
           {activeTab === "payments" && (
-            <div className="grid" style={{ gridTemplateColumns: "2fr 1fr" }}>
-              <div>
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Invoice</th>
-                      <th>Client</th>
-                      <th>Amount</th>
-                      <th>Method</th>
-                      <th>Paid At</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(payments || []).map((p) => (
-                      <tr key={p.id}>
-                        <td>{normalizeDisplayText(p.invoice?.invoiceNumber)}</td>
-                        <td>{normalizeDisplayText(p.invoice?.client?.name)}</td>
-                        <td>{formatCurrency(p.amount)}</td>
-                        <td>{formatEnumLabel(p.method)}</td>
-                        <td>{formatDate(p.paidAt)}</td>
-                      </tr>
-                    ))}
-                    {(!payments || payments.length === 0) && (
-                      <tr>
-                        <td colSpan={5}>No payments yet.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  marginBottom: 16,
+                }}
+              >
+                <div>
+                  <h3 style={{ marginBottom: 6 }}>Bill-wise Payment Tracking</h3>
+                  <p style={{ margin: 0, color: "var(--text-secondary)" }}>
+                    First level shows party name and total pending amount. Expand to see bill numbers and actions.
+                  </p>
+                </div>
+                <input
+                  type="text"
+                  value={paymentSearch}
+                  onChange={(e) => setPaymentSearch(e.target.value)}
+                  placeholder="Search party, bill, GST, contract"
+                  style={{ minWidth: 260 }}
+                />
               </div>
-              <form onSubmit={handleRecordPayment} className="form">
-                <h3>Record Payment</h3>
-                <div className="form-group">
-                  <label>Invoice</label>
-                  <select
-                    value={paymentForm.invoiceId}
-                    onChange={(e) =>
-                      setPaymentForm((prev) => ({
-                        ...prev,
-                        invoiceId: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">Select invoice</option>
-                    {invoices.map((inv: any) => (
-                      <option key={inv.id} value={inv.id}>
-                        {inv.invoiceNumber}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Amount</label>
-                  <input
-                    type="number"
-                    value={paymentForm.amount}
-                    onChange={(e) =>
-                      setPaymentForm((prev) => ({
-                        ...prev,
-                        amount: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Method</label>
-                  <select
-                    value={paymentForm.method}
-                    onChange={(e) =>
-                      setPaymentForm((prev) => ({
-                        ...prev,
-                        method: e.target.value,
-                      }))
-                    }
-                  >
-                    {paymentMethods.map((m) => (
-                      <option key={m} value={m}>
-                        {formatEnumLabel(m)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Reference</label>
-                  <input
-                    type="text"
-                    value={paymentForm.reference}
-                    onChange={(e) =>
-                      setPaymentForm((prev) => ({
-                        ...prev,
-                        reference: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Notes</label>
-                  <textarea
-                    value={paymentForm.notes}
-                    onChange={(e) =>
-                      setPaymentForm((prev) => ({
-                        ...prev,
-                        notes: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <button className="tab-button active" type="submit">
-                  Record Payment
-                </button>
-              </form>
+
+              <div style={{ display: "grid", gap: 14 }}>
+                {(filteredPaymentGroups || []).map((group: any) => {
+                  const expanded = expandedPaymentGroups.includes(group.clientId);
+                  return (
+                    <div
+                      key={group.clientId}
+                      style={{
+                        border: "1px solid var(--border-color)",
+                        borderRadius: 16,
+                        padding: 18,
+                        background: "#fff",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 16,
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div>
+                          <h3 style={{ marginBottom: 6 }}>{group.partyName}</h3>
+                          {group.partyName !== group.clientName && (
+                            <p style={{ margin: "0 0 6px", color: "var(--text-secondary)" }}>
+                              Client: {group.clientName}
+                            </p>
+                          )}
+                          <p style={{ margin: 0, color: "var(--text-secondary)" }}>
+                            Pending Amount {formatCurrency(group.totalPendingAmount)}
+                          </p>
+                        </div>
+                        <button
+                          className={expanded ? "tab-button active" : "tab-button"}
+                          onClick={() => togglePaymentGroup(group.clientId)}
+                        >
+                          {expanded ? "Collapse" : "Expand Bills"}
+                        </button>
+                      </div>
+
+                      {expanded && (
+                        <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
+                          {(group.bills || []).map((bill: any) => {
+                            const billExpanded = expandedBills.includes(bill.invoiceId);
+                            const isPending = Number(bill.remainingAmount || 0) > 0;
+                            return (
+                              <div
+                                key={bill.invoiceId}
+                                style={{
+                                  border: "1px solid var(--border-color)",
+                                  borderRadius: 14,
+                                  padding: 16,
+                                  background: isPending
+                                    ? "rgba(239, 68, 68, 0.04)"
+                                    : "rgba(34, 197, 94, 0.04)",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    gap: 12,
+                                    flexWrap: "wrap",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                                    <strong>{bill.invoiceNumber}</strong>
+                                    <span
+                                      style={{
+                                        padding: "6px 10px",
+                                        borderRadius: 999,
+                                        background: isPending
+                                          ? "rgba(239, 68, 68, 0.12)"
+                                          : "rgba(34, 197, 94, 0.12)",
+                                        color: isPending ? "#b91c1c" : "#15803d",
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      {isPending ? "Pending" : "Cleared"}
+                                    </span>
+                                    <span style={{ color: "var(--text-secondary)", fontSize: 14 }}>
+                                      Remaining {formatCurrency(bill.remainingAmount)}
+                                    </span>
+                                  </div>
+                                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                    <button className="tab-button" onClick={() => openPaymentModal(bill, group)}>
+                                      Payment Received
+                                    </button>
+                                    <button className="tab-button" onClick={() => openReminderModal(bill, group, 7)}>
+                                      Remind in 7 Days
+                                    </button>
+                                    <button className="tab-button" onClick={() => openReminderModal(bill, group)}>
+                                      Custom Reminder
+                                    </button>
+                                    <button
+                                      className={billExpanded ? "tab-button active" : "tab-button"}
+                                      onClick={() => toggleBill(bill.invoiceId)}
+                                    >
+                                      {billExpanded ? "Hide Details" : "Show Details"}
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {billExpanded && (
+                                  <div style={{ marginTop: 14 }}>
+                                    <div
+                                      style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                                        gap: 10,
+                                        marginBottom: 14,
+                                      }}
+                                    >
+                                      <div><strong>Bill Created:</strong> {formatDate(bill.billCreatedDate)}</div>
+                                      <div><strong>Total Bill Amount:</strong> {formatCurrency(bill.totalAmount)}</div>
+                                      <div>
+                                        <strong>Remaining Amount:</strong>{" "}
+                                        <span style={{ color: isPending ? "#b91c1c" : "#15803d", fontWeight: 700 }}>
+                                          {formatCurrency(bill.remainingAmount)}
+                                        </span>
+                                      </div>
+                                      <div><strong>Days Due:</strong> {bill.daysDue}</div>
+                                      <div><strong>Last Payment Received:</strong> {formatDate(bill.lastPaymentReceivedDate)}</div>
+                                      <div><strong>Reminder Date:</strong> {formatDate(bill.reminderAt)}</div>
+                                      <div><strong>Reminder Note:</strong> {normalizeDisplayText(bill.reminderNote)}</div>
+                                      <div><strong>Contract:</strong> {normalizeDisplayText(bill.contractNumber)}</div>
+                                    </div>
+
+                                    <div>
+                                      <strong>Payment History</strong>
+                                      <table className="table" style={{ marginTop: 10 }}>
+                                        <thead>
+                                          <tr>
+                                            <th>Date</th>
+                                            <th>Amount</th>
+                                            <th>Method</th>
+                                            <th>Status</th>
+                                            <th>Reference</th>
+                                            <th>Note</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {(bill.paymentHistory || []).map((payment: any) => (
+                                            <tr key={payment.id}>
+                                              <td>{formatDate(payment.paidAt)}</td>
+                                              <td>{formatCurrency(payment.amount)}</td>
+                                              <td>{formatEnumLabel(payment.method)}</td>
+                                              <td>{formatEnumLabel(payment.status)}</td>
+                                              <td>{normalizeDisplayText(payment.reference)}</td>
+                                              <td>{normalizeDisplayText(payment.notes)}</td>
+                                            </tr>
+                                          ))}
+                                          {(!bill.paymentHistory || bill.paymentHistory.length === 0) && (
+                                            <tr>
+                                              <td colSpan={6}>No payment history yet.</td>
+                                            </tr>
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {(!filteredPaymentGroups || filteredPaymentGroups.length === 0) && (
+                  <div className="empty-state">
+                    No bills found for the current payment filters.
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -1398,6 +1829,158 @@ export default function AccountantDashboardPage() {
           )}
         </div>
 
+        {paymentModalOpen && (
+          <div
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/45 p-4"
+            onClick={closePaymentModal}
+          >
+            <div
+              className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <form onSubmit={handleRecordPayment} className="form">
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 16,
+                    flexWrap: "wrap",
+                    marginBottom: 16,
+                  }}
+                >
+                  <div>
+                    <h3 style={{ marginBottom: 6 }}>Payment Received</h3>
+                    <p style={{ color: "var(--text-secondary)", margin: 0 }}>
+                      {paymentForm.partyName} | {paymentForm.invoiceNumber}
+                    </p>
+                  </div>
+                  <button type="button" className="tab-button" onClick={closePaymentModal}>
+                    Close
+                  </button>
+                </div>
+
+                <div className="form-group">
+                  <label>Amount Received</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={paymentForm.amount}
+                    onChange={(e) =>
+                      setPaymentForm((prev) => ({ ...prev, amount: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Date</label>
+                  <input
+                    type="date"
+                    value={paymentForm.paidAt}
+                    onChange={(e) =>
+                      setPaymentForm((prev) => ({ ...prev, paidAt: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Method</label>
+                  <select
+                    value={paymentForm.method}
+                    onChange={(e) =>
+                      setPaymentForm((prev) => ({ ...prev, method: e.target.value }))
+                    }
+                  >
+                    {paymentMethods.map((m) => (
+                      <option key={m} value={m}>
+                        {formatEnumLabel(m)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Reference Number</label>
+                  <input
+                    type="text"
+                    value={paymentForm.reference}
+                    onChange={(e) =>
+                      setPaymentForm((prev) => ({ ...prev, reference: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Note / Remarks</label>
+                  <textarea
+                    value={paymentForm.notes}
+                    onChange={(e) =>
+                      setPaymentForm((prev) => ({ ...prev, notes: e.target.value }))
+                    }
+                  />
+                </div>
+                <button className="tab-button active" type="submit">
+                  Save Payment
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {reminderModalOpen && (
+          <div
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/45 p-4"
+            onClick={closeReminderModal}
+          >
+            <div
+              className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <form onSubmit={handleScheduleReminder} className="form">
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 16,
+                    flexWrap: "wrap",
+                    marginBottom: 16,
+                  }}
+                >
+                  <div>
+                    <h3 style={{ marginBottom: 6 }}>Custom Reminder</h3>
+                    <p style={{ color: "var(--text-secondary)", margin: 0 }}>
+                      {reminderForm.partyName} | {reminderForm.invoiceNumber}
+                    </p>
+                  </div>
+                  <button type="button" className="tab-button" onClick={closeReminderModal}>
+                    Close
+                  </button>
+                </div>
+
+                <div className="form-group">
+                  <label>Reminder Date</label>
+                  <input
+                    type="date"
+                    min={new Date().toISOString().slice(0, 10)}
+                    value={reminderForm.reminderAt}
+                    onChange={(e) =>
+                      setReminderForm((prev) => ({ ...prev, reminderAt: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Note</label>
+                  <textarea
+                    value={reminderForm.reminderNote}
+                    onChange={(e) =>
+                      setReminderForm((prev) => ({ ...prev, reminderNote: e.target.value }))
+                    }
+                  />
+                </div>
+                <button className="tab-button active" type="submit">
+                  Save Reminder
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
         {billModal.open && (
           <div
             className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/45 p-4"
@@ -1419,8 +2002,15 @@ export default function AccountantDashboardPage() {
                 <div>
                   <h3 style={{ marginBottom: 6 }}>Create Bill</h3>
                   <p style={{ color: "var(--text-secondary)", margin: 0 }}>
-                    {billModal.clientName} | {billModal.rows.length} item(s) selected
+                    {billModal.partyName || billModal.clientName} | {billModal.rows.length} item(s) selected
                   </p>
+                  {billModal.partyName &&
+                    billModal.clientName &&
+                    billModal.partyName !== billModal.clientName && (
+                      <p style={{ color: "var(--text-secondary)", margin: "6px 0 0" }}>
+                        Client: {billModal.clientName}
+                      </p>
+                    )}
                 </div>
                 <button className="tab-button" onClick={closeBillModal}>
                   Close
@@ -1454,6 +2044,17 @@ export default function AccountantDashboardPage() {
                                 {normalizeDisplayText(row.city)} |{" "}
                                 {normalizeDisplayText(row.area)}
                               </small>
+                              {(row.sizeSquareFeet || row.size) && (
+                                <small
+                                  style={{
+                                    display: "block",
+                                    color: "var(--text-secondary)",
+                                    marginTop: 4,
+                                  }}
+                                >
+                                  Size: {normalizeDisplayText(row.sizeSquareFeet || row.size)}
+                                </small>
+                              )}
                               {row.warningNotLive && (
                                 <div
                                   style={{
@@ -1496,6 +2097,94 @@ export default function AccountantDashboardPage() {
 
                 <div className="form">
                   <h3>Bill Details</h3>
+                  <div
+                    style={{
+                      marginBottom: 14,
+                      padding: 14,
+                      borderRadius: 14,
+                      background: "rgba(59, 130, 246, 0.08)",
+                    }}
+                  >
+                    <strong>Party / Billing Details</strong>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                        gap: 10,
+                        marginTop: 10,
+                      }}
+                    >
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Party / Billing Name</label>
+                        <input
+                          type="text"
+                          value={billForm.billingCompanyName}
+                          onChange={(e) =>
+                            setBillForm((prev) => ({
+                              ...prev,
+                              billingCompanyName: e.target.value,
+                            }))
+                          }
+                          placeholder={billModal.partyName || billModal.clientName}
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Contact Number</label>
+                        <input
+                          type="text"
+                          value={billForm.billingPhone}
+                          onChange={(e) =>
+                            setBillForm((prev) => ({
+                              ...prev,
+                              billingPhone: e.target.value,
+                            }))
+                          }
+                          placeholder="Billing mobile / contact"
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Email</label>
+                        <input
+                          type="email"
+                          value={billForm.billingEmail}
+                          onChange={(e) =>
+                            setBillForm((prev) => ({
+                              ...prev,
+                              billingEmail: e.target.value,
+                            }))
+                          }
+                          placeholder="Billing email"
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>GSTIN</label>
+                        <input
+                          type="text"
+                          value={billForm.gstin}
+                          onChange={(e) =>
+                            setBillForm((prev) => ({ ...prev, gstin: e.target.value }))
+                          }
+                          placeholder="GST number"
+                        />
+                      </div>
+                      <div
+                        className="form-group"
+                        style={{ marginBottom: 0, gridColumn: "1 / -1" }}
+                      >
+                        <label>Billing Address</label>
+                        <textarea
+                          value={billForm.billingAddress}
+                          onChange={(e) =>
+                            setBillForm((prev) => ({
+                              ...prev,
+                              billingAddress: e.target.value,
+                            }))
+                          }
+                          placeholder="Billing address"
+                        />
+                      </div>
+                    </div>
+                  </div>
                   <div className="form-group">
                     <label>Firm</label>
                     <select

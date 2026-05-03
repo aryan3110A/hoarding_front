@@ -46,7 +46,10 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
     }
   };
 
-  const userRole = user?.role?.toLowerCase() || "";
+  const userRole = String(user?.role || "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "_");
 
   const dashboardHref = "/dashboard";
 
@@ -162,7 +165,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Reports",
       href: "/reports",
       iconName: "BarChart2",
-      roles: ["manager", "accountant", "admin"],
+      roles: ["owner", "manager", "sales", "sales_head", "admin"],
     },
     {
       id: "tasks",

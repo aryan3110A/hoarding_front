@@ -38,7 +38,10 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
     }
   };
 
-  const userRole = user?.role?.toLowerCase() || "";
+  const userRole = String(user?.role || "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "_");
 
   const dashboardHref = "/dashboard";
 
@@ -139,7 +142,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Reports",
       href: "/reports",
       icon: "📈",
-      roles: ["owner", "manager", "accountant", "admin"], // Sales cannot access reports
+      roles: ["owner", "manager", "sales", "sales_head", "admin"],
     },
     {
       title: "Tasks",

@@ -473,6 +473,20 @@ export const clientsAPI = {
     return response.data;
   },
 
+  upsertBillingProfile: async (
+    id: string,
+    data: {
+      billingCompanyName?: string;
+      billingPhone?: string;
+      billingEmail?: string;
+      gstin?: string;
+      billingAddress?: string;
+    },
+  ) => {
+    const response = await api.patch(`/clients/${id}/billing-profile`, data);
+    return response.data;
+  },
+
   create: async (data: {
     name: string;
     phone: string;
@@ -562,6 +576,13 @@ export const enquiriesAPI = {
     assignedSalesId?: string;
     assignedToMe?: boolean;
     status?: "OPEN" | "LOCKED" | "CLOSED" | string;
+    performanceStage?:
+      | "IN_PROCESS"
+      | "WON"
+      | "FOLLOW_UP_LATER"
+      | "DEAD"
+      | "NOT_INTERESTED"
+      | string;
     createdByRole?: "owner" | "sales" | string;
   }) => {
     // Backend supports both /enquiries and /inquiries; prefer /inquiries.
@@ -586,6 +607,13 @@ export const enquiriesAPI = {
     firstContactDate?: string;
     nextFollowupDate?: string;
     followupStatus?: "PENDING" | "DONE";
+    performanceStage?:
+      | "IN_PROCESS"
+      | "WON"
+      | "FOLLOW_UP_LATER"
+      | "DEAD"
+      | "NOT_INTERESTED"
+      | string;
     source:
       | "WALK_IN"
       | "SELF_GENERATED"
@@ -615,6 +643,12 @@ export const enquiriesAPI = {
       firstContactDate: string | null;
       nextFollowupDate: string | null;
       followupStatus: "PENDING" | "DONE";
+      performanceStage:
+        | "IN_PROCESS"
+        | "WON"
+        | "FOLLOW_UP_LATER"
+        | "DEAD"
+        | "NOT_INTERESTED";
       assignedSalesId: string | null;
       categoryId: string | null;
       status: "OPEN" | "LOCKED" | "CLOSED";
@@ -822,6 +856,50 @@ export const dashboardAPI = {
 
   getSalesDashboard: async () => {
     const response = await api.get("/dashboard/sales");
+    return response.data;
+  },
+
+  getSalesPerformance: async (params?: {
+    startDate?: string;
+    endDate?: string;
+    groupBy?: "day" | "month" | string;
+    salespersonId?: string;
+  }) => {
+    const response = await api.get("/dashboard/sales-performance", { params });
+    return response.data;
+  },
+
+  getSalesPerformanceClients: async (params?: {
+    startDate?: string;
+    endDate?: string;
+    salespersonId?: string;
+  }) => {
+    const response = await api.get("/dashboard/sales-performance/clients", {
+      params,
+    });
+    return response.data;
+  },
+
+  getSalesMarketVisits: async (params?: {
+    startDate?: string;
+    endDate?: string;
+    salespersonId?: string;
+  }) => {
+    const response = await api.get("/dashboard/sales-performance/market-visits", {
+      params,
+    });
+    return response.data;
+  },
+
+  saveSalesMarketVisit: async (data?: {
+    visitDate?: string;
+    visitedMarket?: boolean;
+    notes?: string | null;
+  }) => {
+    const response = await api.post(
+      "/dashboard/sales-performance/market-visits",
+      data || {},
+    );
     return response.data;
   },
 
@@ -1057,6 +1135,17 @@ export const accountantAPI = {
     invoiceId?: string;
   }) => {
     const response = await api.get("/accountant/payments", { params });
+    return response.data;
+  },
+  getPaymentTracking: async (params?: { search?: string }) => {
+    const response = await api.get("/accountant/payment-tracking", { params });
+    return response.data;
+  },
+  scheduleInvoiceReminder: async (
+    invoiceId: string,
+    data: { reminderAt: string; reminderNote?: string },
+  ) => {
+    const response = await api.post(`/accountant/invoices/${invoiceId}/reminder`, data);
     return response.data;
   },
   listPrintingExpenses: async (params?: {
