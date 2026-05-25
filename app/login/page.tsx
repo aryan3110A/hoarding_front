@@ -66,6 +66,13 @@ export default function Login() {
         localStorage.setItem("token", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
         localStorage.setItem("user", JSON.stringify(response.data.user));
+        sessionStorage.setItem(
+          "dashboardWelcomeToast",
+          JSON.stringify({
+            name: response.data.user?.name || null,
+            role: response.data.user?.role || null,
+          }),
+        );
 
         router.push("/dashboard");
       } else {

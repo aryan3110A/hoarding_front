@@ -180,6 +180,19 @@ export default function HoardingDetailPage() {
     return raw || "—";
   };
 
+  const formatDate = (value: unknown) => {
+    if (!value) return "N/A";
+    const date = new Date(String(value));
+    if (Number.isNaN(date.getTime())) return "N/A";
+    return date.toLocaleDateString("en-IN");
+  };
+
+  const formatCampaignMonths = (value: unknown) => {
+    const months = Number(value);
+    if (!Number.isFinite(months) || months <= 0) return "N/A";
+    return `${months} month${months === 1 ? "" : "s"}`;
+  };
+
   const handleMarkUnderProcess = async () => {
     if (!confirm("Mark this hoarding as Under Process?")) return;
     try {
@@ -353,6 +366,20 @@ export default function HoardingDetailPage() {
                   {hoarding.minimumRate != null
                     ? `₹${Number(hoarding.minimumRate).toLocaleString()}`
                     : "N/A"}
+                </div>
+                <div>
+                  <strong>Campaign Months:</strong>{" "}
+                  {formatCampaignMonths(hoarding.campaignMonths)}
+                </div>
+                <div>
+                  <strong>Live Date:</strong> {formatDate(hoarding.liveDate)}
+                </div>
+                <div>
+                  <strong>End Date:</strong> {formatDate(hoarding.endDate)}
+                </div>
+                <div>
+                  <strong>Sold / Booked By:</strong>{" "}
+                  {hoarding.soldByName || hoarding.soldById || "N/A"}
                 </div>
                 {hoarding.lat && hoarding.lng && (
                   <div>

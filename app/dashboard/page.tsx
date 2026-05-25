@@ -16,7 +16,7 @@ import {
   supervisorAPI,
 } from "@/lib/api";
 import { canViewRent, canAssignTasks } from "@/lib/rbac";
-import { showError, showSuccess } from "@/lib/toast";
+import { showError, showSuccess, showToast } from "@/lib/toast";
 
 const toProposalFilenamePart = (value?: string | null) => {
   const raw = String(value || "")
@@ -454,6 +454,8 @@ function DashboardContent() {
   };
 
   const displayRole = user?.role ? capitalize(user.role) : "User";
+  const welcomeName = String(user?.name || "").trim();
+  const welcomeFallback = displayRole;
   const canViewRentInfo = canViewRent(userRole);
   const executionTypeOptions = [
     { value: "", label: "Select..." },
@@ -506,6 +508,9 @@ function DashboardContent() {
 
   const getSupervisorDesignerId = (h: any) =>
     String(h?.designerId || h?.latestDesignerId || h?.designer?.id || "");
+
+  const hasSupervisorDesignerAssigned = (h: any) =>
+    !!getSupervisorDesignerId(h).trim();
 
   const isSupervisorAssignmentLocked = (h: any) => {
     const statusLower = String(h?.status || "").toLowerCase();
@@ -601,6 +606,30 @@ function DashboardContent() {
       setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user || typeof window === "undefined") return;
+
+    const pendingToast = sessionStorage.getItem("dashboardWelcomeToast");
+    if (!pendingToast) return;
+
+    sessionStorage.removeItem("dashboardWelcomeToast");
+
+    let label = welcomeName || welcomeFallback;
+    try {
+      const parsed = JSON.parse(pendingToast) as { name?: string; role?: string };
+      const pendingName = String(parsed?.name || "").trim();
+      const pendingRole = capitalize(parsed?.role);
+      label = pendingName || pendingRole || label;
+    } catch {
+      // Ignore malformed session data and fall back to current user context.
+    }
+
+    showToast("info", `Welcome back, ${label}!`, {
+      timeout: 4000,
+      title: "Welcome",
+    });
+  }, [user, welcomeFallback, welcomeName]);
 
   useEffect(() => {
     if (selectedSupervisorClient === "all") return;
@@ -895,6 +924,7 @@ function DashboardContent() {
     rows.map((h: any) => {
       const hid = String(h.id);
       const lockAssignAction = isSupervisorAssignmentLocked(h);
+      const hasAssignedDesigner = hasSupervisorDesignerAssigned(h);
       const currentExec = h.executionType || "";
       const selectedExec = execTypeDraft[hid] || currentExec || "";
       const requiresDesigner =
@@ -972,6 +1002,7 @@ function DashboardContent() {
               className="btn btn-primary supervisor-assign-btn"
               disabled={
                 lockAssignAction ||
+                hasAssignedDesigner ||
                 saving ||
                 !selectedExec ||
                 (requiresDesigner && !selectedDesigner)
@@ -988,6 +1019,8 @@ function DashboardContent() {
               title={
                 lockAssignAction
                   ? getSupervisorLockReason(h)
+                  : hasAssignedDesigner
+                    ? "Designer already assigned"
                   : isClientFlex
                     ? "Confirm Client Direct Flex"
                     : "Assign execution/designer"
@@ -995,6 +1028,8 @@ function DashboardContent() {
             >
               {lockAssignAction
                 ? "Locked"
+                : hasAssignedDesigner
+                  ? "Assigned"
                 : saving
                   ? "Saving..."
                   : isClientFlex
@@ -2172,6 +2207,11 @@ function DashboardContent() {
                           const unlockedCount = group.rows.filter(
                             (h: any) => !isSupervisorAssignmentLocked(h),
                           ).length;
+                          const unlockedWithoutDesignerCount = group.rows.filter(
+                            (h: any) =>
+                              !isSupervisorAssignmentLocked(h) &&
+                              !hasSupervisorDesignerAssigned(h),
+                          ).length;
                           const clientExec = clientExecDraft[group.key] || "";
                           const clientRequiresDesigner =
                             !!clientExec &&
@@ -2256,16 +2296,24 @@ function DashboardContent() {
                                     className="btn btn-primary supervisor-assign-btn"
                                     disabled={
                                       clientSaving ||
-                                      unlockedCount === 0 ||
+                                      unlockedWithoutDesignerCount === 0 ||
                                       !clientExec ||
                                       (clientRequiresDesigner && !clientDesigner)
                                     }
                                     onClick={() =>
                                       handleAssignClientHoardings(group.key)
                                     }
-                                    title={`${unlockedCount} unlocked hoarding(s) can be assigned`}
+                                    title={
+                                      unlockedWithoutDesignerCount === 0
+                                        ? "All unlocked hoardings already have a designer assigned"
+                                        : `${unlockedWithoutDesignerCount} unlocked hoarding(s) can be assigned`
+                                    }
                                   >
-                                    {clientSaving ? "Assigning..." : "Assign"}
+                                    {clientSaving
+                                      ? "Assigning..."
+                                      : unlockedWithoutDesignerCount === 0
+                                        ? "Assigned"
+                                        : "Assign"}
                                   </button>
                                 </td>
                                 <td>

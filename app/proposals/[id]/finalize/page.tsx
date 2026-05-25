@@ -40,6 +40,12 @@ export default function FinalizeProposalPage() {
     return ["booked", "live", "under_process"].includes(s);
   };
 
+  const displayStatus = (statusRaw: unknown) => {
+    const status = String(statusRaw || "available").toLowerCase();
+    if (status === "tokenized") return "AVAILABLE";
+    return status.toUpperCase();
+  };
+
   const finalRateDraftKey = `proposal-finalize-finalRates:${id}`;
 
   const updateProposalRowStatus = (hid: string, nextStatus: string) => {
@@ -229,8 +235,16 @@ export default function FinalizeProposalPage() {
     if (!hid || rowActionLoading[hid]) return;
     setRowActionLoading((prev) => ({ ...prev, [hid]: "blocking" }));
     try {
-      await hoardingsAPI.finalizeStatus(hid, "BLOCKED");
-      updateProposalRowStatus(hid, "blocked");
+      const rate = Math.max(0, Number(finalRates[hid] || 0));
+      const resp = await proposalsAPI.finalize(id, {
+        hoardingIds: [hid],
+        finalRates: { [hid]: rate },
+      });
+      if (!resp?.success) {
+        showError(resp?.message || "Failed to block hoarding");
+        return;
+      }
+      await loadProposal();
       showSuccess("Hoarding blocked");
     } catch (e: any) {
       showError(e?.response?.data?.message || "Failed to block hoarding");
@@ -311,12 +325,20 @@ export default function FinalizeProposalPage() {
               Select only the hoardings you want to block now.
             </div>
           </div>
-          <Link
-            href={`/proposals/${id}`}
-            className="px-3 py-2 rounded border bg-white hover:bg-gray-50"
-          >
-            Back
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/proposals/pdf?proposalId=${encodeURIComponent(id)}`}
+              className="px-3 py-2 rounded border bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Add Hoarding
+            </Link>
+            <Link
+              href={`/proposals/${id}`}
+              className="px-3 py-2 rounded border bg-white hover:bg-gray-50"
+            >
+              Back
+            </Link>
+          </div>
         </div>
 
         {loading ? (
@@ -328,6 +350,10 @@ export default function FinalizeProposalPage() {
             <div className="text-sm mb-3">
               <span className="font-semibold">Client:</span>{" "}
               {proposal.client?.name} ({proposal.client?.phone})
+            </div>
+
+            <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+              Need to include more hoardings for this same client? Use <span className="font-semibold">Add Hoarding</span> to reopen the proposal builder with this proposal prefilled, add more hoardings, generate the PDF again, and then continue finalizing from the updated list.
             </div>
 
             <div className="mb-3 inline-flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700">
@@ -393,7 +419,7 @@ export default function FinalizeProposalPage() {
                         <td className="p-2">{h.location || "—"}</td>
                         <td className="p-2">
                           <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                            {status.toUpperCase()}
+                            {displayStatus(status)}
                           </span>
                         </td>
                         <td className="p-2 text-right">

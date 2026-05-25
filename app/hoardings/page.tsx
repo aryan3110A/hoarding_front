@@ -199,7 +199,8 @@ export default function Hoardings() {
 
     if (normalized === "on_rent") return "On Rent";
     if (normalized === "under_process") return "Under Process";
-    if (normalized === "tokenized") return "Tokenized";
+    if (normalized === "blocked") return "Blocked";
+    if (normalized === "tokenized") return "Blocked";
 
     return normalized.charAt(0).toUpperCase() + normalized.slice(1);
   };
@@ -208,6 +209,19 @@ export default function Hoardings() {
     const amount = Number(value);
     if (!Number.isFinite(amount)) return "—";
     return `₹${amount.toLocaleString("en-IN")}`;
+  };
+
+  const formatDate = (value: unknown) => {
+    if (!value) return "—";
+    const date = new Date(String(value));
+    if (Number.isNaN(date.getTime())) return "—";
+    return date.toLocaleDateString("en-IN");
+  };
+
+  const formatCampaignMonths = (value: unknown) => {
+    const months = Number(value);
+    if (!Number.isFinite(months) || months <= 0) return "—";
+    return `${months} month${months === 1 ? "" : "s"}`;
   };
 
   return (
@@ -301,10 +315,10 @@ export default function Hoardings() {
                   { value: "", label: "All Status" },
                   { value: "available", label: "Available" },
                   { value: "occupied", label: "Occupied" },
+                  { value: "blocked", label: "Blocked" },
                   { value: "booked", label: "Booked" },
                   { value: "on_rent", label: "On Rent" },
                   { value: "under_process", label: "Under Process" },
-                  { value: "tokenized", label: "Tokenized" },
                   { value: "live", label: "Live" },
                 ]}
                 placeholder="All Status"
@@ -366,6 +380,9 @@ export default function Hoardings() {
                   <th>Size</th>
                   <th>Category</th>
                   <th>Status</th>
+                  <th>Campaign Months</th>
+                  <th>Live Date</th>
+                  <th>End Date</th>
                   <th>Standard Rate</th>
                   <th>Minimum Rate</th>
                   <th>Actions</th>
@@ -375,7 +392,7 @@ export default function Hoardings() {
                 {hoardings.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={12}
                       style={{ textAlign: "center", padding: "30px" }}
                     >
                       No hoardings found
@@ -423,6 +440,9 @@ export default function Hoardings() {
                             <td>{toFt(h.widthCm, h.heightCm)}</td>
                             <td>{h?.category?.name || "—"}</td>
                             <td>{formatStatus(h.status)}</td>
+                            <td>{formatCampaignMonths(h.campaignMonths)}</td>
+                            <td>{formatDate(h.liveDate)}</td>
+                            <td>{formatDate(h.endDate)}</td>
                             <td>{formatRate(h.standardRate)}</td>
                             <td>{formatRate(h.minimumRate)}</td>
                             <td>
