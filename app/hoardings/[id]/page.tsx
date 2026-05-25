@@ -69,14 +69,14 @@ export default function HoardingDetailPage() {
 
     const phone = String(
       relationPhone ||
-      (history as any)?.landlordPhone ||
+        (history as any)?.landlordPhone ||
         (history as any)?.phone ||
         (history as any)?.ownerPhone ||
         "",
     ).trim();
     const email = String(
       relationEmail ||
-      (history as any)?.landlordEmail ||
+        (history as any)?.landlordEmail ||
         (history as any)?.email ||
         (history as any)?.ownerEmail ||
         "",

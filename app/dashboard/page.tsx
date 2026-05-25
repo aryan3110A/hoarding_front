@@ -617,7 +617,10 @@ function DashboardContent() {
 
     let label = welcomeName || welcomeFallback;
     try {
-      const parsed = JSON.parse(pendingToast) as { name?: string; role?: string };
+      const parsed = JSON.parse(pendingToast) as {
+        name?: string;
+        role?: string;
+      };
       const pendingName = String(parsed?.name || "").trim();
       const pendingRole = capitalize(parsed?.role);
       label = pendingName || pendingRole || label;
@@ -1021,20 +1024,20 @@ function DashboardContent() {
                   ? getSupervisorLockReason(h)
                   : hasAssignedDesigner
                     ? "Designer already assigned"
-                  : isClientFlex
-                    ? "Confirm Client Direct Flex"
-                    : "Assign execution/designer"
+                    : isClientFlex
+                      ? "Confirm Client Direct Flex"
+                      : "Assign execution/designer"
               }
             >
               {lockAssignAction
                 ? "Locked"
                 : hasAssignedDesigner
                   ? "Assigned"
-                : saving
-                  ? "Saving..."
-                  : isClientFlex
-                    ? "Confirm"
-                    : "Assign"}
+                  : saving
+                    ? "Saving..."
+                    : isClientFlex
+                      ? "Confirm"
+                      : "Assign"}
             </button>
           </td>
         </tr>
@@ -2207,15 +2210,15 @@ function DashboardContent() {
                           const unlockedCount = group.rows.filter(
                             (h: any) => !isSupervisorAssignmentLocked(h),
                           ).length;
-                          const unlockedWithoutDesignerCount = group.rows.filter(
-                            (h: any) =>
-                              !isSupervisorAssignmentLocked(h) &&
-                              !hasSupervisorDesignerAssigned(h),
-                          ).length;
+                          const unlockedWithoutDesignerCount =
+                            group.rows.filter(
+                              (h: any) =>
+                                !isSupervisorAssignmentLocked(h) &&
+                                !hasSupervisorDesignerAssigned(h),
+                            ).length;
                           const clientExec = clientExecDraft[group.key] || "";
                           const clientRequiresDesigner =
-                            !!clientExec &&
-                            clientExec !== "CLIENT_DIRECT_FLEX";
+                            !!clientExec && clientExec !== "CLIENT_DIRECT_FLEX";
                           const clientDesigner =
                             clientDesignerDraft[group.key] || "";
                           const clientSaving = assigningClientKey === group.key;
@@ -2263,7 +2266,9 @@ function DashboardContent() {
                                     options={executionTypeOptions}
                                     placeholder="Select..."
                                     className="supervisor-custom-select"
-                                    disabled={clientSaving || unlockedCount === 0}
+                                    disabled={
+                                      clientSaving || unlockedCount === 0
+                                    }
                                   />
                                 </td>
                                 <td className="supervisor-client-control-cell">
@@ -2298,7 +2303,8 @@ function DashboardContent() {
                                       clientSaving ||
                                       unlockedWithoutDesignerCount === 0 ||
                                       !clientExec ||
-                                      (clientRequiresDesigner && !clientDesigner)
+                                      (clientRequiresDesigner &&
+                                        !clientDesigner)
                                     }
                                     onClick={() =>
                                       handleAssignClientHoardings(group.key)
@@ -2338,7 +2344,8 @@ function DashboardContent() {
                                           <h4>{group.name}</h4>
                                           <p>
                                             {group.phone || "No phone"} -{" "}
-                                            {group.rows.length} booked hoarding(s)
+                                            {group.rows.length} booked
+                                            hoarding(s)
                                           </p>
                                         </div>
                                       </div>
@@ -2488,10 +2495,9 @@ function DashboardContent() {
 
         .supervisor-client-toolbar {
           display: grid;
-          grid-template-columns: minmax(240px, 1.25fr) minmax(190px, 1fr) minmax(
-              190px,
-              1fr
-            ) auto;
+          grid-template-columns:
+            minmax(240px, 1.25fr) minmax(190px, 1fr) minmax(190px, 1fr)
+            auto;
           align-items: end;
           gap: 14px;
           padding: 16px;
@@ -2595,11 +2601,13 @@ function DashboardContent() {
         }
 
         .supervisor-inline-detail-card :global(.supervisor-assignment-table th),
-        .supervisor-inline-detail-card :global(.supervisor-assignment-table td) {
+        .supervisor-inline-detail-card
+          :global(.supervisor-assignment-table td) {
           padding: 10px 10px;
         }
 
-        .supervisor-inline-detail-card :global(.supervisor-assignment-table th) {
+        .supervisor-inline-detail-card
+          :global(.supervisor-assignment-table th) {
           font-size: 10px;
           letter-spacing: 0.3px;
         }
@@ -2676,24 +2684,28 @@ function DashboardContent() {
           min-width: 138px;
         }
 
-        :global(.supervisor-client-table tbody tr.supervisor-client-row-active) {
+        :global(
+          .supervisor-client-table tbody tr.supervisor-client-row-active
+        ) {
           background: color-mix(in srgb, var(--primary-color) 10%, white);
         }
 
         :global(
-            .supervisor-client-table tbody tr.supervisor-client-row-active td
-          ) {
+          .supervisor-client-table tbody tr.supervisor-client-row-active td
+        ) {
           box-shadow: inset 0 -1px 0
             color-mix(in srgb, var(--primary-color) 18%, white);
         }
 
-        :global(.supervisor-client-table tbody tr.supervisor-inline-detail-row) {
+        :global(
+          .supervisor-client-table tbody tr.supervisor-inline-detail-row
+        ) {
           background: transparent;
         }
 
         :global(
-            .supervisor-client-table tbody tr.supervisor-inline-detail-row td
-          ) {
+          .supervisor-client-table tbody tr.supervisor-inline-detail-row td
+        ) {
           padding: 0;
           border: 0;
         }
@@ -2736,7 +2748,8 @@ function DashboardContent() {
           min-width: 120px;
         }
 
-        .supervisor-inline-detail-card :global(.supervisor-custom-select button) {
+        .supervisor-inline-detail-card
+          :global(.supervisor-custom-select button) {
           height: 36px;
           padding-left: 10px;
           padding-right: 10px;
