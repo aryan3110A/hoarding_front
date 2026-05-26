@@ -65,7 +65,6 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
         "sales",
         "designer",
         "supervisor",
-        "accountant",
         "admin",
       ],
     },

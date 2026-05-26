@@ -389,7 +389,6 @@ export default function Enquiries() {
 
   useEffect(() => {
     const rawPhone = String(formData.phone || "").trim();
-    const rawName = String(formData.clientName || "").trim();
     const roleName = String(getRoleFromUser(user) || "").toLowerCase();
     const isSalesRole = roleName === "sales";
 
@@ -434,26 +433,26 @@ export default function Enquiries() {
         }
 
         if (client && client?.name) {
-          const existingName = normalizeName(client.name);
-          const enteredName = normalizeName(rawName);
-          if (enteredName && existingName && existingName !== enteredName) {
-            setPhoneConflictMessage(
-              `A client named '${client.name}' is already registered with this phone number. Please use the existing client name or enter a different phone number.`,
-            );
-            return;
-          }
+          setMatchedClientByPhone(client);
+          setFormData((prev) => ({
+            ...prev,
+            clientName: String(client.name || ""),
+            companyName: String(client.companyName || ""),
+            email: String(client.email || ""),
+          }));
+          setPhoneConflictMessage("");
+          return;
         }
+        setMatchedClientByPhone(null);
         setPhoneConflictMessage("");
       } catch (error) {
         setPhoneConflictMessage("");
-        if (isSalesRole) {
-          setMatchedClientByPhone(null);
-        }
+        setMatchedClientByPhone(null);
       }
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [formData.phone, formData.clientName, user]);
+  }, [formData.phone, user]);
 
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
@@ -681,6 +680,19 @@ export default function Enquiries() {
                     >
                       {phoneConflictMessage}
                     </div>
+                  ) : matchedClientByPhone ? (
+                    <div
+                      style={{
+                        color: "#0f766e",
+                        fontSize: "12px",
+                        marginTop: "6px",
+                      }}
+                    >
+                      Existing client details loaded for this phone number.
+                      {isOwnerOrManager
+                        ? " You can assign this inquiry to another sales person if needed."
+                        : ""}
+                    </div>
                   ) : null}
                 </div>
                 <div className="form-group">
@@ -691,7 +703,7 @@ export default function Enquiries() {
                     onChange={(e) =>
                       setFormData({ ...formData, clientName: e.target.value })
                     }
-                    disabled={isSalesRole && !!matchedClientByPhone}
+                    disabled={!!matchedClientByPhone}
                     required
                   />
                 </div>
@@ -704,7 +716,6 @@ export default function Enquiries() {
                       setFormData({ ...formData, companyName: e.target.value })
                     }
                     disabled={
-                      isSalesRole &&
                       !!matchedClientByPhone &&
                       !!String(matchedClientByPhone?.companyName || "").trim()
                     }
@@ -780,7 +791,6 @@ export default function Enquiries() {
                       setFormData({ ...formData, email: e.target.value })
                     }
                     disabled={
-                      isSalesRole &&
                       !!matchedClientByPhone &&
                       !!String(matchedClientByPhone?.email || "").trim()
                     }

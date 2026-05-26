@@ -52,6 +52,25 @@ const normalizeDisplayText = (value?: string | null) =>
 const getBillPdfUrl = (path?: string | null) =>
   path ? `${API_BASE_URL}${path}` : null;
 
+const LoadingAnimation = ({ label }: { label: string }) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+      minHeight: 180,
+      color: "var(--text-secondary)",
+      textAlign: "center",
+    }}
+    role="status"
+  >
+    <div className="loading-spinner" style={{ margin: 0 }}></div>
+    <p style={{ margin: 0, fontWeight: 600 }}>{label}</p>
+  </div>
+);
+
 export default function AccountantDashboardPage() {
   const user = useUser();
   const roleLower = String(user?.role || "").toLowerCase();
@@ -135,6 +154,7 @@ export default function AccountantDashboardPage() {
     invoiceId: "",
     invoiceNumber: "",
     partyName: "",
+    remainingAmount: "",
     amount: "",
     paidAt: new Date().toISOString().slice(0, 10),
     method: "UPI",
@@ -166,6 +186,31 @@ export default function AccountantDashboardPage() {
     [roleLower],
   );
 
+  useEffect(() => {
+    const hasOpenModal =
+      billModal.open || paymentModalOpen || reminderModalOpen;
+
+    if (!hasOpenModal) return;
+
+    const { body, documentElement } = document;
+    const previousBodyOverflow = body.style.overflow;
+    const previousHtmlOverflow = documentElement.style.overflow;
+    const previousBodyOverscroll = body.style.overscrollBehavior;
+    const previousHtmlOverscroll = documentElement.style.overscrollBehavior;
+
+    body.style.overflow = "hidden";
+    documentElement.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+    documentElement.style.overscrollBehavior = "none";
+
+    return () => {
+      body.style.overflow = previousBodyOverflow;
+      documentElement.style.overflow = previousHtmlOverflow;
+      body.style.overscrollBehavior = previousBodyOverscroll;
+      documentElement.style.overscrollBehavior = previousHtmlOverscroll;
+    };
+  }, [billModal.open, paymentModalOpen, reminderModalOpen]);
+
   const billingSummary = summary?.billingQueue || {};
 
   const selectedFirmName = billForm.useCustomFirm
@@ -184,6 +229,7 @@ export default function AccountantDashboardPage() {
   const fetchQueue = async (tab = activeQueueTab) => {
     try {
       setQueueLoading(true);
+      setQueueGroups([]);
       const resp = await accountantAPI.getBillingQueue({ tab });
       if (resp?.success) {
         setQueueGroups(resp.data?.groups || []);
@@ -309,8 +355,23 @@ export default function AccountantDashboardPage() {
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const amount = Number(paymentForm.amount || 0);
+      const remainingAmount = Number(paymentForm.remainingAmount || 0);
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        showError("Amount must be greater than 0");
+        return;
+      }
+
+      if (Number.isFinite(remainingAmount) && amount > remainingAmount) {
+        showError(
+          `Amount cannot be greater than the remaining bill amount of ${formatCurrency(remainingAmount)}`,
+        );
+        return;
+      }
+
       const payload = {
-        amount: Number(paymentForm.amount || 0),
+        amount,
         paidAt: paymentForm.paidAt || undefined,
         method: paymentForm.method,
         reference: paymentForm.reference || undefined,
@@ -326,6 +387,7 @@ export default function AccountantDashboardPage() {
           invoiceId: "",
           invoiceNumber: "",
           partyName: "",
+          remainingAmount: "",
           amount: "",
           paidAt: new Date().toISOString().slice(0, 10),
           method: "UPI",
@@ -348,6 +410,7 @@ export default function AccountantDashboardPage() {
       invoiceId: bill.invoiceId,
       invoiceNumber: bill.invoiceNumber,
       partyName: group.partyName || group.clientName,
+      remainingAmount: String(bill.remainingAmount || ""),
       amount: String(bill.remainingAmount || ""),
       paidAt: new Date().toISOString().slice(0, 10),
       method: "UPI",
@@ -363,6 +426,7 @@ export default function AccountantDashboardPage() {
       invoiceId: "",
       invoiceNumber: "",
       partyName: "",
+      remainingAmount: "",
       amount: "",
       paidAt: new Date().toISOString().slice(0, 10),
       method: "UPI",
@@ -858,7 +922,7 @@ export default function AccountantDashboardPage() {
             />
           </div>
 
-          {queueLoading && <p>Loading billing queue...</p>}
+          {queueLoading && <LoadingAnimation label="Loading billing queue..." />}
           {!queueLoading && filteredQueueGroups.length === 0 && (
             <div className="empty-state">
               {queueSearch.trim()
@@ -2089,6 +2153,9 @@ export default function AccountantDashboardPage() {
                     <p style={{ color: "var(--text-secondary)", margin: 0 }}>
                       {paymentForm.partyName} | {paymentForm.invoiceNumber}
                     </p>
+                    <p style={{ color: "var(--text-secondary)", margin: "6px 0 0" }}>
+                      Remaining Amount: {formatCurrency(paymentForm.remainingAmount)}
+                    </p>
                   </div>
                   <button
                     type="button"
@@ -2105,6 +2172,7 @@ export default function AccountantDashboardPage() {
                     type="number"
                     min="0"
                     step="0.01"
+                    max={paymentForm.remainingAmount || undefined}
                     value={paymentForm.amount}
                     onChange={(e) =>
                       setPaymentForm((prev) => ({
@@ -2248,11 +2316,16 @@ export default function AccountantDashboardPage() {
 
         {billModal.open && (
           <div
-            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/45 p-4"
+            className="fixed inset-0 z-[1000] flex items-start justify-center overflow-hidden bg-black/45 p-4 sm:p-6"
             onClick={closeBillModal}
           >
             <div
-              className="w-full max-w-5xl rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl"
+              className="my-4 w-full max-w-5xl rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl sm:my-8 sm:p-6"
+              style={{
+                maxHeight: "calc(100vh - 32px)",
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+              }}
               onClick={(e) => e.stopPropagation()}
             >
               <div
@@ -2288,15 +2361,14 @@ export default function AccountantDashboardPage() {
                 </button>
               </div>
               <div
-                className="grid"
-                style={{ gridTemplateColumns: "2fr 1fr", gap: 20 }}
+                className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]"
               >
                 <div>
                   <div
                     style={{
                       border: "1px solid var(--border-color)",
                       borderRadius: 14,
-                      overflow: "hidden",
+                      overflowX: "auto",
                     }}
                   >
                     <table className="table">
@@ -2384,7 +2456,7 @@ export default function AccountantDashboardPage() {
                   </div>
                 </div>
 
-                <div className="form">
+                <div className="form" style={{ minWidth: 0 }}>
                   <h3>Bill Details</h3>
                   <div
                     style={{

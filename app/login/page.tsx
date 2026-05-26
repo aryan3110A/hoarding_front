@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authAPI } from "@/lib/api";
+import { authAPI, devicesAPI } from "@/lib/api";
+import { showInfo } from "@/lib/toast";
 
 // Simple UUID generator (no external dependency needed)
 function generateDeviceId(): string {
@@ -11,6 +12,89 @@ function generateDeviceId(): string {
     const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
+}
+
+function buildDeviceMeta(): { deviceName?: string; platform?: string } {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  const userAgent = window.navigator.userAgent || "";
+  const platform =
+    (window.navigator as Navigator & {
+      userAgentData?: { platform?: string };
+    }).userAgentData?.platform ||
+    window.navigator.platform ||
+    "";
+
+  const ua = userAgent.toLowerCase();
+  const normalizedPlatform = String(platform || "").trim();
+  const isTablet = ua.includes("ipad") || (ua.includes("android") && !ua.includes("mobile"));
+  const isPhone = ua.includes("iphone") || (ua.includes("android") && ua.includes("mobile"));
+
+  let deviceName = "Other Device";
+  if (isTablet) {
+    deviceName = `${normalizedPlatform || "Tablet"} Tablet`;
+  } else if (isPhone) {
+    deviceName = `${normalizedPlatform || "Mobile"} Phone`;
+  } else if (normalizedPlatform) {
+    deviceName = `${normalizedPlatform} PC`;
+  }
+
+  return {
+    deviceName,
+    platform: normalizedPlatform || undefined,
+  };
+}
+
+function getDefaultRouteForRole(role?: string | null): string {
+  const normalizedRole = String(role || "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "_");
+
+  return normalizedRole === "accountant"
+    ? "/dashboard/accountant"
+    : "/dashboard";
+}
+
+function requestSalesLocationPermission(deviceId: string) {
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
+    return;
+  }
+
+  if (!navigator.geolocation) {
+    showInfo("Location tracking is not available in this browser.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      try {
+        await devicesAPI.ping(deviceId, {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: Number.isFinite(position.coords.accuracy)
+            ? Math.round(position.coords.accuracy)
+            : undefined,
+        });
+      } catch {
+        // Ignore initial upload failures; the background tracker will retry.
+      }
+    },
+    (error) => {
+      if (error.code === error.PERMISSION_DENIED) {
+        showInfo(
+          "Please allow browser location permission for sales login so the owner can see your latest coordinates.",
+        );
+      }
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0,
+    },
+  );
 }
 
 export default function Login() {
@@ -25,7 +109,12 @@ export default function Login() {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
     if (token && user) {
-      router.replace("/dashboard");
+      try {
+        const parsedUser = JSON.parse(user);
+        router.replace(getDefaultRouteForRole(parsedUser?.role));
+      } catch {
+        router.replace("/dashboard");
+      }
     }
   }
 
@@ -56,6 +145,7 @@ export default function Login() {
         trimmedEmail,
         trimmedPassword,
         deviceId,
+        buildDeviceMeta(),
       );
 
       console.log(response, "response");
@@ -74,7 +164,12 @@ export default function Login() {
           }),
         );
 
-        router.push("/dashboard");
+        const roleName = String(response.data.user?.role || "").toLowerCase();
+        if (roleName === "sales") {
+          requestSalesLocationPermission(deviceId);
+        }
+
+        router.push(getDefaultRouteForRole(response.data.user?.role));
       } else {
         setError(response.message || "Login failed");
       }

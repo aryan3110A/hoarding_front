@@ -9,8 +9,10 @@ import { showSuccess, showError } from "@/lib/toast";
 
 export default function Users() {
   const [users, setUsers] = useState<any[]>([]);
+  const [salesDeviceStatus, setSalesDeviceStatus] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [salesDeviceLoading, setSalesDeviceLoading] = useState(false);
   const userFromContext = useUser();
   const [user, setUser] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
@@ -43,7 +45,18 @@ export default function Users() {
     if (user) {
       fetchUsers();
       fetchRoles();
+      fetchSalesDeviceStatus();
     }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const intervalId = window.setInterval(() => {
+      fetchSalesDeviceStatus();
+    }, 60000);
+
+    return () => window.clearInterval(intervalId);
   }, [user]);
 
   const fetchUsers = async () => {
@@ -87,6 +100,23 @@ export default function Users() {
     }
   };
 
+  const fetchSalesDeviceStatus = async () => {
+    try {
+      setSalesDeviceLoading(true);
+      const response = await usersAPI.getSalesDeviceStatus();
+      if (response.success && Array.isArray(response.data)) {
+        setSalesDeviceStatus(response.data);
+      } else {
+        setSalesDeviceStatus([]);
+      }
+    } catch (error: any) {
+      console.error("Failed to fetch sales device status:", error);
+      setSalesDeviceStatus([]);
+    } finally {
+      setSalesDeviceLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -109,6 +139,7 @@ export default function Users() {
           territory: "",
         });
         fetchUsers();
+        fetchSalesDeviceStatus();
         showSuccess("User created successfully!");
       }
     } catch (error: any) {
@@ -187,6 +218,7 @@ export default function Users() {
       if (response.success) {
         setEditingUser(null);
         fetchUsers();
+        fetchSalesDeviceStatus();
         showSuccess("User updated successfully!");
       }
     } catch (error: any) {
@@ -211,6 +243,7 @@ export default function Users() {
       const response = await usersAPI.delete(userId);
       if (response.success) {
         fetchUsers();
+        fetchSalesDeviceStatus();
         showSuccess("User deleted successfully!");
       }
     } catch (error: any) {
@@ -227,6 +260,7 @@ export default function Users() {
       const response = await usersAPI.update(userId, { isActive: !isActive });
       if (response.success) {
         fetchUsers();
+        fetchSalesDeviceStatus();
       }
     } catch (error: any) {
       const raw =
@@ -235,6 +269,57 @@ export default function Users() {
         "Failed to update user";
       showError(String(raw).replace(/\u001b\[[0-9;]*m/g, ""));
     }
+  };
+
+  const formatDateTime = (value?: string | null) => {
+    if (!value) return "-";
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "-";
+
+    return parsed.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatCoordinate = (value?: number | null) => {
+    if (typeof value !== "number" || Number.isNaN(value)) return "-";
+    return value.toFixed(6);
+  };
+
+  const formatRelativeTime = (value?: string | null) => {
+    if (!value) return "";
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "";
+
+    const diffMs = Date.now() - parsed.getTime();
+    if (diffMs < 0) return "just now";
+
+    const diffMinutes = Math.floor(diffMs / (60 * 1000));
+    if (diffMinutes <= 0) return "just now";
+    if (diffMinutes === 1) return "1 minute ago";
+    if (diffMinutes < 60) return `${diffMinutes} minutes ago`;
+
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours === 1) return "1 hour ago";
+    if (diffHours < 24) return `${diffHours} hours ago`;
+
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return "1 day ago";
+    return `${diffDays} days ago`;
+  };
+
+  const buildGoogleMapsUrl = (latitude?: number | null, longitude?: number | null) => {
+    if (typeof latitude !== "number" || typeof longitude !== "number") {
+      return null;
+    }
+
+    return `https://www.google.com/maps?q=${latitude},${longitude}`;
   };
 
   if (!user) {
@@ -475,6 +560,140 @@ export default function Users() {
           </form>
         </div>
       )}
+
+      <div className="card">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+            gap: "12px",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h3 style={{ marginBottom: "4px" }}>Sales Device Status</h3>
+            <p style={{ margin: 0, color: "var(--text-secondary)" }}>
+              See which sales user is currently logged in and on which device.
+            </p>
+          </div>
+          <button
+            onClick={fetchSalesDeviceStatus}
+            className="btn btn-secondary"
+            disabled={salesDeviceLoading}
+          >
+            {salesDeviceLoading ? "Refreshing..." : "Refresh Status"}
+          </button>
+        </div>
+
+        {salesDeviceStatus.length > 0 ? (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Sales User</th>
+                <th>Status</th>
+                <th>Current Device</th>
+                <th>Platform</th>
+                <th>IP</th>
+                <th>Coordinates</th>
+                <th>Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {salesDeviceStatus.map((item) => (
+                <tr key={item.userId}>
+                  <td>
+                    <strong>{item.name}</strong>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--text-secondary)",
+                        marginTop: "4px",
+                      }}
+                    >
+                      {item.email || item.phone || "-"}
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${
+                        item.isLoggedIn ? "badge-success" : "badge-info"
+                      }`}
+                    >
+                      {item.isLoggedIn ? "Logged In" : "Logged Out"}
+                    </span>
+                  </td>
+                  <td>{item.currentDevice || "-"}</td>
+                  <td>{item.platform || "-"}</td>
+                  <td>{item.ip || "-"}</td>
+                  <td>
+                    {item.latitude != null && item.longitude != null ? (
+                      (() => {
+                        const relativeTime = formatRelativeTime(item.lastSeen);
+
+                        return (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "4px",
+                        }}
+                      >
+                        <span>
+                          {`${formatCoordinate(item.latitude)}, ${formatCoordinate(
+                            item.longitude,
+                          )}`}
+                        </span>
+                        {relativeTime ? (
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              color: "var(--text-secondary)",
+                            }}
+                          >
+                            Last location updated {relativeTime}
+                          </span>
+                        ) : null}
+                        <a
+                          href={buildGoogleMapsUrl(item.latitude, item.longitude) || "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            color: "var(--primary-color)",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                            textDecoration: "none",
+                          }}
+                        >
+                          Open in Google Maps
+                        </a>
+                      </div>
+                        );
+                      })()
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                  <td>{formatDateTime(item.lastSeen)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "36px 20px",
+              color: "var(--text-secondary)",
+            }}
+          >
+            {salesDeviceLoading
+              ? "Loading sales device status..."
+              : "No sales users found yet."}
+          </div>
+        )}
+      </div>
 
       <div className="card">
         <div

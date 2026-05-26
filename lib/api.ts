@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const SALES_IDLE_STORAGE_KEY = "salesLastActivityAt";
 
 // Create axios instance with default config
 const api = axios.create({
@@ -45,6 +46,7 @@ api.interceptors.response.use(
           localStorage.removeItem("token");
           localStorage.removeItem("refreshToken");
           localStorage.removeItem("user");
+          localStorage.removeItem(SALES_IDLE_STORAGE_KEY);
           window.location.href = "/login";
           return Promise.reject(refreshError);
         }
@@ -57,13 +59,23 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  login: async (emailOrPhone: string, password: string, deviceId: string) => {
+  login: async (
+    emailOrPhone: string,
+    password: string,
+    deviceId: string,
+    deviceMeta?: { deviceName?: string; platform?: string },
+  ) => {
     const isEmail = emailOrPhone.includes("@");
     const payload = isEmail
-      ? { email: emailOrPhone, password, deviceId }
-      : { phone: emailOrPhone, password, deviceId };
+      ? { email: emailOrPhone, password, deviceId, ...deviceMeta }
+      : { phone: emailOrPhone, password, deviceId, ...deviceMeta };
 
     const response = await api.post("/auth/login", payload);
+    return response.data;
+  },
+
+  getSession: async () => {
+    const response = await api.get("/auth/session");
     return response.data;
   },
 
@@ -380,6 +392,11 @@ export const usersAPI = {
     return response.data;
   },
 
+  getSalesDeviceStatus: async () => {
+    const response = await api.get("/users/sales/device-status");
+    return response.data;
+  },
+
   getById: async (id: string) => {
     const response = await api.get(`/users/${id}`);
     return response.data;
@@ -397,6 +414,16 @@ export const usersAPI = {
 
   delete: async (id: string) => {
     const response = await api.delete(`/users/${id}`);
+    return response.data;
+  },
+};
+
+export const devicesAPI = {
+  ping: async (
+    deviceId: string,
+    data: { lat: number; lng: number; accuracy?: number },
+  ) => {
+    const response = await api.post(`/devices/${deviceId}/ping`, data);
     return response.data;
   },
 };

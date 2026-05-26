@@ -448,6 +448,12 @@ function DashboardContent() {
   const userRole = user?.role || "";
   const userRoleLower = userRole?.toLowerCase() || "";
 
+  useEffect(() => {
+    if (userRoleLower === "accountant") {
+      router.replace("/dashboard/accountant");
+    }
+  }, [router, userRoleLower]);
+
   const capitalize = (s?: string | null) => {
     if (!s) return "";
     return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
