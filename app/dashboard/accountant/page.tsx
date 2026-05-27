@@ -922,7 +922,9 @@ export default function AccountantDashboardPage() {
             />
           </div>
 
-          {queueLoading && <LoadingAnimation label="Loading billing queue..." />}
+          {queueLoading && (
+            <LoadingAnimation label="Loading billing queue..." />
+          )}
           {!queueLoading && filteredQueueGroups.length === 0 && (
             <div className="empty-state">
               {queueSearch.trim()
@@ -2153,8 +2155,14 @@ export default function AccountantDashboardPage() {
                     <p style={{ color: "var(--text-secondary)", margin: 0 }}>
                       {paymentForm.partyName} | {paymentForm.invoiceNumber}
                     </p>
-                    <p style={{ color: "var(--text-secondary)", margin: "6px 0 0" }}>
-                      Remaining Amount: {formatCurrency(paymentForm.remainingAmount)}
+                    <p
+                      style={{
+                        color: "var(--text-secondary)",
+                        margin: "6px 0 0",
+                      }}
+                    >
+                      Remaining Amount:{" "}
+                      {formatCurrency(paymentForm.remainingAmount)}
                     </p>
                   </div>
                   <button
@@ -2360,9 +2368,7 @@ export default function AccountantDashboardPage() {
                   Close
                 </button>
               </div>
-              <div
-                className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]"
-              >
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
                 <div>
                   <div
                     style={{

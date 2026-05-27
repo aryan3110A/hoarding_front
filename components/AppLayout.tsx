@@ -66,7 +66,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken }),
-        }
+        },
       );
     } catch (error) {
       // Ignore logout API failures and clear the local session anyway.
@@ -181,7 +181,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         JSON.stringify({
           token: localStorage.getItem("token") || "",
           lastActivityAt: now,
-        })
+        }),
       );
       scheduleLogout(now);
     };
@@ -287,7 +287,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
     }
 
     const deviceId = String(localStorage.getItem("deviceId") || "").trim();
-    if (!deviceId || typeof navigator === "undefined" || !navigator.geolocation) {
+    if (
+      !deviceId ||
+      typeof navigator === "undefined" ||
+      !navigator.geolocation
+    ) {
       return;
     }
 

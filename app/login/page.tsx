@@ -21,16 +21,20 @@ function buildDeviceMeta(): { deviceName?: string; platform?: string } {
 
   const userAgent = window.navigator.userAgent || "";
   const platform =
-    (window.navigator as Navigator & {
-      userAgentData?: { platform?: string };
-    }).userAgentData?.platform ||
+    (
+      window.navigator as Navigator & {
+        userAgentData?: { platform?: string };
+      }
+    ).userAgentData?.platform ||
     window.navigator.platform ||
     "";
 
   const ua = userAgent.toLowerCase();
   const normalizedPlatform = String(platform || "").trim();
-  const isTablet = ua.includes("ipad") || (ua.includes("android") && !ua.includes("mobile"));
-  const isPhone = ua.includes("iphone") || (ua.includes("android") && ua.includes("mobile"));
+  const isTablet =
+    ua.includes("ipad") || (ua.includes("android") && !ua.includes("mobile"));
+  const isPhone =
+    ua.includes("iphone") || (ua.includes("android") && ua.includes("mobile"));
 
   let deviceName = "Other Device";
   if (isTablet) {

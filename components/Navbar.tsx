@@ -59,14 +59,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Dashboard",
       href: dashboardHref,
       iconName: "BarChart2",
-      roles: [
-        "owner",
-        "manager",
-        "sales",
-        "designer",
-        "supervisor",
-        "admin",
-      ],
+      roles: ["owner", "manager", "sales", "designer", "supervisor", "admin"],
     },
     {
       id: "supervisor-status",

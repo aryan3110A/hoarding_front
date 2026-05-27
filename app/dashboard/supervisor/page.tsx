@@ -12,11 +12,15 @@ type ExecutionTab = "pending" | "live" | "remounting" | "unmounting";
 
 type ExecutionImage = {
   image_url?: string;
+  url?: string;
   filename?: string;
   timestamp?: string;
   uploaded_by?: string;
   type?: string;
 };
+
+const BACKEND_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 type BoardRow = {
   id: string;
@@ -63,6 +67,15 @@ const tabOptions: Array<{ value: ExecutionTab; label: string }> = [
   { value: "remounting", label: "Re-mounting" },
   { value: "unmounting", label: "Unmounting" },
 ];
+
+function resolveImageUrl(image?: ExecutionImage | null) {
+  const rawUrl = String(image?.image_url || image?.url || "").trim();
+  if (!rawUrl) return "";
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
+  if (rawUrl.startsWith("//")) return `https:${rawUrl}`;
+  if (rawUrl.startsWith("/")) return `${BACKEND_BASE_URL}${rawUrl}`;
+  return `${BACKEND_BASE_URL}/${rawUrl.replace(/^\/+/, "")}`;
+}
 
 const statusStyle = (status?: string | null) => {
   const s = String(status || "").toLowerCase();
@@ -1305,6 +1318,10 @@ export default function SupervisorExecutionBoardPage() {
                                         }}
                                       >
                                         {allImages.map((img, idx) => (
+                                          (() => {
+                                            const imageUrl = resolveImageUrl(img);
+
+                                            return (
                                           <div
                                             key={idx}
                                             style={{
@@ -1317,12 +1334,12 @@ export default function SupervisorExecutionBoardPage() {
                                             }}
                                           >
                                             <a
-                                              href={img.image_url || "#"}
+                                              href={imageUrl || "#"}
                                               target="_blank"
                                               rel="noopener noreferrer"
                                             >
                                               <img
-                                                src={img.image_url || ""}
+                                                src={imageUrl}
                                                 alt={`${img.type || "image"} ${idx + 1}`}
                                                 style={{
                                                   width: 140,
@@ -1369,6 +1386,8 @@ export default function SupervisorExecutionBoardPage() {
                                               )}
                                             </div>
                                           </div>
+                                            );
+                                          })()
                                         ))}
                                       </div>
                                     </td>

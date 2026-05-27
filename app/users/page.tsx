@@ -155,11 +155,11 @@ export default function Users() {
 
       if (/email already exists/i.test(msg)) {
         showError(
-          "A user with this email already exists — choose a different phone number or role."
+          "A user with this email already exists — choose a different phone number or role.",
         );
       } else if (/phone already exists/i.test(msg)) {
         showError(
-          "A user with this phone number already exists — choose a different phone number or role."
+          "A user with this phone number already exists — choose a different phone number or role.",
         );
       } else if (
         /same name and role/i.test(msg) ||
@@ -167,7 +167,7 @@ export default function Users() {
         /same name and role and phone number already exists/i.test(msg)
       ) {
         showError(
-          "A user with the same name and role already exists. Please choose a different role or phone number."
+          "A user with the same name and role already exists. Please choose a different role or phone number.",
         );
       } else {
         showError(msg || "Failed to create user");
@@ -189,7 +189,7 @@ export default function Users() {
     setEditingUser(user);
     // Find role ID from role name
     const role = roles.find(
-      (r) => r.name.toLowerCase() === (user.role?.toLowerCase() || "")
+      (r) => r.name.toLowerCase() === (user.role?.toLowerCase() || ""),
     );
     setEditFormData({
       name: user.name,
@@ -233,7 +233,7 @@ export default function Users() {
   const handleDeleteUser = async (userId: string, userName: string) => {
     if (
       !confirm(
-        `Are you sure you want to delete user "${userName}"? This action cannot be undone.`
+        `Are you sure you want to delete user "${userName}"? This action cannot be undone.`,
       )
     ) {
       return;
@@ -314,7 +314,10 @@ export default function Users() {
     return `${diffDays} days ago`;
   };
 
-  const buildGoogleMapsUrl = (latitude?: number | null, longitude?: number | null) => {
+  const buildGoogleMapsUrl = (
+    latitude?: number | null,
+    longitude?: number | null,
+  ) => {
     if (typeof latitude !== "number" || typeof longitude !== "number") {
       return null;
     }
@@ -628,52 +631,57 @@ export default function Users() {
                   <td>{item.platform || "-"}</td>
                   <td>{item.ip || "-"}</td>
                   <td>
-                    {item.latitude != null && item.longitude != null ? (
-                      (() => {
-                        const relativeTime = formatRelativeTime(item.lastSeen);
+                    {item.latitude != null && item.longitude != null
+                      ? (() => {
+                          const relativeTime = formatRelativeTime(
+                            item.lastSeen,
+                          );
 
-                        return (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "4px",
-                        }}
-                      >
-                        <span>
-                          {`${formatCoordinate(item.latitude)}, ${formatCoordinate(
-                            item.longitude,
-                          )}`}
-                        </span>
-                        {relativeTime ? (
-                          <span
-                            style={{
-                              fontSize: "12px",
-                              color: "var(--text-secondary)",
-                            }}
-                          >
-                            Last location updated {relativeTime}
-                          </span>
-                        ) : null}
-                        <a
-                          href={buildGoogleMapsUrl(item.latitude, item.longitude) || "#"}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            color: "var(--primary-color)",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                            textDecoration: "none",
-                          }}
-                        >
-                          Open in Google Maps
-                        </a>
-                      </div>
-                        );
-                      })()
-                    ) : (
-                      "-"
-                    )}
+                          return (
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "4px",
+                              }}
+                            >
+                              <span>
+                                {`${formatCoordinate(item.latitude)}, ${formatCoordinate(
+                                  item.longitude,
+                                )}`}
+                              </span>
+                              {relativeTime ? (
+                                <span
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "var(--text-secondary)",
+                                  }}
+                                >
+                                  Last location updated {relativeTime}
+                                </span>
+                              ) : null}
+                              <a
+                                href={
+                                  buildGoogleMapsUrl(
+                                    item.latitude,
+                                    item.longitude,
+                                  ) || "#"
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{
+                                  color: "var(--primary-color)",
+                                  fontSize: "12px",
+                                  fontWeight: 600,
+                                  textDecoration: "none",
+                                }}
+                              >
+                                Open in Google Maps
+                              </a>
+                            </div>
+                          );
+                        })()
+                      : "-"}
                   </td>
                   <td>{formatDateTime(item.lastSeen)}</td>
                 </tr>
@@ -709,7 +717,7 @@ export default function Users() {
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {roles.map((role) => {
                 const count = users.filter(
-                  (u) => u.role?.toLowerCase() === role.name.toLowerCase()
+                  (u) => u.role?.toLowerCase() === role.name.toLowerCase(),
                 ).length;
                 if (count === 0) return null;
                 return (
