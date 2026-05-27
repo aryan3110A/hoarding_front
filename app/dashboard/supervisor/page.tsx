@@ -1317,78 +1317,86 @@ export default function SupervisorExecutionBoardPage() {
                                           flexWrap: "wrap",
                                         }}
                                       >
-                                        {allImages.map((img, idx) => (
+                                        {allImages.map((img, idx) =>
                                           (() => {
-                                            const imageUrl = resolveImageUrl(img);
+                                            const imageUrl =
+                                              resolveImageUrl(img);
 
                                             return (
-                                          <div
-                                            key={idx}
-                                            style={{
-                                              border: "1px solid #e2e8f0",
-                                              borderRadius: 8,
-                                              padding: 6,
-                                              background: "white",
-                                              textAlign: "center",
-                                              maxWidth: 160,
-                                            }}
-                                          >
-                                            <a
-                                              href={imageUrl || "#"}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                            >
-                                              <img
-                                                src={imageUrl}
-                                                alt={`${img.type || "image"} ${idx + 1}`}
+                                              <div
+                                                key={idx}
                                                 style={{
-                                                  width: 140,
-                                                  height: 100,
-                                                  objectFit: "cover",
-                                                  borderRadius: 4,
-                                                }}
-                                                onError={(e) => {
-                                                  (
-                                                    e.target as HTMLImageElement
-                                                  ).style.display = "none";
-                                                }}
-                                              />
-                                            </a>
-                                            <div
-                                              style={{
-                                                fontSize: 11,
-                                                color: "#64748b",
-                                                marginTop: 4,
-                                              }}
-                                            >
-                                              <span
-                                                style={{
-                                                  background:
-                                                    img.type === "mount"
-                                                      ? "#dcfce7"
-                                                      : img.type === "remount"
-                                                        ? "#e0f2fe"
-                                                        : img.type === "unmount"
-                                                          ? "#fef3c7"
-                                                          : "#f1f5f9",
-                                                  padding: "1px 6px",
-                                                  borderRadius: 4,
-                                                  fontWeight: 600,
-                                                  textTransform: "capitalize",
+                                                  border: "1px solid #e2e8f0",
+                                                  borderRadius: 8,
+                                                  padding: 6,
+                                                  background: "white",
+                                                  textAlign: "center",
+                                                  maxWidth: 160,
                                                 }}
                                               >
-                                                {img.type || "site"}
-                                              </span>
-                                              {img.timestamp && (
-                                                <div style={{ marginTop: 2 }}>
-                                                  {formatDate(img.timestamp)}
+                                                <a
+                                                  href={imageUrl || "#"}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                >
+                                                  <img
+                                                    src={imageUrl}
+                                                    alt={`${img.type || "image"} ${idx + 1}`}
+                                                    style={{
+                                                      width: 140,
+                                                      height: 100,
+                                                      objectFit: "cover",
+                                                      borderRadius: 4,
+                                                    }}
+                                                    onError={(e) => {
+                                                      (
+                                                        e.target as HTMLImageElement
+                                                      ).style.display = "none";
+                                                    }}
+                                                  />
+                                                </a>
+                                                <div
+                                                  style={{
+                                                    fontSize: 11,
+                                                    color: "#64748b",
+                                                    marginTop: 4,
+                                                  }}
+                                                >
+                                                  <span
+                                                    style={{
+                                                      background:
+                                                        img.type === "mount"
+                                                          ? "#dcfce7"
+                                                          : img.type ===
+                                                              "remount"
+                                                            ? "#e0f2fe"
+                                                            : img.type ===
+                                                                "unmount"
+                                                              ? "#fef3c7"
+                                                              : "#f1f5f9",
+                                                      padding: "1px 6px",
+                                                      borderRadius: 4,
+                                                      fontWeight: 600,
+                                                      textTransform:
+                                                        "capitalize",
+                                                    }}
+                                                  >
+                                                    {img.type || "site"}
+                                                  </span>
+                                                  {img.timestamp && (
+                                                    <div
+                                                      style={{ marginTop: 2 }}
+                                                    >
+                                                      {formatDate(
+                                                        img.timestamp,
+                                                      )}
+                                                    </div>
+                                                  )}
                                                 </div>
-                                              )}
-                                            </div>
-                                          </div>
+                                              </div>
                                             );
-                                          })()
-                                        ))}
+                                          })(),
+                                        )}
                                       </div>
                                     </td>
                                   </tr>
