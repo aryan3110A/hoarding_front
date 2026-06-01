@@ -51,7 +51,8 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
     .trim()
     .replace(/\s+/g, "_");
 
-  const dashboardHref = "/dashboard";
+  const dashboardHref =
+    userRole === "accountant" ? "/dashboard/accountant" : "/dashboard";
 
   const menuItems = [
     {
@@ -254,13 +255,13 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       <nav className="navbar">
         <div className="navbar-container">
           {/* Logo and Brand */}
-          <div className="navbar-brand">
+          <Link href={dashboardHref} className="navbar-brand" aria-label="Go to dashboard">
             <img
               src="/LOGO_SHUBHAM_ADVERTISE_FINAL_PNG.png"
               alt="Shubham Advertise"
               className="brand-logo-img"
             />
-          </div>
+          </Link>
 
           {/* Desktop Menu */}
           <div className="navbar-menu-desktop">

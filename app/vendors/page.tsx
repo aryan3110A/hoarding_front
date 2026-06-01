@@ -954,9 +954,26 @@ export default function Vendors() {
             width: 100%;
           }
 
+          .vendors-page-header {
+            gap: 10px;
+            margin-bottom: 12px !important;
+          }
+
+          .vendors-page-header h1 {
+            font-size: 23px;
+            line-height: 1.02;
+            margin-bottom: 0;
+          }
+
+          .vendors-header-actions {
+            gap: 8px;
+          }
+
           .vendors-header-actions :global(.btn),
           .vendors-landlord-actions :global(.btn) {
             flex: 1 1 0;
+            padding: 10px 14px;
+            font-size: 13px;
           }
 
           .vendors-search-wrap {

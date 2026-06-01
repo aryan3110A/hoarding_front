@@ -648,7 +648,7 @@ export default function Enquiries() {
           <div className="card">
             <h3>Create New Inquiry</h3>
             <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 enquiries-form-grid">
                 <div className="form-group">
                   <label>Phone *</label>
                   <input
@@ -905,6 +905,14 @@ export default function Enquiries() {
             </form>
           </div>
         )}
+
+        <style jsx>{`
+          @media (max-width: 640px) {
+            .enquiries-form-grid {
+              gap: 8px !important;
+            }
+          }
+        `}</style>
 
         <div className="card">
           <div
