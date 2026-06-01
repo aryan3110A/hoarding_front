@@ -96,7 +96,7 @@ export default function Bookings() {
         },
         {
           headers: { Authorization: `Bearer ${authToken}` },
-        }
+        },
       );
       setShowTokenForm(false);
       setTokenForm({ hoardingId: "", startDate: "", endDate: "" });
@@ -106,7 +106,7 @@ export default function Bookings() {
       alert(
         error.response?.data?.message ||
           error.response?.data?.error ||
-          "Failed to create booking"
+          "Failed to create booking",
       );
     }
   };
@@ -134,6 +134,7 @@ export default function Bookings() {
     <ProtectedRoute component="bookings">
       <div>
         <div
+          className="mobile-page-header"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -143,12 +144,14 @@ export default function Bookings() {
         >
           <h1>Bookings</h1>
           {canCreateBooking && (
-            <button
-              onClick={() => setShowTokenForm(!showTokenForm)}
-              className="btn btn-primary"
-            >
-              {showTokenForm ? "Cancel" : "Create New Booking"}
-            </button>
+            <div className="mobile-page-header-actions">
+              <button
+                onClick={() => setShowTokenForm(!showTokenForm)}
+                className="btn btn-primary"
+              >
+                {showTokenForm ? "Cancel" : "Create New Booking"}
+              </button>
+            </div>
           )}
         </div>
 
@@ -207,10 +210,11 @@ export default function Bookings() {
         <div className="card">
           <h3>All Bookings</h3>
           {bookings.length > 0 ? (
-            <div className="grid">
+            <div className="grid mobile-card-list">
               {bookings.map((booking) => (
-                <div key={booking.id} className="card">
+                <div key={booking.id} className="card mobile-compact-card">
                   <div
+                    className="mobile-stack-row"
                     style={{
                       display: "flex",
                       justifyContent: "space-between",

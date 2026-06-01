@@ -260,6 +260,7 @@ export default function HoardingDetailPage() {
               const tokenizeLabel = isBooked ? "Booked" : "Block Hoarding";
               return (
                 <div
+                  className="mobile-inline-actions"
                   style={{ display: "flex", gap: "12px", marginBottom: "16px" }}
                 >
                   {hideBlockedButton ||
@@ -297,6 +298,7 @@ export default function HoardingDetailPage() {
             <div className="card" style={{ marginBottom: "24px" }}>
               <h3>Basic Information</h3>
               <div
+                className="mobile-two-column-grid"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(2, 1fr)",
@@ -392,6 +394,7 @@ export default function HoardingDetailPage() {
             <div className="card" style={{ marginBottom: "24px" }}>
               <h3>Landlord Information</h3>
               <div
+                className="mobile-two-column-grid"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(2, 1fr)",
@@ -414,6 +417,7 @@ export default function HoardingDetailPage() {
               <div className="card" style={{ marginBottom: "24px" }}>
                 <h3>Landlord Rent Reference</h3>
                 <div
+                  className="mobile-two-column-grid"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(2, 1fr)",
@@ -446,7 +450,10 @@ export default function HoardingDetailPage() {
               </div>
             )}
 
-            <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
+            <div
+              className="mobile-inline-actions"
+              style={{ display: "flex", gap: "12px", marginTop: "24px" }}
+            >
               {canViewRentDetails &&
                 !(openedFromNotification && (isOwner || isManager)) &&
                 (landlordInfo.name ? (

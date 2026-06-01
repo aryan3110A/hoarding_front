@@ -160,13 +160,6 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       roles: ["owner", "manager", "sales", "sales_head", "admin"],
     },
     {
-      id: "tasks",
-      title: "Tasks",
-      href: "/tasks",
-      iconName: "CheckSquare",
-      roles: ["owner", "manager", "designer", "supervisor", "admin"],
-    },
-    {
       id: "admin-settings",
       title: "Admin Settings",
       href: "/admin",

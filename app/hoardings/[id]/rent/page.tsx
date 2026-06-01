@@ -72,7 +72,10 @@ export default function DeprecatedHoardingRentPage() {
           ) : (
             <p>No landlord mapping found for this hoarding.</p>
           )}
-          <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+          <div
+            className="mobile-inline-actions"
+            style={{ display: "flex", gap: "10px", marginTop: "16px" }}
+          >
             <button
               className="btn btn-primary"
               onClick={() => router.push(targetPath)}

@@ -228,6 +228,7 @@ export default function Hoardings() {
     <ProtectedRoute component="hoardings">
       <div>
         <div
+          className="mobile-page-header"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -243,15 +244,18 @@ export default function Hoardings() {
           </div>
 
           {canCreateHoarding && (
-            <Link href="/hoardings/new" className="btn btn-primary">
-              Add New Hoarding
-            </Link>
+            <div className="mobile-page-header-actions">
+              <Link href="/hoardings/new" className="btn btn-primary">
+                Add New Hoarding
+              </Link>
+            </div>
           )}
         </div>
 
         <div className="card" style={{ marginBottom: "16px" }}>
           <h3>Filters</h3>
           <div
+            className="mobile-two-column-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
@@ -371,177 +375,179 @@ export default function Hoardings() {
               <p>Loading hoardings...</p>
             </div>
           ) : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Hoarding Code</th>
-                  <th>City</th>
-                  <th>Location / Landmark</th>
-                  <th>Size</th>
-                  <th>Category</th>
-                  <th>Status</th>
-                  <th>Campaign Months</th>
-                  <th>Live Date</th>
-                  <th>End Date</th>
-                  <th>Standard Rate</th>
-                  <th>Minimum Rate</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {hoardings.length === 0 ? (
+            <div className="mobile-scroll-card">
+              <table className="table">
+                <thead>
                   <tr>
-                    <td
-                      colSpan={12}
-                      style={{ textAlign: "center", padding: "30px" }}
-                    >
-                      No hoardings found
-                    </td>
+                    <th>Hoarding Code</th>
+                    <th>City</th>
+                    <th>Location / Landmark</th>
+                    <th>Size</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Campaign Months</th>
+                    <th>Live Date</th>
+                    <th>End Date</th>
+                    <th>Standard Rate</th>
+                    <th>Minimum Rate</th>
+                    <th>Actions</th>
                   </tr>
-                ) : (
-                  hoardings.map((h: any) => (
-                    <tr key={h.id}>
-                      {(() => {
-                        const hoardingStatus = String(h.status || "")
-                          .toLowerCase()
-                          .trim();
-                        const isBooked = hoardingStatus === "booked";
-                        const salesAlreadyBlocked =
-                          String(h.myActiveToken || "").toLowerCase() ===
-                            "true" || h.myActiveToken === true;
-                        const canSalesBlock = ![
-                          "booked",
-                          "live",
-                          "under_process",
-                        ].includes(hoardingStatus);
+                </thead>
+                <tbody>
+                  {hoardings.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={12}
+                        style={{ textAlign: "center", padding: "30px" }}
+                      >
+                        No hoardings found
+                      </td>
+                    </tr>
+                  ) : (
+                    hoardings.map((h: any) => (
+                      <tr key={h.id}>
+                        {(() => {
+                          const hoardingStatus = String(h.status || "")
+                            .toLowerCase()
+                            .trim();
+                          const isBooked = hoardingStatus === "booked";
+                          const salesAlreadyBlocked =
+                            String(h.myActiveToken || "").toLowerCase() ===
+                              "true" || h.myActiveToken === true;
+                          const canSalesBlock = ![
+                            "booked",
+                            "live",
+                            "under_process",
+                          ].includes(hoardingStatus);
 
-                        return (
-                          <>
-                            <td>
-                              {h.code || "—"} {h.side ? `(${h.side})` : ""}
-                            </td>
-                            <td>{h.city || "—"}</td>
-                            <td>
-                              <strong>
-                                {h.landmark || h.roadName || h.title || "—"}
-                              </strong>
-                              <div
-                                style={{
-                                  fontSize: "12px",
-                                  color: "var(--text-secondary)",
-                                  marginTop: "4px",
-                                }}
-                              >
-                                {[h.area, h.roadName]
-                                  .filter(Boolean)
-                                  .join(", ") || "—"}
-                              </div>
-                            </td>
-                            <td>{toFt(h.widthCm, h.heightCm)}</td>
-                            <td>{h?.category?.name || "—"}</td>
-                            <td>{formatStatus(h.status)}</td>
-                            <td>{formatCampaignMonths(h.campaignMonths)}</td>
-                            <td>{formatDate(h.liveDate)}</td>
-                            <td>{formatDate(h.endDate)}</td>
-                            <td>{formatRate(h.standardRate)}</td>
-                            <td>{formatRate(h.minimumRate)}</td>
-                            <td>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  gap: "8px",
-                                  flexWrap: "nowrap",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Link
-                                  href={`/hoardings/${h.id}`}
-                                  className="btn btn-secondary"
+                          return (
+                            <>
+                              <td>
+                                {h.code || "—"} {h.side ? `(${h.side})` : ""}
+                              </td>
+                              <td>{h.city || "—"}</td>
+                              <td>
+                                <strong>
+                                  {h.landmark || h.roadName || h.title || "—"}
+                                </strong>
+                                <div
                                   style={{
-                                    padding: "5px 10px",
                                     fontSize: "12px",
+                                    color: "var(--text-secondary)",
+                                    marginTop: "4px",
                                   }}
                                 >
-                                  View
-                                </Link>
-
-                                {isSalesUser &&
-                                  canCreateBookingToken &&
-                                  (salesAlreadyBlocked ? (
-                                    <button
-                                      type="button"
-                                      className="btn btn-secondary"
-                                      style={{
-                                        padding: "5px 10px",
-                                        fontSize: "12px",
-                                      }}
-                                      disabled
-                                    >
-                                      Blocked
-                                    </button>
-                                  ) : isBooked ? (
-                                    <button
-                                      type="button"
-                                      className="btn btn-secondary"
-                                      style={{
-                                        padding: "5px 10px",
-                                        fontSize: "12px",
-                                      }}
-                                      disabled
-                                    >
-                                      Booked
-                                    </button>
-                                  ) : canSalesBlock ? (
-                                    <Link
-                                      href={`/hoardings/${h.id}/token`}
-                                      className="btn btn-primary"
-                                      style={{
-                                        padding: "5px 10px",
-                                        fontSize: "12px",
-                                      }}
-                                    >
-                                      Block
-                                    </Link>
-                                  ) : null)}
-
-                                {canEditHoarding && (
+                                  {[h.area, h.roadName]
+                                    .filter(Boolean)
+                                    .join(", ") || "—"}
+                                </div>
+                              </td>
+                              <td>{toFt(h.widthCm, h.heightCm)}</td>
+                              <td>{h?.category?.name || "—"}</td>
+                              <td>{formatStatus(h.status)}</td>
+                              <td>{formatCampaignMonths(h.campaignMonths)}</td>
+                              <td>{formatDate(h.liveDate)}</td>
+                              <td>{formatDate(h.endDate)}</td>
+                              <td>{formatRate(h.standardRate)}</td>
+                              <td>{formatRate(h.minimumRate)}</td>
+                              <td>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: "8px",
+                                    flexWrap: "nowrap",
+                                    alignItems: "center",
+                                  }}
+                                >
                                   <Link
-                                    href={`/hoardings/${h.id}/edit`}
-                                    className="btn btn-warning"
+                                    href={`/hoardings/${h.id}`}
+                                    className="btn btn-secondary"
                                     style={{
                                       padding: "5px 10px",
                                       fontSize: "12px",
                                     }}
                                   >
-                                    Edit
+                                    View
                                   </Link>
-                                )}
 
-                                {canDeleteHoarding && (
-                                  <button
-                                    className="btn btn-danger"
-                                    style={{
-                                      padding: "5px 10px",
-                                      fontSize: "12px",
-                                    }}
-                                    disabled={deletingId === String(h.id)}
-                                    onClick={() => handleDelete(String(h.id))}
-                                  >
-                                    {deletingId === String(h.id)
-                                      ? "Deleting..."
-                                      : "Delete"}
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </>
-                        );
-                      })()}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                                  {isSalesUser &&
+                                    canCreateBookingToken &&
+                                    (salesAlreadyBlocked ? (
+                                      <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        style={{
+                                          padding: "5px 10px",
+                                          fontSize: "12px",
+                                        }}
+                                        disabled
+                                      >
+                                        Blocked
+                                      </button>
+                                    ) : isBooked ? (
+                                      <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        style={{
+                                          padding: "5px 10px",
+                                          fontSize: "12px",
+                                        }}
+                                        disabled
+                                      >
+                                        Booked
+                                      </button>
+                                    ) : canSalesBlock ? (
+                                      <Link
+                                        href={`/hoardings/${h.id}/token`}
+                                        className="btn btn-primary"
+                                        style={{
+                                          padding: "5px 10px",
+                                          fontSize: "12px",
+                                        }}
+                                      >
+                                        Block
+                                      </Link>
+                                    ) : null)}
+
+                                  {canEditHoarding && (
+                                    <Link
+                                      href={`/hoardings/${h.id}/edit`}
+                                      className="btn btn-warning"
+                                      style={{
+                                        padding: "5px 10px",
+                                        fontSize: "12px",
+                                      }}
+                                    >
+                                      Edit
+                                    </Link>
+                                  )}
+
+                                  {canDeleteHoarding && (
+                                    <button
+                                      className="btn btn-danger"
+                                      style={{
+                                        padding: "5px 10px",
+                                        fontSize: "12px",
+                                      }}
+                                      disabled={deletingId === String(h.id)}
+                                      onClick={() => handleDelete(String(h.id))}
+                                    >
+                                      {deletingId === String(h.id)
+                                        ? "Deleting..."
+                                        : "Delete"}
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </>
+                          );
+                        })()}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
 
           {!loading && hasMore && hoardings.length > 0 && (

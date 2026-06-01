@@ -279,6 +279,7 @@ export default function Notifications() {
   return (
     <div>
       <div
+        className="notifications-page-header"
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -336,6 +337,7 @@ export default function Notifications() {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
+                className="notification-card"
                 style={{
                   padding: "16px",
                   border: "1px solid var(--border-color)",
@@ -365,6 +367,7 @@ export default function Notifications() {
                 }}
               >
                 <div
+                  className="notification-card-head"
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -548,6 +551,7 @@ export default function Notifications() {
 
       {total > limit && (
         <div
+          className="notifications-pagination"
           style={{
             display: "flex",
             justifyContent: "center",
@@ -580,6 +584,34 @@ export default function Notifications() {
           </button>
         </div>
       )}
+
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .notifications-page-header,
+          .notifications-pagination {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+
+          .notification-card-head {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: flex-start !important;
+            justify-content: space-between !important;
+            gap: 10px;
+          }
+
+          .notifications-page-header :global(.btn),
+          .notifications-pagination :global(.btn) {
+            width: 100%;
+          }
+
+          .notification-card {
+            padding: 14px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

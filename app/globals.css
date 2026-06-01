@@ -1546,9 +1546,29 @@ h4 {
 }
 
 @media (max-width: 768px) {
+  .navbar {
+    padding: 8px 0;
+  }
+
   .navbar-container {
-    padding: 0 20px;
+    padding: 0 12px 0 12px;
+    height: 42px;
+    gap: 8px;
+  }
+
+  .brand-logo-img {
     height: 64px;
+  }
+
+  .navbar-brand {
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .navbar-toggle {
+    margin-left: auto;
+    padding: 6px 2px 6px 10px;
+    align-self: center;
   }
 
   .navbar-brand h2 {
@@ -1575,8 +1595,95 @@ h4 {
     display: block;
   }
 
+  .navbar-menu-mobile .navbar-link {
+    gap: 14px;
+    padding: 16px 24px;
+    color: #64748b;
+  }
+
+  .navbar-menu-mobile .navbar-link .navbar-text {
+    display: inline-block;
+    opacity: 1;
+    max-width: none;
+    margin-left: 0;
+    transform: none;
+    white-space: normal;
+    overflow: visible;
+    color: inherit;
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .navbar-menu-mobile .navbar-link .navbar-icon {
+    flex-shrink: 0;
+  }
+
+  .navbar-menu-mobile .navbar-link .navbar-badge {
+    margin-left: auto;
+  }
+
   .content-wrapper {
-    padding: 24px 20px;
+    padding: 14px 14px 20px;
+  }
+
+  .mobile-page-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px !important;
+  }
+
+  .mobile-page-header-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mobile-page-header-actions > * {
+    width: 100%;
+  }
+
+  .mobile-two-column-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .mobile-stack-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .mobile-stack-row > * {
+    width: 100%;
+  }
+
+  .mobile-scroll-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-card-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .mobile-compact-card {
+    padding: 18px;
+  }
+
+  .mobile-inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mobile-inline-actions > * {
+    flex: 1 1 140px;
   }
 }
 
@@ -1676,9 +1783,23 @@ h4 {
 }
 
 @media (max-width: 480px) {
+  .navbar {
+    padding: 6px 10px;
+  }
+
   .navbar-container {
-    padding: 0 16px;
-    height: 60px;
+    padding: 0 10px 0 12px;
+    height: 48px;
+    gap: 6px;
+  }
+
+  .brand-logo-img {
+    height: 65px;
+  }
+
+  .navbar-toggle {
+    margin-left: auto;
+    padding: 6px 0 6px 10px;
   }
 
   .navbar-brand h2 {
@@ -1690,6 +1811,25 @@ h4 {
   }
 
   .content-wrapper {
-    padding: 20px 16px;
+    padding: 12px 12px 18px;
+  }
+
+  .card {
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stat-card {
+    min-height: auto;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 10px;
   }
 }

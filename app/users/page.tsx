@@ -347,6 +347,7 @@ export default function Users() {
   return (
     <div>
       <div
+        className="users-page-header"
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -355,7 +356,10 @@ export default function Users() {
         }}
       >
         <h1>User Management</h1>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div
+          className="users-header-actions"
+          style={{ display: "flex", gap: "12px" }}
+        >
           <button
             onClick={() => router.push("/roles")}
             className="btn btn-secondary"
@@ -385,6 +389,7 @@ export default function Users() {
           </h3>
           <form onSubmit={handleUpdateUser}>
             <div
+              className="users-form-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(2, 1fr)",
@@ -464,7 +469,10 @@ export default function Users() {
                 </select>
               </div>
             </div>
-            <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+            <div
+              className="users-form-actions"
+              style={{ display: "flex", gap: "10px", marginTop: "20px" }}
+            >
               <button type="submit" className="btn btn-primary">
                 💾 Save Changes
               </button>
@@ -485,6 +493,7 @@ export default function Users() {
           <h3>Create New User</h3>
           <form onSubmit={handleSubmit}>
             <div
+              className="users-form-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(2, 1fr)",
@@ -566,6 +575,7 @@ export default function Users() {
 
       <div className="card">
         <div
+          className="users-section-header"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -591,103 +601,105 @@ export default function Users() {
         </div>
 
         {salesDeviceStatus.length > 0 ? (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Sales User</th>
-                <th>Status</th>
-                <th>Current Device</th>
-                <th>Platform</th>
-                <th>IP</th>
-                <th>Coordinates</th>
-                <th>Last Seen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {salesDeviceStatus.map((item) => (
-                <tr key={item.userId}>
-                  <td>
-                    <strong>{item.name}</strong>
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "var(--text-secondary)",
-                        marginTop: "4px",
-                      }}
-                    >
-                      {item.email || item.phone || "-"}
-                    </div>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        item.isLoggedIn ? "badge-success" : "badge-info"
-                      }`}
-                    >
-                      {item.isLoggedIn ? "Logged In" : "Logged Out"}
-                    </span>
-                  </td>
-                  <td>{item.currentDevice || "-"}</td>
-                  <td>{item.platform || "-"}</td>
-                  <td>{item.ip || "-"}</td>
-                  <td>
-                    {item.latitude != null && item.longitude != null
-                      ? (() => {
-                          const relativeTime = formatRelativeTime(
-                            item.lastSeen,
-                          );
+          <div className="users-table-wrap users-device-table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Sales User</th>
+                  <th>Status</th>
+                  <th>Current Device</th>
+                  <th>Platform</th>
+                  <th>IP</th>
+                  <th>Coordinates</th>
+                  <th>Last Seen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {salesDeviceStatus.map((item) => (
+                  <tr key={item.userId}>
+                    <td>
+                      <strong>{item.name}</strong>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--text-secondary)",
+                          marginTop: "4px",
+                        }}
+                      >
+                        {item.email || item.phone || "-"}
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          item.isLoggedIn ? "badge-success" : "badge-info"
+                        }`}
+                      >
+                        {item.isLoggedIn ? "Logged In" : "Logged Out"}
+                      </span>
+                    </td>
+                    <td>{item.currentDevice || "-"}</td>
+                    <td>{item.platform || "-"}</td>
+                    <td>{item.ip || "-"}</td>
+                    <td>
+                      {item.latitude != null && item.longitude != null
+                        ? (() => {
+                            const relativeTime = formatRelativeTime(
+                              item.lastSeen,
+                            );
 
-                          return (
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "4px",
-                              }}
-                            >
-                              <span>
-                                {`${formatCoordinate(item.latitude)}, ${formatCoordinate(
-                                  item.longitude,
-                                )}`}
-                              </span>
-                              {relativeTime ? (
-                                <span
-                                  style={{
-                                    fontSize: "12px",
-                                    color: "var(--text-secondary)",
-                                  }}
-                                >
-                                  Last location updated {relativeTime}
-                                </span>
-                              ) : null}
-                              <a
-                                href={
-                                  buildGoogleMapsUrl(
-                                    item.latitude,
-                                    item.longitude,
-                                  ) || "#"
-                                }
-                                target="_blank"
-                                rel="noreferrer"
+                            return (
+                              <div
                                 style={{
-                                  color: "var(--primary-color)",
-                                  fontSize: "12px",
-                                  fontWeight: 600,
-                                  textDecoration: "none",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: "4px",
                                 }}
                               >
-                                Open in Google Maps
-                              </a>
-                            </div>
-                          );
-                        })()
-                      : "-"}
-                  </td>
-                  <td>{formatDateTime(item.lastSeen)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                                <span>
+                                  {`${formatCoordinate(item.latitude)}, ${formatCoordinate(
+                                    item.longitude,
+                                  )}`}
+                                </span>
+                                {relativeTime ? (
+                                  <span
+                                    style={{
+                                      fontSize: "12px",
+                                      color: "var(--text-secondary)",
+                                    }}
+                                  >
+                                    Last location updated {relativeTime}
+                                  </span>
+                                ) : null}
+                                <a
+                                  href={
+                                    buildGoogleMapsUrl(
+                                      item.latitude,
+                                      item.longitude,
+                                    ) || "#"
+                                  }
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{
+                                    color: "var(--primary-color)",
+                                    fontSize: "12px",
+                                    fontWeight: 600,
+                                    textDecoration: "none",
+                                  }}
+                                >
+                                  Open in Google Maps
+                                </a>
+                              </div>
+                            );
+                          })()
+                        : "-"}
+                    </td>
+                    <td>{formatDateTime(item.lastSeen)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <div
             style={{
@@ -705,6 +717,7 @@ export default function Users() {
 
       <div className="card">
         <div
+          className="users-list-header"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -714,7 +727,10 @@ export default function Users() {
         >
           <h3>All Users ({users.length})</h3>
           {users.length > 0 && (
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <div
+              className="users-role-badges"
+              style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}
+            >
               {roles.map((role) => {
                 const count = users.filter(
                   (u) => u.role?.toLowerCase() === role.name.toLowerCase(),
@@ -731,88 +747,91 @@ export default function Users() {
           )}
         </div>
         {users.length > 0 ? (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id}>
-                  <td>
-                    <strong>{u.name}</strong>
-                    {u.id === user?.id && (
-                      <span
-                        className="badge badge-info"
-                        style={{ marginLeft: "8px", fontSize: "10px" }}
-                      >
-                        You
+          <div className="users-table-wrap users-list-table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u.id}>
+                    <td>
+                      <strong>{u.name}</strong>
+                      {u.id === user?.id && (
+                        <span
+                          className="badge badge-info"
+                          style={{ marginLeft: "8px", fontSize: "10px" }}
+                        >
+                          You
+                        </span>
+                      )}
+                    </td>
+                    <td>{u.email || "-"}</td>
+                    <td>{u.phone || "-"}</td>
+                    <td>
+                      <span className="badge badge-info">
+                        {u.role
+                          ? u.role.charAt(0).toUpperCase() + u.role.slice(1)
+                          : "N/A"}
                       </span>
-                    )}
-                  </td>
-                  <td>{u.email || "-"}</td>
-                  <td>{u.phone || "-"}</td>
-                  <td>
-                    <span className="badge badge-info">
-                      {u.role
-                        ? u.role.charAt(0).toUpperCase() + u.role.slice(1)
-                        : "N/A"}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        u.isActive ? "badge-success" : "badge-danger"
-                      }`}
-                    >
-                      {u.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "8px",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <button
-                        onClick={() => handleEdit(u)}
-                        className="btn btn-primary"
-                        style={{ padding: "5px 10px", fontSize: "12px" }}
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => handleToggleActive(u.id, u.isActive)}
-                        className={`btn ${
-                          u.isActive ? "btn-danger" : "btn-success"
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          u.isActive ? "badge-success" : "badge-danger"
                         }`}
-                        style={{ padding: "5px 10px", fontSize: "12px" }}
                       >
-                        {u.isActive ? "🚫 Disable" : "✅ Enable"}
-                      </button>
-                      {u.id !== user?.id && (
+                        {u.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td>
+                      <div
+                        className="users-row-actions"
+                        style={{
+                          display: "flex",
+                          gap: "8px",
+                          flexWrap: "wrap",
+                        }}
+                      >
                         <button
-                          onClick={() => handleDeleteUser(u.id, u.name)}
-                          className="btn btn-danger"
+                          onClick={() => handleEdit(u)}
+                          className="btn btn-primary"
                           style={{ padding: "5px 10px", fontSize: "12px" }}
                         >
-                          🗑️ Delete
+                          ✏️ Edit
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        <button
+                          onClick={() => handleToggleActive(u.id, u.isActive)}
+                          className={`btn ${
+                            u.isActive ? "btn-danger" : "btn-success"
+                          }`}
+                          style={{ padding: "5px 10px", fontSize: "12px" }}
+                        >
+                          {u.isActive ? "🚫 Disable" : "✅ Enable"}
+                        </button>
+                        {u.id !== user?.id && (
+                          <button
+                            onClick={() => handleDeleteUser(u.id, u.name)}
+                            className="btn btn-danger"
+                            style={{ padding: "5px 10px", fontSize: "12px" }}
+                          >
+                            🗑️ Delete
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <div
             style={{
@@ -837,6 +856,48 @@ export default function Users() {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        .users-table-wrap {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .users-device-table-wrap :global(.table) {
+          min-width: 860px;
+        }
+
+        .users-list-table-wrap :global(.table) {
+          min-width: 760px;
+        }
+
+        @media (max-width: 640px) {
+          .users-page-header,
+          .users-header-actions,
+          .users-section-header,
+          .users-list-header,
+          .users-form-actions {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+
+          .users-header-actions :global(.btn),
+          .users-form-actions :global(.btn),
+          .users-row-actions :global(.btn) {
+            width: 100%;
+          }
+
+          .users-form-grid {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+          }
+
+          .users-role-badges {
+            width: 100%;
+          }
+        }
+      `}</style>
     </div>
   );
 }

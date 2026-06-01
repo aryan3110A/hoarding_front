@@ -55,7 +55,7 @@ export default function Roles() {
       alert(
         error.response?.data?.message ||
           error.response?.data?.error ||
-          "Failed to create role"
+          "Failed to create role",
       );
     }
   };
@@ -82,7 +82,7 @@ export default function Roles() {
       alert(
         error.response?.data?.message ||
           error.response?.data?.error ||
-          "Failed to update role"
+          "Failed to update role",
       );
     }
   };
@@ -90,7 +90,7 @@ export default function Roles() {
   const handleDeleteRole = async (roleId: number, roleName: string) => {
     if (
       !confirm(
-        `Are you sure you want to delete role "${roleName}"? This action cannot be undone.`
+        `Are you sure you want to delete role "${roleName}"? This action cannot be undone.`,
       )
     ) {
       return;
@@ -106,7 +106,7 @@ export default function Roles() {
       alert(
         error.response?.data?.message ||
           error.response?.data?.error ||
-          "Failed to delete role"
+          "Failed to delete role",
       );
     }
   };
@@ -128,103 +128,108 @@ export default function Roles() {
 
   return (
     <div>
+      <div
+        className="roles-page-header"
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+        }}
+      >
+        <h1>Role Management</h1>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="btn btn-primary"
+        >
+          {showForm ? "Cancel" : "Create New Role"}
+        </button>
+      </div>
+
+      {editingRole && (
         <div
+          className="card"
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "20px",
+            marginBottom: "24px",
+            border: "2px solid var(--primary-color)",
+            background: "linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)",
           }}
         >
-          <h1>Role Management</h1>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="btn btn-primary"
-          >
-            {showForm ? "Cancel" : "Create New Role"}
-          </button>
-        </div>
-
-        {editingRole && (
-          <div
-            className="card"
-            style={{
-              marginBottom: "24px",
-              border: "2px solid var(--primary-color)",
-              background: "linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)",
-            }}
-          >
-            <h3 style={{ marginBottom: "20px", color: "var(--primary-color)" }}>
-              ✏️ Edit Role: {editingRole.name}
-            </h3>
-            <form onSubmit={handleUpdateRole}>
-              <div className="form-group">
-                <label>Role Name *</label>
-                <input
-                  type="text"
-                  value={editFormData.name}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, name: e.target.value })
-                  }
-                  required
-                  placeholder="e.g., Accountant, Supervisor"
-                />
-              </div>
-              <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-                <button type="submit" className="btn btn-primary">
-                  💾 Save Changes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditingRole(null)}
-                  className="btn btn-secondary"
-                >
-                  ❌ Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {showForm && (
-          <div className="card" style={{ marginBottom: "24px" }}>
-            <h3>Create New Role</h3>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Role Name *</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  required
-                  placeholder="e.g., Accountant, Supervisor, Coordinator"
-                />
-                <small
-                  style={{
-                    color: "var(--text-secondary)",
-                    marginTop: "5px",
-                    display: "block",
-                  }}
-                >
-                  Role names will be converted to lowercase automatically
-                </small>
-              </div>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                style={{ marginTop: "20px" }}
-              >
-                Create Role
+          <h3 style={{ marginBottom: "20px", color: "var(--primary-color)" }}>
+            ✏️ Edit Role: {editingRole.name}
+          </h3>
+          <form onSubmit={handleUpdateRole}>
+            <div className="form-group">
+              <label>Role Name *</label>
+              <input
+                type="text"
+                value={editFormData.name}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, name: e.target.value })
+                }
+                required
+                placeholder="e.g., Accountant, Supervisor"
+              />
+            </div>
+            <div
+              className="roles-form-actions"
+              style={{ display: "flex", gap: "10px", marginTop: "20px" }}
+            >
+              <button type="submit" className="btn btn-primary">
+                💾 Save Changes
               </button>
-            </form>
-          </div>
-        )}
+              <button
+                type="button"
+                onClick={() => setEditingRole(null)}
+                className="btn btn-secondary"
+              >
+                ❌ Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
-        <div className="card">
-          <h3>All Roles ({roles.length})</h3>
-          {roles.length > 0 ? (
+      {showForm && (
+        <div className="card" style={{ marginBottom: "24px" }}>
+          <h3>Create New Role</h3>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Role Name *</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                required
+                placeholder="e.g., Accountant, Supervisor, Coordinator"
+              />
+              <small
+                style={{
+                  color: "var(--text-secondary)",
+                  marginTop: "5px",
+                  display: "block",
+                }}
+              >
+                Role names will be converted to lowercase automatically
+              </small>
+            </div>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ marginTop: "20px" }}
+            >
+              Create Role
+            </button>
+          </form>
+        </div>
+      )}
+
+      <div className="card">
+        <h3>All Roles ({roles.length})</h3>
+        {roles.length > 0 ? (
+          <div className="roles-table-wrap">
             <table className="table" style={{ marginTop: "16px" }}>
               <thead>
                 <tr>
@@ -248,6 +253,7 @@ export default function Roles() {
                       </td>
                       <td>
                         <div
+                          className="roles-row-actions"
                           style={{
                             display: "flex",
                             gap: "8px",
@@ -288,30 +294,56 @@ export default function Roles() {
                 })}
               </tbody>
             </table>
-          ) : (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "60px 20px",
-                color: "var(--text-secondary)",
-              }}
+          </div>
+        ) : (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 20px",
+              color: "var(--text-secondary)",
+            }}
+          >
+            <div style={{ fontSize: "48px", marginBottom: "16px" }}>👥</div>
+            <h3 style={{ marginBottom: "8px", color: "var(--text-primary)" }}>
+              No Roles Yet
+            </h3>
+            <p style={{ marginBottom: "24px" }}>
+              Create your first role to start managing user permissions.
+            </p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="btn btn-primary"
             >
-              <div style={{ fontSize: "48px", marginBottom: "16px" }}>👥</div>
-              <h3 style={{ marginBottom: "8px", color: "var(--text-primary)" }}>
-                No Roles Yet
-              </h3>
-              <p style={{ marginBottom: "24px" }}>
-                Create your first role to start managing user permissions.
-              </p>
-              <button
-                onClick={() => setShowForm(true)}
-                className="btn btn-primary"
-              >
-                Create New Role
-              </button>
-            </div>
-          )}
-        </div>
+              Create New Role
+            </button>
+          </div>
+        )}
       </div>
+      <style jsx>{`
+        .roles-table-wrap {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .roles-table-wrap :global(.table) {
+          min-width: 520px;
+        }
+
+        @media (max-width: 640px) {
+          .roles-page-header,
+          .roles-form-actions {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+
+          .roles-page-header :global(.btn),
+          .roles-form-actions :global(.btn),
+          .roles-row-actions :global(.btn) {
+            width: 100%;
+          }
+        }
+      `}</style>
+    </div>
   );
 }

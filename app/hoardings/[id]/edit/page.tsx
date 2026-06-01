@@ -363,6 +363,7 @@ export default function EditHoarding() {
       <div className="card">
         <form onSubmit={handleSubmit}>
           <div
+            className="mobile-two-column-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(2, 1fr)",
@@ -616,6 +617,7 @@ export default function EditHoarding() {
             </div>
           </div>
           <div
+            className="mobile-inline-actions"
             style={{
               marginTop: "20px",
               display: "flex",
@@ -675,6 +677,7 @@ export default function EditHoarding() {
             }}
           >
             <div
+              className="mobile-stack-row"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -829,6 +832,7 @@ export default function EditHoarding() {
                 />
               </div>
               <div
+                className="mobile-inline-actions"
                 style={{
                   display: "flex",
                   gap: 8,

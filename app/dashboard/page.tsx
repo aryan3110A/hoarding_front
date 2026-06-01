@@ -1087,6 +1087,7 @@ function DashboardContent() {
       <div>
         <div style={{ marginBottom: "32px" }}>
           <div
+            className="mobile-page-header"
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -1125,6 +1126,7 @@ function DashboardContent() {
             onClick={() => router.push("/notifications")}
           >
             <div
+              className="mobile-stack-row"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -1216,6 +1218,7 @@ function DashboardContent() {
             {/* Send Reminders Button */}
             <div className="card" style={{ marginBottom: "24px" }}>
               <div
+                className="mobile-stack-row"
                 style={{
                   display: "flex",
                   justifyContent: "space-between",

@@ -123,99 +123,101 @@ export default function Contracts() {
       <div className="card">
         <h3>All Contracts</h3>
         {contracts.length > 0 ? (
-          <table className="table" style={{ marginTop: "16px" }}>
-            <thead>
-              <tr>
-                <th>Contract ID</th>
-                <th>Client</th>
-                <th>Hoarding</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {contracts
-                .filter((contract: any) => {
-                  if (userRole === "sales") {
-                    // Sales see only contracts they created/assigned to
-                    return (
-                      String(contract.createdById) === String(user?.id) ||
-                      String(contract.salesUserId) === String(user?.id)
-                    );
-                  }
-                  return true;
-                })
-                .map((contract: any) => (
-                  <tr key={contract.id}>
-                    <td>{contract.id}</td>
-                    <td>{contract.clientName || "N/A"}</td>
-                    <td>{contract.hoardingCode || "N/A"}</td>
-                    <td>
-                      {contract.startDate
-                        ? new Date(contract.startDate).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    <td>
-                      {contract.endDate
-                        ? new Date(contract.endDate).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    <td>
-                      <span className="badge badge-info">
-                        {contract.status || "Active"}
-                      </span>
-                    </td>
-                    <td>
-                      {/* Role-based actions */}
-                      {["owner", "admin"].includes(userRole) && (
-                        <>
-                          <button
-                            className="btn btn-sm"
-                            onClick={() => handleRenew(contract.id)}
-                          >
-                            Renew
-                          </button>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleCancel(contract.id)}
-                            style={{ marginLeft: 8 }}
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      )}
-                      {userRole === "manager" && (
-                        <>
-                          <button
-                            className="btn btn-sm"
-                            onClick={() => handleRenew(contract.id)}
-                          >
-                            Renew
-                          </button>
-                          <button
-                            className="btn btn-sm"
-                            disabled
-                            style={{ marginLeft: 8 }}
-                          >
-                            Cancel (restricted)
-                          </button>
-                        </>
-                      )}
-                      {userRole === "sales" &&
-                        String(contract.createdById) === String(user?.id) && (
-                          <button
-                            className="btn btn-sm"
-                            onClick={() => handleRequestRenew(contract.id)}
-                          >
-                            Request Renew
-                          </button>
+          <div className="mobile-scroll-card" style={{ marginTop: "16px" }}>
+            <table className="table" style={{ marginTop: "0" }}>
+              <thead>
+                <tr>
+                  <th>Contract ID</th>
+                  <th>Client</th>
+                  <th>Hoarding</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contracts
+                  .filter((contract: any) => {
+                    if (userRole === "sales") {
+                      // Sales see only contracts they created/assigned to
+                      return (
+                        String(contract.createdById) === String(user?.id) ||
+                        String(contract.salesUserId) === String(user?.id)
+                      );
+                    }
+                    return true;
+                  })
+                  .map((contract: any) => (
+                    <tr key={contract.id}>
+                      <td>{contract.id}</td>
+                      <td>{contract.clientName || "N/A"}</td>
+                      <td>{contract.hoardingCode || "N/A"}</td>
+                      <td>
+                        {contract.startDate
+                          ? new Date(contract.startDate).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td>
+                        {contract.endDate
+                          ? new Date(contract.endDate).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td>
+                        <span className="badge badge-info">
+                          {contract.status || "Active"}
+                        </span>
+                      </td>
+                      <td>
+                        {/* Role-based actions */}
+                        {["owner", "admin"].includes(userRole) && (
+                          <>
+                            <button
+                              className="btn btn-sm"
+                              onClick={() => handleRenew(contract.id)}
+                            >
+                              Renew
+                            </button>
+                            <button
+                              className="btn btn-sm btn-danger"
+                              onClick={() => handleCancel(contract.id)}
+                              style={{ marginLeft: 8 }}
+                            >
+                              Cancel
+                            </button>
+                          </>
                         )}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+                        {userRole === "manager" && (
+                          <>
+                            <button
+                              className="btn btn-sm"
+                              onClick={() => handleRenew(contract.id)}
+                            >
+                              Renew
+                            </button>
+                            <button
+                              className="btn btn-sm"
+                              disabled
+                              style={{ marginLeft: 8 }}
+                            >
+                              Cancel (restricted)
+                            </button>
+                          </>
+                        )}
+                        {userRole === "sales" &&
+                          String(contract.createdById) === String(user?.id) && (
+                            <button
+                              className="btn btn-sm"
+                              onClick={() => handleRequestRenew(contract.id)}
+                            >
+                              Request Renew
+                            </button>
+                          )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <div
             style={{

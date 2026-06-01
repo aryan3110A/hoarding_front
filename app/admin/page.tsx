@@ -32,13 +32,13 @@ export default function AdminSettings() {
   const handleSaveSettings = () => {
     // In a real app, this would save to backend
     alert(
-      "Settings saved successfully! (This is a demo - settings are not persisted)"
+      "Settings saved successfully! (This is a demo - settings are not persisted)",
     );
   };
 
   return (
     <div>
-      <div style={{ marginBottom: 32 }}>
+      <div className="admin-page-header" style={{ marginBottom: 32 }}>
         <h1>Admin Settings</h1>
         <p
           style={{ color: "var(--text-secondary)", fontSize: 16, marginTop: 8 }}
@@ -83,6 +83,7 @@ export default function AdminSettings() {
       <div className="card" style={{ marginBottom: 24 }}>
         <h3>Notification Settings</h3>
         <div
+          className="admin-settings-grid"
           style={{
             marginTop: 20,
             display: "grid",
@@ -101,6 +102,7 @@ export default function AdminSettings() {
             </div>
           </div>
           <div
+            className="admin-toggle-cell"
             style={{
               display: "flex",
               justifyContent: "flex-end",
@@ -176,7 +178,7 @@ export default function AdminSettings() {
               min={1}
               max={30}
               style={{ width: 100, padding: "8px 10px", marginTop: 8 }}
-              className="rounded rounded-xl"
+              className="rounded-xl"
             />
 
             <div style={{ marginTop: 12 }}>
@@ -207,6 +209,7 @@ export default function AdminSettings() {
       <div className="card" style={{ marginBottom: 24 }}>
         <h3>System Management</h3>
         <div
+          className="admin-management-actions"
           style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 20 }}
         >
           <button
@@ -243,17 +246,20 @@ export default function AdminSettings() {
           <p style={{ color: "var(--text-secondary)", marginBottom: 16 }}>
             These actions are irreversible. Please proceed with caution.
           </p>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          <div
+            className="admin-danger-actions"
+            style={{ display: "flex", gap: 16, flexWrap: "wrap" }}
+          >
             <button
               className="btn btn-danger"
               onClick={() => {
                 if (
                   confirm(
-                    "Are you sure you want to clear all system cache? This action cannot be undone."
+                    "Are you sure you want to clear all system cache? This action cannot be undone.",
                   )
                 ) {
                   alert(
-                    "Cache cleared! (Demo mode - no actual action performed)"
+                    "Cache cleared! (Demo mode - no actual action performed)",
                   );
                 }
               }}
@@ -265,7 +271,7 @@ export default function AdminSettings() {
               onClick={() => {
                 if (
                   confirm(
-                    "Are you sure you want to reset all settings to default? This action cannot be undone."
+                    "Are you sure you want to reset all settings to default? This action cannot be undone.",
                   )
                 ) {
                   setSettings({
@@ -285,7 +291,10 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      <div style={{ marginTop: 24, display: "flex", gap: 16 }}>
+      <div
+        className="admin-footer-actions"
+        style={{ marginTop: 24, display: "flex", gap: 16 }}
+      >
         <button className="btn btn-primary" onClick={handleSaveSettings}>
           💾 Save All Settings
         </button>
@@ -296,6 +305,33 @@ export default function AdminSettings() {
           Cancel
         </button>
       </div>
+
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .admin-settings-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .admin-toggle-cell,
+          .admin-management-actions,
+          .admin-danger-actions,
+          .admin-footer-actions {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+
+          .admin-toggle-cell {
+            justify-content: flex-start !important;
+          }
+
+          .admin-management-actions :global(.btn),
+          .admin-danger-actions :global(.btn),
+          .admin-footer-actions :global(.btn) {
+            width: 100%;
+          }
+        }
+      `}</style>
     </div>
   );
 }

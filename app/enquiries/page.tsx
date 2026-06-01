@@ -623,6 +623,7 @@ export default function Enquiries() {
     <ProtectedRoute component="enquiries">
       <div>
         <div
+          className="mobile-page-header"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -632,12 +633,14 @@ export default function Enquiries() {
         >
           <h1>Inquiries</h1>
           {canCreateInquiry && (
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="btn btn-primary"
-            >
-              {showForm ? "Cancel" : "New Inquiry"}
-            </button>
+            <div className="mobile-page-header-actions">
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="btn btn-primary"
+              >
+                {showForm ? "Cancel" : "New Inquiry"}
+              </button>
+            </div>
           )}
         </div>
 
@@ -914,7 +917,7 @@ export default function Enquiries() {
             }}
           >
             <h3 style={{ margin: 0 }}>All Inquiries</h3>
-            <div className="flex flex-wrap gap-2 w-full">
+            <div className="flex flex-wrap gap-2 w-full mobile-page-header-actions">
               <input
                 type="text"
                 placeholder="Search client, company or phone"
@@ -1007,6 +1010,7 @@ export default function Enquiries() {
             <div style={{ padding: "16px" }}>Loading...</div>
           ) : inquiries.length > 0 ? (
             <div
+              className="mobile-scroll-card"
               style={{ marginTop: "16px", overflowX: "auto", width: "100%" }}
             >
               <table
@@ -1225,7 +1229,10 @@ export default function Enquiries() {
           )}
 
           {!loading && inquiries.length > 0 && inquiries.length < total && (
-            <div style={{ marginTop: "16px", display: "flex", gap: "8px" }}>
+            <div
+              className="mobile-stack-row"
+              style={{ marginTop: "16px", display: "flex", gap: "8px" }}
+            >
               <button
                 className="btn btn-secondary"
                 onClick={() => fetchData(page + 1, false)}

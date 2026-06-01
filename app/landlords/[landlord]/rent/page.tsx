@@ -57,13 +57,19 @@ function defaultManualIncrements(): ManualIncrementRow[] {
   }));
 }
 
-function normalizeManualIncrementsFromPayload(payload: unknown): ManualIncrementRow[] {
+function normalizeManualIncrementsFromPayload(
+  payload: unknown,
+): ManualIncrementRow[] {
   const base = defaultManualIncrements();
   if (!payload || typeof payload !== "object") return base;
 
   const raw = payload as {
     mode?: unknown;
-    manualIncrements?: Array<{ year?: unknown; type?: unknown; value?: unknown }>;
+    manualIncrements?: Array<{
+      year?: unknown;
+      type?: unknown;
+      value?: unknown;
+    }>;
   };
 
   if (String(raw.mode || "").toUpperCase() !== "MANUAL") {
@@ -71,7 +77,9 @@ function normalizeManualIncrementsFromPayload(payload: unknown): ManualIncrement
   }
 
   const mapped = new Map<number, ManualIncrementRow>();
-  for (const item of Array.isArray(raw.manualIncrements) ? raw.manualIncrements : []) {
+  for (const item of Array.isArray(raw.manualIncrements)
+    ? raw.manualIncrements
+    : []) {
     const year = Number(item?.year || 0);
     if (year < 2 || year > 5) continue;
     const type =
@@ -102,7 +110,9 @@ function buildFiveYearRentSchedule(input: {
     manualIncrements,
   } = input;
 
-  const rows: Array<{ year: number; rent: number }> = [{ year: 1, rent: baseRent }];
+  const rows: Array<{ year: number; rent: number }> = [
+    { year: 1, rent: baseRent },
+  ];
   let current = baseRent;
 
   for (let year = 2; year <= 5; year += 1) {
@@ -117,7 +127,8 @@ function buildFiveYearRentSchedule(input: {
         }
       }
     } else {
-      const shouldApply = incrementCycleYears > 0 && (year - 1) % incrementCycleYears === 0;
+      const shouldApply =
+        incrementCycleYears > 0 && (year - 1) % incrementCycleYears === 0;
       if (shouldApply && incrementValue > 0) {
         if (incrementType === "AMOUNT") {
           current += incrementValue;
@@ -163,7 +174,8 @@ export default function LandlordRentPage() {
   const role = getRoleFromUser(user);
   const canEdit = canEditRent(role);
 
-  const backHref = searchParams?.get("from") === "vendors" ? "/vendors" : "/hoardings";
+  const backHref =
+    searchParams?.get("from") === "vendors" ? "/vendors" : "/hoardings";
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -334,7 +346,9 @@ export default function LandlordRentPage() {
                   type: item.type,
                   value: Number(item.value || 0),
                 }))
-                .filter((item) => Number.isFinite(item.value) && item.value >= 0)
+                .filter(
+                  (item) => Number.isFinite(item.value) && item.value >= 0,
+                )
             : undefined,
         rentStartDate: form.rentStartDate,
         paymentFrequency: form.paymentFrequency,
@@ -357,6 +371,7 @@ export default function LandlordRentPage() {
     <ProtectedRoute component="hoardings">
       <div>
         <div
+          className="landlord-rent-header"
           style={{
             marginBottom: "16px",
             display: "flex",
@@ -388,6 +403,7 @@ export default function LandlordRentPage() {
 
             <form onSubmit={onSubmit}>
               <div
+                className="landlord-rent-form-grid"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(2, 1fr)",
@@ -533,6 +549,7 @@ export default function LandlordRentPage() {
                   </>
                 ) : (
                   <div
+                    className="landlord-rent-manual-block"
                     style={{
                       gridColumn: "1 / span 2",
                       border: "1px solid var(--border-color, #e2e8f0)",
@@ -540,65 +557,76 @@ export default function LandlordRentPage() {
                       padding: "12px",
                     }}
                   >
-                    <label style={{ fontWeight: 600 }}>Manual Year-wise Increments (Year 2-5)</label>
-                    <table className="table" style={{ marginTop: "10px", marginBottom: 0 }}>
-                      <thead>
-                        <tr>
-                          <th>Year</th>
-                          <th>Type</th>
-                          <th>Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {form.manualIncrements.map((row) => (
-                          <tr key={row.year}>
-                            <td>Year {row.year}</td>
-                            <td>
-                              <select
-                                value={row.type}
-                                onChange={(e) =>
-                                  setForm((p) => ({
-                                    ...p,
-                                    manualIncrements: p.manualIncrements.map((item) =>
-                                      item.year === row.year
-                                        ? {
-                                            ...item,
-                                            type:
-                                              e.target.value === "AMOUNT"
-                                                ? "AMOUNT"
-                                                : "PERCENTAGE",
-                                          }
-                                        : item,
-                                    ),
-                                  }))
-                                }
-                              >
-                                <option value="PERCENTAGE">Percentage</option>
-                                <option value="AMOUNT">Amount</option>
-                              </select>
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                min={0}
-                                value={row.value}
-                                onChange={(e) =>
-                                  setForm((p) => ({
-                                    ...p,
-                                    manualIncrements: p.manualIncrements.map((item) =>
-                                      item.year === row.year
-                                        ? { ...item, value: e.target.value }
-                                        : item,
-                                    ),
-                                  }))
-                                }
-                                placeholder={row.type === "AMOUNT" ? "₹" : "%"}
-                              />
-                            </td>
+                    <label style={{ fontWeight: 600 }}>
+                      Manual Year-wise Increments (Year 2-5)
+                    </label>
+                    <div className="landlord-rent-table-wrap">
+                      <table
+                        className="table"
+                        style={{ marginTop: "10px", marginBottom: 0 }}
+                      >
+                        <thead>
+                          <tr>
+                            <th>Year</th>
+                            <th>Type</th>
+                            <th>Value</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {form.manualIncrements.map((row) => (
+                            <tr key={row.year}>
+                              <td>Year {row.year}</td>
+                              <td>
+                                <select
+                                  value={row.type}
+                                  onChange={(e) =>
+                                    setForm((p) => ({
+                                      ...p,
+                                      manualIncrements: p.manualIncrements.map(
+                                        (item) =>
+                                          item.year === row.year
+                                            ? {
+                                                ...item,
+                                                type:
+                                                  e.target.value === "AMOUNT"
+                                                    ? "AMOUNT"
+                                                    : "PERCENTAGE",
+                                              }
+                                            : item,
+                                      ),
+                                    }))
+                                  }
+                                >
+                                  <option value="PERCENTAGE">Percentage</option>
+                                  <option value="AMOUNT">Amount</option>
+                                </select>
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={row.value}
+                                  onChange={(e) =>
+                                    setForm((p) => ({
+                                      ...p,
+                                      manualIncrements: p.manualIncrements.map(
+                                        (item) =>
+                                          item.year === row.year
+                                            ? { ...item, value: e.target.value }
+                                            : item,
+                                      ),
+                                    }))
+                                  }
+                                  placeholder={
+                                    row.type === "AMOUNT" ? "₹" : "%"
+                                  }
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </div>
@@ -650,26 +678,32 @@ export default function LandlordRentPage() {
               >
                 <strong>5-Year Increment Schedule</strong>
                 {fiveYearSchedule.length > 0 ? (
-                  <table className="table" style={{ marginTop: "10px", marginBottom: 0 }}>
-                    <thead>
-                      <tr>
-                        <th>Year</th>
-                        <th>Projected Rent</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fiveYearSchedule.map((row) => (
-                        <tr key={row.year}>
-                          <td>Year {row.year}</td>
-                          <td>
-                            ₹{Number(row.rent || 0).toLocaleString("en-IN", {
-                              maximumFractionDigits: 2,
-                            })}
-                          </td>
+                  <div className="landlord-rent-table-wrap">
+                    <table
+                      className="table"
+                      style={{ marginTop: "10px", marginBottom: 0 }}
+                    >
+                      <thead>
+                        <tr>
+                          <th>Year</th>
+                          <th>Projected Rent</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {fiveYearSchedule.map((row) => (
+                          <tr key={row.year}>
+                            <td>Year {row.year}</td>
+                            <td>
+                              ₹
+                              {Number(row.rent || 0).toLocaleString("en-IN", {
+                                maximumFractionDigits: 2,
+                              })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
                   <div
                     style={{
@@ -683,7 +717,10 @@ export default function LandlordRentPage() {
                 )}
               </div>
 
-              <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+              <div
+                className="landlord-rent-actions"
+                style={{ marginTop: "20px", display: "flex", gap: "10px" }}
+              >
                 {canEdit ? (
                   <button
                     className="btn btn-primary"
@@ -708,6 +745,39 @@ export default function LandlordRentPage() {
             </form>
           </div>
         )}
+        <style jsx>{`
+          .landlord-rent-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+          }
+
+          .landlord-rent-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          @media (max-width: 640px) {
+            .landlord-rent-header,
+            .landlord-rent-actions {
+              display: flex !important;
+              flex-direction: column !important;
+              align-items: stretch !important;
+            }
+
+            .landlord-rent-form-grid {
+              grid-template-columns: 1fr;
+            }
+
+            .landlord-rent-manual-block {
+              grid-column: auto !important;
+            }
+
+            .landlord-rent-actions :global(.btn) {
+              width: 100%;
+            }
+          }
+        `}</style>
       </div>
     </ProtectedRoute>
   );

@@ -162,7 +162,10 @@ export default function HoardingTokenPage() {
   return (
     <ProtectedRoute component="hoardings">
       <div>
-        <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
+        <div
+          className="mobile-inline-actions"
+          style={{ display: "flex", gap: "10px", marginBottom: "16px" }}
+        >
           <Link href={`/hoardings/${hoardingId}`} className="btn btn-secondary">
             Back
           </Link>
@@ -192,6 +195,7 @@ export default function HoardingTokenPage() {
 
           <div>
             <div
+              className="mobile-stack-row"
               style={{
                 display: "flex",
                 gap: "10px",
@@ -279,6 +283,7 @@ export default function HoardingTokenPage() {
               </div>
             </div>
             <div
+              className="mobile-inline-actions"
               style={{
                 display: "flex",
                 justifyContent: "flex-end",

@@ -556,6 +556,7 @@ export default function NewHoarding() {
       <div className="card">
         <form onSubmit={handleSubmit}>
           <div
+            className="mobile-two-column-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(2, 1fr)",
@@ -575,7 +576,10 @@ export default function NewHoarding() {
             </div>
             <div className="form-group">
               <label>Landlord *</label>
-              <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+              <div
+                className="mobile-stack-row"
+                style={{ display: "flex", gap: "8px", marginBottom: "8px" }}
+              >
                 <div ref={landlordRootRef} style={{ flex: 1 }}>
                   <input
                     ref={landlordInputRef}
@@ -865,7 +869,10 @@ export default function NewHoarding() {
               />
             </div>
           </div>
-          <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+          <div
+            className="mobile-inline-actions"
+            style={{ marginTop: "20px", display: "flex", gap: "10px" }}
+          >
             <button
               type="submit"
               className="btn btn-primary"
@@ -992,7 +999,10 @@ export default function NewHoarding() {
                 </div>
               </div>
 
-              <div style={{ marginTop: "16px", display: "flex", gap: "10px" }}>
+              <div
+                className="mobile-inline-actions"
+                style={{ marginTop: "16px", display: "flex", gap: "10px" }}
+              >
                 <button
                   type="submit"
                   className="btn btn-primary"

@@ -151,6 +151,18 @@ export default function Vendors() {
     router.push(`/landlords/${encoded}/rent?from=vendors`);
   };
 
+  const toggleVendorForm = () => {
+    const nextOpen = !showVendorForm;
+    setShowVendorForm(nextOpen);
+    setShowRentForm(false);
+  };
+
+  const toggleRentForm = () => {
+    const nextOpen = !showRentForm;
+    setShowRentForm(nextOpen);
+    setShowVendorForm(false);
+  };
+
   const handleDeleteHoarding = async (hoardingId: string) => {
     if (!canDeleteHoarding) return;
 
@@ -239,6 +251,7 @@ export default function Vendors() {
   return (
     <div>
       <div
+        className="vendors-page-header"
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -247,274 +260,18 @@ export default function Vendors() {
         }}
       >
         <h1>Vendors & Landlord Management</h1>
-        <div>
+        <div className="vendors-header-actions">
           <button
-            onClick={() => setShowVendorForm(!showVendorForm)}
+            onClick={toggleVendorForm}
             className="btn btn-primary"
             style={{ marginRight: "10px" }}
           >
             {showVendorForm ? "Cancel" : "Add Vendor"}
           </button>
-          <button
-            onClick={() => setShowRentForm(!showRentForm)}
-            className="btn btn-primary"
-          >
+          <button onClick={toggleRentForm} className="btn btn-primary">
             {showRentForm ? "Cancel" : "Add Rent Record"}
           </button>
         </div>
-      </div>
-
-      <div className="card">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "16px",
-            gap: "16px",
-            flexWrap: "wrap",
-          }}
-        >
-          <h3 style={{ margin: 0 }}>Landlords & Hoardings</h3>
-          <div style={{ minWidth: "280px", flex: 1, maxWidth: "420px" }}>
-            <input
-              type="text"
-              value={landlordSearch}
-              onChange={(e) => setLandlordSearch(e.target.value)}
-              placeholder="Search landlord name..."
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
-            />
-          </div>
-        </div>
-
-        {loading ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "30px 20px",
-              color: "var(--text-secondary)",
-            }}
-          >
-            Loading landlord data...
-          </div>
-        ) : filteredLandlordGroups.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "30px 20px",
-              color: "var(--text-secondary)",
-            }}
-          >
-            {landlordSearch.trim()
-              ? "No landlords found matching your search"
-              : "No landlord data found"}
-          </div>
-        ) : (
-          <div>
-            {filteredLandlordGroups.map((row: any) => {
-              const landlord = String(row?.landlordName || "Unknown");
-              const landlordHoardings = Array.isArray(row?.hoardings)
-                ? row.hoardings
-                : [];
-              const isExpanded = expandedLandlords.has(landlord);
-
-              return (
-                <div
-                  key={landlord}
-                  style={{
-                    marginBottom: "12px",
-                    border: "1px solid var(--border-color, #e2e8f0)",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    onClick={() => toggleLandlord(landlord)}
-                    style={{
-                      padding: "14px 18px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      cursor: "pointer",
-                      background: isExpanded
-                        ? "var(--primary-light, rgba(0, 187, 241, 0.12))"
-                        : "var(--bg-secondary, #fff)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "18px",
-                          fontWeight: 600,
-                          color: "var(--text-primary)",
-                        }}
-                      >
-                        {landlord}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: "13px",
-                          color: "var(--text-secondary)",
-                          padding: "2px 8px",
-                          borderRadius: "12px",
-                          background:
-                            "var(--primary-light, rgba(0, 187, 241, 0.15))",
-                        }}
-                      >
-                        {landlordHoardings.length} hoardings
-                      </span>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        style={{ padding: "5px 10px", fontSize: "12px" }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleLandlord(landlord);
-                        }}
-                      >
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        style={{ padding: "5px 10px", fontSize: "12px" }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditRent(landlord);
-                        }}
-                      >
-                        Edit Rent
-                      </button>
-                      <span
-                        style={{
-                          transform: isExpanded
-                            ? "rotate(180deg)"
-                            : "rotate(0deg)",
-                          transition: "transform 0.2s ease",
-                          color: "var(--text-secondary)",
-                          fontSize: "18px",
-                        }}
-                      >
-                        ▼
-                      </span>
-                    </div>
-                  </div>
-
-                  {isExpanded && (
-                    <div style={{ padding: "16px" }}>
-                      <table className="table" style={{ margin: 0 }}>
-                        <thead>
-                          <tr>
-                            <th>Property / Location</th>
-                            <th>Hoarding Code</th>
-                            <th>Size</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {landlordHoardings.map((h: any) => {
-                            const isDeleting =
-                              deletingHoardingId === String(h.id);
-
-                            return (
-                              <tr key={h.id}>
-                                <td>
-                                  <strong>{h.city || "—"}</strong>
-                                  <div
-                                    style={{
-                                      fontSize: "12px",
-                                      color: "var(--text-secondary)",
-                                      marginTop: "4px",
-                                    }}
-                                  >
-                                    {[h.area, h.landmark || h.roadName || ""]
-                                      .filter(Boolean)
-                                      .join(", ") || "—"}
-                                  </div>
-                                </td>
-                                <td>
-                                  {h.code || "—"} {h.side ? `(${h.side})` : ""}
-                                </td>
-                                <td>{toFt(h.widthCm, h.heightCm)}</td>
-                                <td>{formatStatus(h.status)}</td>
-                                <td>
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      gap: "8px",
-                                      flexWrap: "nowrap",
-                                      alignItems: "center",
-                                    }}
-                                  >
-                                    <Link
-                                      href={`/hoardings/${h.id}`}
-                                      className="btn btn-secondary"
-                                      style={{
-                                        padding: "5px 10px",
-                                        fontSize: "12px",
-                                      }}
-                                    >
-                                      View
-                                    </Link>
-
-                                    {canEditHoarding && (
-                                      <Link
-                                        href={`/hoardings/${h.id}/edit`}
-                                        className="btn btn-warning"
-                                        style={{
-                                          padding: "5px 10px",
-                                          fontSize: "12px",
-                                        }}
-                                      >
-                                        Edit
-                                      </Link>
-                                    )}
-
-                                    {canDeleteHoarding && (
-                                      <button
-                                        className="btn btn-danger"
-                                        style={{
-                                          padding: "5px 10px",
-                                          fontSize: "12px",
-                                        }}
-                                        disabled={isDeleting}
-                                        onClick={() =>
-                                          handleDeleteHoarding(String(h.id))
-                                        }
-                                      >
-                                        {isDeleting ? "Deleting..." : "Delete"}
-                                      </button>
-                                    )}
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {showVendorForm && (
@@ -522,6 +279,7 @@ export default function Vendors() {
           <h3>Add New Vendor</h3>
           <form onSubmit={handleCreateVendor}>
             <div
+              className="vendors-form-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(2, 1fr)",
@@ -593,6 +351,7 @@ export default function Vendors() {
           <h3>Add Rent Record</h3>
           <form onSubmit={handleCreateRent}>
             <div
+              className="vendors-form-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(2, 1fr)",
@@ -656,6 +415,13 @@ export default function Vendors() {
                 />
               </div>
             </div>
+            {vendors.length === 0 && (
+              <p
+                style={{ color: "var(--text-secondary)", marginBottom: "12px" }}
+              >
+                Create a vendor first so you can assign the rent record to it.
+              </p>
+            )}
             <button type="submit" className="btn btn-primary">
               Create Rent Record
             </button>
@@ -664,28 +430,295 @@ export default function Vendors() {
       )}
 
       <div className="card">
+        <div
+          className="vendors-toolbar"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "16px",
+            gap: "16px",
+            flexWrap: "wrap",
+          }}
+        >
+          <h3 style={{ margin: 0 }}>Landlords & Hoardings</h3>
+          <div
+            className="vendors-search-wrap"
+            style={{ minWidth: "280px", flex: 1, maxWidth: "420px" }}
+          >
+            <input
+              type="text"
+              value={landlordSearch}
+              onChange={(e) => setLandlordSearch(e.target.value)}
+              placeholder="Search landlord name..."
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+            />
+          </div>
+        </div>
+
+        {loading ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "30px 20px",
+              color: "var(--text-secondary)",
+            }}
+          >
+            Loading landlord data...
+          </div>
+        ) : filteredLandlordGroups.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "30px 20px",
+              color: "var(--text-secondary)",
+            }}
+          >
+            {landlordSearch.trim()
+              ? "No landlords found matching your search"
+              : "No landlord data found"}
+          </div>
+        ) : (
+          <div>
+            {filteredLandlordGroups.map((row: any) => {
+              const landlord = String(row?.landlordName || "Unknown");
+              const landlordHoardings = Array.isArray(row?.hoardings)
+                ? row.hoardings
+                : [];
+              const isExpanded = expandedLandlords.has(landlord);
+
+              return (
+                <div
+                  key={landlord}
+                  style={{
+                    marginBottom: "12px",
+                    border: "1px solid var(--border-color, #e2e8f0)",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    className="vendors-landlord-row"
+                    onClick={() => toggleLandlord(landlord)}
+                    style={{
+                      padding: "14px 18px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      background: isExpanded
+                        ? "var(--primary-light, rgba(0, 187, 241, 0.12))"
+                        : "var(--bg-secondary, #fff)",
+                    }}
+                  >
+                    <div
+                      className="vendors-landlord-summary"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "18px",
+                          fontWeight: 600,
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {landlord}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "13px",
+                          color: "var(--text-secondary)",
+                          padding: "2px 8px",
+                          borderRadius: "12px",
+                          background:
+                            "var(--primary-light, rgba(0, 187, 241, 0.15))",
+                        }}
+                      >
+                        {landlordHoardings.length} hoardings
+                      </span>
+                    </div>
+
+                    <div
+                      className="vendors-landlord-actions"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        style={{ padding: "5px 10px", fontSize: "12px" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleLandlord(landlord);
+                        }}
+                      >
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        style={{ padding: "5px 10px", fontSize: "12px" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditRent(landlord);
+                        }}
+                      >
+                        Edit Rent
+                      </button>
+                      <span
+                        style={{
+                          transform: isExpanded
+                            ? "rotate(180deg)"
+                            : "rotate(0deg)",
+                          transition: "transform 0.2s ease",
+                          color: "var(--text-secondary)",
+                          fontSize: "18px",
+                        }}
+                      >
+                        ▼
+                      </span>
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div style={{ padding: "16px" }}>
+                      <div className="vendors-table-wrap">
+                        <table className="table" style={{ margin: 0 }}>
+                          <thead>
+                            <tr>
+                              <th>Property / Location</th>
+                              <th>Hoarding Code</th>
+                              <th>Size</th>
+                              <th>Status</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {landlordHoardings.map((h: any) => {
+                              const isDeleting =
+                                deletingHoardingId === String(h.id);
+
+                              return (
+                                <tr key={h.id}>
+                                  <td>
+                                    <strong>{h.city || "—"}</strong>
+                                    <div
+                                      style={{
+                                        fontSize: "12px",
+                                        color: "var(--text-secondary)",
+                                        marginTop: "4px",
+                                      }}
+                                    >
+                                      {[h.area, h.landmark || h.roadName || ""]
+                                        .filter(Boolean)
+                                        .join(", ") || "—"}
+                                    </div>
+                                  </td>
+                                  <td>
+                                    {h.code || "—"}{" "}
+                                    {h.side ? `(${h.side})` : ""}
+                                  </td>
+                                  <td>{toFt(h.widthCm, h.heightCm)}</td>
+                                  <td>{formatStatus(h.status)}</td>
+                                  <td>
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        gap: "8px",
+                                        flexWrap: "nowrap",
+                                        alignItems: "center",
+                                      }}
+                                    >
+                                      <Link
+                                        href={`/hoardings/${h.id}`}
+                                        className="btn btn-secondary"
+                                        style={{
+                                          padding: "5px 10px",
+                                          fontSize: "12px",
+                                        }}
+                                      >
+                                        View
+                                      </Link>
+
+                                      {canEditHoarding && (
+                                        <Link
+                                          href={`/hoardings/${h.id}/edit`}
+                                          className="btn btn-warning"
+                                          style={{
+                                            padding: "5px 10px",
+                                            fontSize: "12px",
+                                          }}
+                                        >
+                                          Edit
+                                        </Link>
+                                      )}
+
+                                      {canDeleteHoarding && (
+                                        <button
+                                          className="btn btn-danger"
+                                          style={{
+                                            padding: "5px 10px",
+                                            fontSize: "12px",
+                                          }}
+                                          disabled={isDeleting}
+                                          onClick={() =>
+                                            handleDeleteHoarding(String(h.id))
+                                          }
+                                        >
+                                          {isDeleting
+                                            ? "Deleting..."
+                                            : "Delete"}
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <div className="card">
         <h3>Vendors</h3>
         {vendors.length > 0 ? (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Contact</th>
-                <th>Type</th>
-                <th>Payment Cycle</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vendors.map((vendor) => (
-                <tr key={vendor.id}>
-                  <td>{vendor.name}</td>
-                  <td>{vendor.contact}</td>
-                  <td>{vendor.type}</td>
-                  <td>{vendor.paymentCycle}</td>
+          <div className="vendors-table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Contact</th>
+                  <th>Type</th>
+                  <th>Payment Cycle</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {vendors.map((vendor) => (
+                  <tr key={vendor.id}>
+                    <td>{vendor.name}</td>
+                    <td>{vendor.contact}</td>
+                    <td>{vendor.type}</td>
+                    <td>{vendor.paymentCycle}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <div
             style={{
@@ -713,6 +746,7 @@ export default function Vendors() {
 
       <div className="card">
         <div
+          className="vendors-rent-header"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -735,106 +769,108 @@ export default function Vendors() {
             Loading rent records...
           </p>
         ) : rents.length > 0 ? (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Hoarding Code</th>
-                <th>Location</th>
-                <th>Party Type</th>
-                <th>Rent Amount</th>
-                <th>Payment Mode</th>
-                <th>Last Payment</th>
-                <th>Next Due Date</th>
-                <th>Days Until Due</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rents.map((rent: any) => {
-                const dueDate = rent.nextDueDate
-                  ? new Date(rent.nextDueDate)
-                  : null;
-                const today = new Date();
-                const daysUntilDue = dueDate
-                  ? Math.ceil(
-                      (dueDate.getTime() - today.getTime()) /
-                        (1000 * 60 * 60 * 24),
-                    )
-                  : null;
-                const isUrgent =
-                  daysUntilDue !== null &&
-                  daysUntilDue <= 7 &&
-                  daysUntilDue >= 0;
-                const hoarding = rent.hoarding || {};
+          <div className="vendors-table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Hoarding Code</th>
+                  <th>Location</th>
+                  <th>Party Type</th>
+                  <th>Rent Amount</th>
+                  <th>Payment Mode</th>
+                  <th>Last Payment</th>
+                  <th>Next Due Date</th>
+                  <th>Days Until Due</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rents.map((rent: any) => {
+                  const dueDate = rent.nextDueDate
+                    ? new Date(rent.nextDueDate)
+                    : null;
+                  const today = new Date();
+                  const daysUntilDue = dueDate
+                    ? Math.ceil(
+                        (dueDate.getTime() - today.getTime()) /
+                          (1000 * 60 * 60 * 24),
+                      )
+                    : null;
+                  const isUrgent =
+                    daysUntilDue !== null &&
+                    daysUntilDue <= 7 &&
+                    daysUntilDue >= 0;
+                  const hoarding = rent.hoarding || {};
 
-                return (
-                  <tr
-                    key={rent.id}
-                    style={
-                      isUrgent
-                        ? { backgroundColor: "#fff3cd" }
-                        : daysUntilDue !== null && daysUntilDue < 0
-                          ? { backgroundColor: "#fee2e2" }
-                          : {}
-                    }
-                  >
-                    <td>
-                      <strong>{hoarding.code || "N/A"}</strong>
-                    </td>
-                    <td>
-                      {hoarding.city || ""}
-                      {hoarding.area && `, ${hoarding.area}`}
-                    </td>
-                    <td>
-                      <span className="badge badge-info">
-                        {rent.partyType || "N/A"}
-                      </span>
-                    </td>
-                    <td>₹{Number(rent.rentAmount || 0).toLocaleString()}</td>
-                    <td>{rent.paymentMode || "N/A"}</td>
-                    <td>
-                      {rent.lastPaymentDate
-                        ? new Date(rent.lastPaymentDate).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    <td>{dueDate ? dueDate.toLocaleDateString() : "N/A"}</td>
-                    <td>
-                      {daysUntilDue !== null ? (
-                        <span
-                          className={`badge ${
-                            isUrgent
-                              ? "badge-warning"
-                              : daysUntilDue < 0
-                                ? "badge-danger"
-                                : "badge-info"
-                          }`}
-                        >
-                          {daysUntilDue === 0
-                            ? "Due Today"
-                            : daysUntilDue < 0
-                              ? `Overdue by ${Math.abs(daysUntilDue)} days`
-                              : `${daysUntilDue} days`}
+                  return (
+                    <tr
+                      key={rent.id}
+                      style={
+                        isUrgent
+                          ? { backgroundColor: "#fff3cd" }
+                          : daysUntilDue !== null && daysUntilDue < 0
+                            ? { backgroundColor: "#fee2e2" }
+                            : {}
+                      }
+                    >
+                      <td>
+                        <strong>{hoarding.code || "N/A"}</strong>
+                      </td>
+                      <td>
+                        {hoarding.city || ""}
+                        {hoarding.area && `, ${hoarding.area}`}
+                      </td>
+                      <td>
+                        <span className="badge badge-info">
+                          {rent.partyType || "N/A"}
                         </span>
-                      ) : (
-                        "N/A"
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-primary"
-                        style={{ padding: "5px 10px", fontSize: "12px" }}
-                        onClick={() =>
-                          router.push(`/hoardings/${rent.hoardingId}/rent`)
-                        }
-                      >
-                        View Details
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td>₹{Number(rent.rentAmount || 0).toLocaleString()}</td>
+                      <td>{rent.paymentMode || "N/A"}</td>
+                      <td>
+                        {rent.lastPaymentDate
+                          ? new Date(rent.lastPaymentDate).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td>{dueDate ? dueDate.toLocaleDateString() : "N/A"}</td>
+                      <td>
+                        {daysUntilDue !== null ? (
+                          <span
+                            className={`badge ${
+                              isUrgent
+                                ? "badge-warning"
+                                : daysUntilDue < 0
+                                  ? "badge-danger"
+                                  : "badge-info"
+                            }`}
+                          >
+                            {daysUntilDue === 0
+                              ? "Due Today"
+                              : daysUntilDue < 0
+                                ? `Overdue by ${Math.abs(daysUntilDue)} days`
+                                : `${daysUntilDue} days`}
+                          </span>
+                        ) : (
+                          "N/A"
+                        )}
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-primary"
+                          style={{ padding: "5px 10px", fontSize: "12px" }}
+                          onClick={() =>
+                            router.push(`/hoardings/${rent.hoardingId}/rent`)
+                          }
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <div
             style={{
@@ -859,6 +895,80 @@ export default function Vendors() {
           </div>
         )}
       </div>
+      <style jsx>{`
+        .vendors-page-header {
+          gap: 16px;
+        }
+
+        .vendors-header-actions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        .vendors-toolbar {
+          gap: 16px;
+        }
+
+        .vendors-search-wrap {
+          min-width: 0;
+        }
+
+        .vendors-landlord-row {
+          gap: 16px;
+        }
+
+        .vendors-landlord-summary {
+          min-width: 0;
+          flex-wrap: wrap;
+        }
+
+        .vendors-landlord-actions {
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .vendors-table-wrap {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .vendors-form-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 15px;
+        }
+
+        @media (max-width: 640px) {
+          .vendors-page-header,
+          .vendors-toolbar,
+          .vendors-landlord-row,
+          .vendors-rent-header {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+
+          .vendors-header-actions,
+          .vendors-landlord-actions {
+            width: 100%;
+          }
+
+          .vendors-header-actions :global(.btn),
+          .vendors-landlord-actions :global(.btn) {
+            flex: 1 1 0;
+          }
+
+          .vendors-search-wrap {
+            max-width: none !important;
+            width: 100%;
+          }
+
+          .vendors-form-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -531,6 +531,7 @@ export default function SupervisorExecutionBoardPage() {
           <>
             {/* Tab Navigation */}
             <div
+              className="mobile-inline-actions"
               style={{
                 display: "flex",
                 gap: 10,
@@ -554,17 +555,9 @@ export default function SupervisorExecutionBoardPage() {
             </div>
 
             {/* Filters Row */}
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                marginBottom: "14px",
-                flexWrap: "wrap",
-                alignItems: "flex-end",
-              }}
-            >
+            <div className="supervisor-filters-row">
               {/* Client/City group filter */}
-              <div style={{ minWidth: 200, flex: "1 1 200px", maxWidth: 300 }}>
+              <div className="supervisor-filter-field supervisor-filter-field-wide">
                 <label
                   style={{
                     fontSize: 12,
@@ -587,7 +580,7 @@ export default function SupervisorExecutionBoardPage() {
 
               {/* City filter (for non-unmounting tabs) */}
               {activeTab !== "unmounting" && (
-                <div style={{ minWidth: 160, flex: "0 1 200px" }}>
+                <div className="supervisor-filter-field">
                   <label
                     style={{
                       fontSize: 12,
@@ -610,7 +603,7 @@ export default function SupervisorExecutionBoardPage() {
               )}
 
               {/* Status filter */}
-              <div style={{ minWidth: 160, flex: "0 1 200px" }}>
+              <div className="supervisor-filter-field">
                 <label
                   style={{
                     fontSize: 12,
@@ -632,7 +625,7 @@ export default function SupervisorExecutionBoardPage() {
               </div>
 
               {/* Date Range */}
-              <div style={{ minWidth: 140, flex: "0 1 160px" }}>
+              <div className="supervisor-filter-field supervisor-filter-field-date">
                 <label
                   style={{
                     fontSize: 12,
@@ -659,7 +652,7 @@ export default function SupervisorExecutionBoardPage() {
                   }}
                 />
               </div>
-              <div style={{ minWidth: 140, flex: "0 1 160px" }}>
+              <div className="supervisor-filter-field supervisor-filter-field-date">
                 <label
                   style={{
                     fontSize: 12,
@@ -688,7 +681,7 @@ export default function SupervisorExecutionBoardPage() {
               </div>
 
               {hasActiveFilters && (
-                <div style={{ flex: "0 0 auto", paddingBottom: 1 }}>
+                <div className="supervisor-filter-actions">
                   <button
                     className="btn btn-secondary"
                     onClick={clearFilters}
@@ -758,7 +751,10 @@ export default function SupervisorExecutionBoardPage() {
                       </span>
                     </h3>
 
-                    <div style={{ overflowX: "auto" }}>
+                    <div
+                      className="mobile-scroll-card"
+                      style={{ overflowX: "auto" }}
+                    >
                       <table className="table">
                         <thead>
                           <tr>
@@ -1414,6 +1410,7 @@ export default function SupervisorExecutionBoardPage() {
 
             {/* Pagination */}
             <div
+              className="supervisor-pagination"
               style={{
                 marginTop: 12,
                 display: "flex",
@@ -1443,6 +1440,66 @@ export default function SupervisorExecutionBoardPage() {
           </>
         )}
       </div>
+      <style jsx>{`
+        .supervisor-filters-row {
+          display: grid;
+          grid-template-columns: minmax(220px, 1.2fr) repeat(
+              4,
+              minmax(140px, 1fr)
+            );
+          gap: 10px;
+          margin-bottom: 14px;
+          align-items: end;
+        }
+
+        .supervisor-filter-field {
+          min-width: 0;
+        }
+
+        .supervisor-filter-field-wide {
+          min-width: 0;
+        }
+
+        .supervisor-filter-field-date {
+          min-width: 0;
+        }
+
+        .supervisor-filter-actions {
+          align-self: end;
+        }
+
+        @media (max-width: 900px) {
+          .supervisor-filters-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 640px) {
+          .supervisor-filters-row {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+
+          .supervisor-filter-actions,
+          .supervisor-filter-actions :global(.btn) {
+            width: 100%;
+          }
+
+          .supervisor-pagination {
+            flex-direction: column;
+            gap: 10px;
+            align-items: stretch;
+          }
+
+          .supervisor-pagination :global(.btn) {
+            width: 100%;
+          }
+
+          .supervisor-pagination > div {
+            text-align: center;
+          }
+        }
+      `}</style>
     </ProtectedRoute>
   );
 }

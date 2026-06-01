@@ -565,6 +565,7 @@ export default function ReportsPage() {
   return (
     <div>
       <div
+        className="reports-page-header"
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -581,7 +582,10 @@ export default function ReportsPage() {
             using the live billing-event engine.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+        <div
+          className="reports-header-actions"
+          style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}
+        >
           <button
             className="btn btn-secondary"
             onClick={() => applyRange("month")}
@@ -612,6 +616,7 @@ export default function ReportsPage() {
 
       <div className="card">
         <div
+          className="reports-filter-grid"
           style={{
             display: "grid",
             gridTemplateColumns: isManagement
@@ -666,6 +671,7 @@ export default function ReportsPage() {
           )}
         </div>
         <div
+          className="reports-filter-footer"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -739,6 +745,7 @@ export default function ReportsPage() {
         <>
           <div className="card">
             <div
+              className="reports-section-header"
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -774,6 +781,7 @@ export default function ReportsPage() {
                   return (
                     <div
                       key={item.key}
+                      className="reports-timeline-row"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "140px minmax(0, 1fr) 140px",
@@ -837,6 +845,7 @@ export default function ReportsPage() {
           </div>
 
           <div
+            className="reports-overview-panels"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
@@ -939,6 +948,7 @@ export default function ReportsPage() {
               <h3>Market Visit Tracker</h3>
               {role === "sales" ? (
                 <div
+                  className="reports-market-visit-form"
                   style={{ display: "grid", gap: "12px", marginTop: "16px" }}
                 >
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -1049,7 +1059,10 @@ export default function ReportsPage() {
               {isManagement ? "Salesperson Breakdown" : "Your Revenue Split"}
             </h3>
             {salespersonBreakdown.length > 0 ? (
-              <div style={{ overflowX: "auto", marginTop: "16px" }}>
+              <div
+                className="reports-table-wrap"
+                style={{ overflowX: "auto", marginTop: "16px" }}
+              >
                 <table className="table">
                   <thead>
                     <tr>
@@ -1095,6 +1108,7 @@ export default function ReportsPage() {
       ) : (
         <div className="card">
           <div
+            className="reports-section-header"
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -1117,7 +1131,10 @@ export default function ReportsPage() {
           </div>
 
           {clients.length > 0 ? (
-            <div style={{ display: "grid", gap: "16px" }}>
+            <div
+              className="reports-client-list"
+              style={{ display: "grid", gap: "16px" }}
+            >
               {clients.map((client) => {
                 const isExpanded = Boolean(expandedClients[client.clientId]);
                 return (
@@ -1133,6 +1150,7 @@ export default function ReportsPage() {
                   >
                     <button
                       onClick={() => toggleClient(client.clientId)}
+                      className="reports-client-summary-button"
                       style={{
                         width: "100%",
                         border: "none",
@@ -1262,7 +1280,10 @@ export default function ReportsPage() {
                           borderTop: "1px solid rgba(31, 92, 169, 0.08)",
                         }}
                       >
-                        <div style={{ overflowX: "auto", marginTop: "16px" }}>
+                        <div
+                          className="reports-table-wrap"
+                          style={{ overflowX: "auto", marginTop: "16px" }}
+                        >
                           <table className="table">
                             <thead>
                               <tr>
@@ -1386,6 +1407,7 @@ export default function ReportsPage() {
                                             }}
                                           >
                                             <div
+                                              className="reports-client-metric-grid"
                                               style={{
                                                 display: "grid",
                                                 gridTemplateColumns:
@@ -1481,6 +1503,7 @@ export default function ReportsPage() {
                                                 (cycle) => (
                                                   <div
                                                     key={cycle.billingEventId}
+                                                    className="reports-client-cycle-row"
                                                     style={{
                                                       display: "grid",
                                                       gridTemplateColumns:
@@ -1636,6 +1659,7 @@ export default function ReportsPage() {
                                                         key={
                                                           schedule.billingEventId
                                                         }
+                                                        className="reports-client-schedule-row"
                                                         style={{
                                                           display: "grid",
                                                           gridTemplateColumns:
@@ -1803,6 +1827,82 @@ export default function ReportsPage() {
           )}
         </div>
       )}
+
+      <style jsx>{`
+        .reports-table-wrap {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .reports-table-wrap :global(.table) {
+          min-width: 760px;
+        }
+
+        @media (max-width: 768px) {
+          .reports-page-header,
+          .reports-header-actions,
+          .reports-filter-footer,
+          .reports-section-header {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+
+          .reports-header-actions :global(.btn) {
+            flex: 1 1 calc(50% - 6px);
+          }
+
+          .reports-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .reports-overview-panels {
+            grid-template-columns: 1fr !important;
+          }
+
+          .reports-market-visit-form :global(textarea) {
+            min-height: 110px;
+          }
+
+          .reports-client-summary-button {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .reports-client-metric-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .reports-client-cycle-row,
+          .reports-client-schedule-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .reports-header-actions :global(.btn),
+          .reports-filter-footer :global(.tab-bar),
+          .reports-filter-footer :global(.tab-button) {
+            width: 100%;
+          }
+
+          .reports-filter-grid,
+          .reports-client-summary-button,
+          .reports-client-metric-grid,
+          .reports-client-cycle-row,
+          .reports-client-schedule-row {
+            grid-template-columns: 1fr !important;
+          }
+
+          .reports-timeline-row {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+          }
+
+          .reports-timeline-row > :global(div:last-child) {
+            text-align: left !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
