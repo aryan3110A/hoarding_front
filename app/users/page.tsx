@@ -344,10 +344,16 @@ export default function Users() {
   };
 
   const formatPlatformLabel = (platform?: string | null) => {
-    const value = String(platform || "").trim().toLowerCase();
+    const value = String(platform || "")
+      .trim()
+      .toLowerCase();
 
     if (!value) return "-";
-    if (value.includes("iphone") || value.includes("ipad") || value.includes("ios")) {
+    if (
+      value.includes("iphone") ||
+      value.includes("ipad") ||
+      value.includes("ios")
+    ) {
       return "iPhone / iOS";
     }
     if (value.includes("android")) {
