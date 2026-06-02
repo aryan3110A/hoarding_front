@@ -678,7 +678,8 @@ export default function Users() {
                                       marginTop: "2px",
                                     }}
                                   >
-                                    Last active {formatRelativeTime(device.lastSeen)}
+                                    Last active{" "}
+                                    {formatRelativeTime(device.lastSeen)}
                                   </div>
                                 ) : null}
                               </div>
