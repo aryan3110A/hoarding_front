@@ -70,7 +70,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Accountant",
       href: "/dashboard/accountant",
       icon: "💼",
-      roles: ["accountant", "owner", "manager", "admin"],
+      roles: ["accountant", "owner", "admin"],
     },
     {
       title: "Hoardings",
@@ -106,7 +106,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Contracts",
       href: "/contracts",
       icon: "📄",
-      roles: ["owner", "manager", "accountant", "admin"], // Sales cannot access
+      roles: ["owner", "accountant", "admin"], // Sales cannot access
     },
     {
       title: "Status",
@@ -124,7 +124,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Vendors & Landlord",
       href: "/vendors",
       icon: "💰",
-      roles: ["owner", "manager", "sales", "supervisor", "admin"], // Only Owner/Manager can view rent
+      roles: ["owner", "sales", "supervisor", "admin"],
     },
     {
       title: "Users & Roles",
@@ -136,7 +136,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Design",
       href: "/design",
       icon: "🎨",
-      roles: ["owner", "manager", "designer", "admin"], // Designer only sees this
+      roles: ["owner", "designer", "admin"], // Designer only sees this
     },
     {
       title: "Reports",
@@ -148,7 +148,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       title: "Tasks",
       href: "/tasks",
       icon: "✅",
-      roles: ["owner", "manager", "sales", "designer", "supervisor", "admin"], // All roles see tasks (filtered by role)
+      roles: ["owner", "sales", "designer", "supervisor", "admin"], // All roles see tasks (filtered by role)
     },
     {
       title: "Admin Settings",

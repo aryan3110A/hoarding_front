@@ -325,6 +325,24 @@ export default function Users() {
     return `https://www.google.com/maps?q=${latitude},${longitude}`;
   };
 
+  const getActiveDevices = (item: any) => {
+    if (Array.isArray(item?.activeDevices) && item.activeDevices.length > 0) {
+      return item.activeDevices;
+    }
+
+    return [
+      {
+        deviceId: item?.userId || "primary",
+        deviceName: item?.currentDevice || "-",
+        platform: item?.platform || "-",
+        ip: item?.ip || "-",
+        latitude: item?.latitude ?? null,
+        longitude: item?.longitude ?? null,
+        lastSeen: item?.lastSeen || null,
+      },
+    ].filter((device) => device.deviceName && device.deviceName !== "-");
+  };
+
   if (!user) {
     return (
       <div style={{ textAlign: "center", padding: "40px" }}>
@@ -635,66 +653,137 @@ export default function Users() {
                           item.isLoggedIn ? "badge-success" : "badge-info"
                         }`}
                       >
-                        {item.isLoggedIn ? "Logged In" : "Logged Out"}
+                        {item.isLoggedIn
+                          ? `Logged In${
+                              item.activeDeviceCount > 1
+                                ? ` (${item.activeDeviceCount} devices)`
+                                : ""
+                            }`
+                          : "Logged Out"}
                       </span>
                     </td>
-                    <td>{item.currentDevice || "-"}</td>
-                    <td>{item.platform || "-"}</td>
-                    <td>{item.ip || "-"}</td>
                     <td>
-                      {item.latitude != null && item.longitude != null
-                        ? (() => {
-                            const relativeTime = formatRelativeTime(
-                              item.lastSeen,
-                            );
-
-                            return (
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: "4px",
-                                }}
-                              >
-                                <span>
-                                  {`${formatCoordinate(item.latitude)}, ${formatCoordinate(
-                                    item.longitude,
-                                  )}`}
-                                </span>
-                                {relativeTime ? (
-                                  <span
+                      <div style={{ display: "grid", gap: "8px" }}>
+                        {getActiveDevices(item).length > 0
+                          ? getActiveDevices(item).map((device: any) => (
+                              <div key={device.deviceId}>
+                                <div style={{ fontWeight: 600 }}>
+                                  {device.deviceName || "-"}
+                                </div>
+                                {device.lastSeen ? (
+                                  <div
                                     style={{
                                       fontSize: "12px",
                                       color: "var(--text-secondary)",
+                                      marginTop: "2px",
                                     }}
                                   >
-                                    Last location updated {relativeTime}
-                                  </span>
+                                    Last active {formatRelativeTime(device.lastSeen)}
+                                  </div>
                                 ) : null}
-                                <a
-                                  href={
-                                    buildGoogleMapsUrl(
-                                      item.latitude,
-                                      item.longitude,
-                                    ) || "#"
-                                  }
-                                  target="_blank"
-                                  rel="noreferrer"
+                              </div>
+                            ))
+                          : "-"}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: "grid", gap: "8px" }}>
+                        {getActiveDevices(item).length > 0
+                          ? getActiveDevices(item).map((device: any) => (
+                              <div key={`${device.deviceId}-platform`}>
+                                {device.platform || "-"}
+                              </div>
+                            ))
+                          : "-"}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: "grid", gap: "8px" }}>
+                        {getActiveDevices(item).length > 0
+                          ? getActiveDevices(item).map((device: any) => (
+                              <div key={`${device.deviceId}-ip`}>
+                                {device.ip || "-"}
+                              </div>
+                            ))
+                          : "-"}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: "grid", gap: "8px" }}>
+                        {getActiveDevices(item).length > 0
+                          ? getActiveDevices(item).map((device: any) => {
+                              if (
+                                device.latitude == null ||
+                                device.longitude == null
+                              ) {
+                                return (
+                                  <div key={`${device.deviceId}-coords`}>-</div>
+                                );
+                              }
+
+                              const relativeTime = formatRelativeTime(
+                                device.lastSeen,
+                              );
+
+                              return (
+                                <div
+                                  key={`${device.deviceId}-coords`}
                                   style={{
-                                    color: "var(--primary-color)",
-                                    fontSize: "12px",
-                                    fontWeight: 600,
-                                    textDecoration: "none",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "4px",
                                   }}
                                 >
-                                  Open in Google Maps
-                                </a>
-                              </div>
-                            );
-                          })()
-                        : "-"}
+                                  <span>
+                                    {`${formatCoordinate(device.latitude)}, ${formatCoordinate(
+                                      device.longitude,
+                                    )}`}
+                                  </span>
+                                  {relativeTime ? (
+                                    <span
+                                      style={{
+                                        fontSize: "12px",
+                                        color: "var(--text-secondary)",
+                                      }}
+                                    >
+                                      Last location updated {relativeTime}
+                                    </span>
+                                  ) : null}
+                                  <a
+                                    href={
+                                      buildGoogleMapsUrl(
+                                        device.latitude,
+                                        device.longitude,
+                                      ) || "#"
+                                    }
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                      color: "var(--primary-color)",
+                                      fontSize: "12px",
+                                      fontWeight: 600,
+                                      textDecoration: "none",
+                                    }}
+                                  >
+                                    Open in Google Maps
+                                  </a>
+                                </div>
+                              );
+                            })
+                          : "-"}
+                      </div>
                     </td>
-                    <td>{formatDateTime(item.lastSeen)}</td>
+                    <td>
+                      <div style={{ display: "grid", gap: "8px" }}>
+                        {getActiveDevices(item).length > 0
+                          ? getActiveDevices(item).map((device: any) => (
+                              <div key={`${device.deviceId}-seen`}>
+                                {formatDateTime(device.lastSeen)}
+                              </div>
+                            ))
+                          : formatDateTime(item.lastSeen)}
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -74,7 +74,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Accountant",
       href: "/dashboard/accountant",
       iconName: "Briefcase",
-      roles: ["accountant", "manager", "admin"],
+      roles: ["accountant", "admin"],
     },
     {
       id: "hoardings",
@@ -116,7 +116,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Contracts",
       href: "/contracts",
       iconName: "FileText",
-      roles: ["owner", "manager", "accountant", "admin"],
+      roles: ["owner", "accountant", "admin"],
     },
     {
       id: "sales-status",
@@ -137,7 +137,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Vendors & Landlord",
       href: "/vendors",
       iconName: "DollarSign",
-      roles: ["owner", "manager", "admin"],
+      roles: ["owner", "admin"],
     },
     {
       id: "users",
@@ -151,7 +151,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       title: "Design",
       href: "/design",
       iconName: "Brush",
-      roles: ["manager", "designer", "admin"],
+      roles: ["designer", "admin"],
     },
     {
       id: "reports",
@@ -255,7 +255,11 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       <nav className="navbar">
         <div className="navbar-container">
           {/* Logo and Brand */}
-          <Link href={dashboardHref} className="navbar-brand" aria-label="Go to dashboard">
+          <Link
+            href={dashboardHref}
+            className="navbar-brand"
+            aria-label="Go to dashboard"
+          >
             <img
               src="/LOGO_SHUBHAM_ADVERTISE_FINAL_PNG.png"
               alt="Shubham Advertise"
