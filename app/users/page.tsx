@@ -343,6 +343,36 @@ export default function Users() {
     ].filter((device) => device.deviceName && device.deviceName !== "-");
   };
 
+  const formatPlatformLabel = (platform?: string | null) => {
+    const value = String(platform || "").trim().toLowerCase();
+
+    if (!value) return "-";
+    if (value.includes("iphone") || value.includes("ipad") || value.includes("ios")) {
+      return "iPhone / iOS";
+    }
+    if (value.includes("android")) {
+      return "Android";
+    }
+    if (value.includes("mac")) {
+      return "macOS";
+    }
+    if (value.includes("windows")) {
+      return "Windows";
+    }
+    if (value.includes("linux")) {
+      return "Linux";
+    }
+    if (value.includes("mobile")) {
+      return "Mobile";
+    }
+
+    return value
+      .split(/[_\s-]+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  };
+
   if (!user) {
     return (
       <div style={{ textAlign: "center", padding: "40px" }}>
@@ -692,7 +722,7 @@ export default function Users() {
                         {getActiveDevices(item).length > 0
                           ? getActiveDevices(item).map((device: any) => (
                               <div key={`${device.deviceId}-platform`}>
-                                {device.platform || "-"}
+                                {formatPlatformLabel(device.platform)}
                               </div>
                             ))
                           : "-"}
