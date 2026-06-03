@@ -143,16 +143,6 @@ export default function Bookings() {
           }}
         >
           <h1>Bookings</h1>
-          {canCreateBooking && (
-            <div className="mobile-page-header-actions">
-              <button
-                onClick={() => setShowTokenForm(!showTokenForm)}
-                className="btn btn-primary"
-              >
-                {showTokenForm ? "Cancel" : "Create New Booking"}
-              </button>
-            </div>
-          )}
         </div>
 
         {showTokenForm && canCreateBooking && (
