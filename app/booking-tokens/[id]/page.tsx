@@ -260,6 +260,10 @@ export default function BookingTokenDetailPage() {
       }
     }
 
+    if (!resolved) {
+      resolved = "1";
+    }
+
     setSelectedDurationChoice((prev) => (prev ? prev : resolved));
   }, [token]);
 

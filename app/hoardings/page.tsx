@@ -29,6 +29,8 @@ export default function Hoardings() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const userFromContext = useUser();
   const [user, setUser] = useState<any>(null);
@@ -168,23 +170,27 @@ export default function Hoardings() {
     await fetchHoardings(nextPage, false);
   };
 
-  const handleDelete = async (hoardingId: string) => {
+  const handleDelete = (hoardingId: string) => {
     if (!canDeleteHoarding) return;
+    setDeleteTargetId(hoardingId);
+    setShowDeleteModal(true);
+  };
 
-    const ok = window.confirm("Are you sure you want to delete this hoarding?");
-    if (!ok) return;
-
+  const executeDelete = async (mode: "recycle" | "permanent") => {
+    if (!deleteTargetId) return;
     try {
-      setDeletingId(hoardingId);
-      await hoardingsAPI.delete(hoardingId);
-      showSuccess("Hoarding deleted successfully.");
+      setDeletingId(deleteTargetId);
+      await hoardingsAPI.delete(deleteTargetId, mode);
+      showSuccess(mode === "recycle" ? "Hoarding moved to Recycle Bin." : "Hoarding deleted successfully.");
       setPage(1);
       setHasMore(true);
       await fetchHoardings(1, true);
-    } catch (error) {
-      showError("Failed to delete hoarding. Please try again.");
+    } catch (error: any) {
+      showError(error?.response?.data?.message || "Failed to delete hoarding. Please try again.");
     } finally {
       setDeletingId(null);
+      setDeleteTargetId(null);
+      setShowDeleteModal(false);
     }
   };
 
@@ -321,7 +327,6 @@ export default function Hoardings() {
                   { value: "occupied", label: "Occupied" },
                   { value: "blocked", label: "Blocked" },
                   { value: "booked", label: "Booked" },
-                  { value: "on_rent", label: "On Rent" },
                   { value: "under_process", label: "Under Process" },
                   { value: "live", label: "Live" },
                 ]}
@@ -563,6 +568,67 @@ export default function Hoardings() {
           )}
         </div>
       </div>
+
+      {showDeleteModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10000,
+            padding: "16px"
+          }}
+          onClick={() => setShowDeleteModal(false)}
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: "480px",
+              width: "100%",
+              padding: "24px",
+              background: "white",
+              borderRadius: "16px",
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+              margin: 0
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ marginBottom: "12px", color: "var(--text-primary)" }}>Delete Hoarding</h3>
+            <p style={{ color: "var(--text-secondary)", marginBottom: "20px", fontSize: "14px" }}>
+              How would you like to delete this hoarding? Soft-deleted hoardings go to the Recycle Bin and are automatically purged after 30 days.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <button
+                type="button"
+                className="btn btn-primary w-full"
+                onClick={() => executeDelete("recycle")}
+              >
+                ♻️ Move to Recycle Bin (Soft Delete)
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger w-full"
+                onClick={() => executeDelete("permanent")}
+              >
+                🗑️ Delete Permanently (Hard Delete)
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary w-full"
+                style={{ marginTop: "10px" }}
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }

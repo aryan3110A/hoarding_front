@@ -451,9 +451,26 @@ export default function EditHoarding() {
               <label>Category</label>
               <select
                 value={formData.categoryId}
-                onChange={(e) =>
-                  setFormData({ ...formData, categoryId: e.target.value })
-                }
+                onChange={async (e) => {
+                  const val = e.target.value;
+                  if (val === "ADD_NEW_CATEGORY") {
+                    const name = window.prompt("Enter new category name:");
+                    if (!name || !name.trim()) return;
+                    try {
+                      const res = await categoriesAPI.create({ name: name.trim() });
+                      if (res && res.data) {
+                        const newCat = res.data;
+                        const listRes = await categoriesAPI.list();
+                        setCategories(Array.isArray(listRes?.data) ? listRes.data : []);
+                        setFormData({ ...formData, categoryId: newCat.id });
+                      }
+                    } catch (err: any) {
+                      alert(err?.response?.data?.message || "Failed to create category");
+                    }
+                  } else {
+                    setFormData({ ...formData, categoryId: val });
+                  }
+                }}
               >
                 <option value="">Select category</option>
                 {categories.map((c) => (
@@ -461,6 +478,7 @@ export default function EditHoarding() {
                     {c.name}
                   </option>
                 ))}
+                <option value="ADD_NEW_CATEGORY">✅ ADD A HOARDING CATEGORY</option>
               </select>
             </div>
             <div className="form-group">

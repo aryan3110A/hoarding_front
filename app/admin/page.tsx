@@ -239,58 +239,6 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      {/* Danger Zone */}
-      <div className="card">
-        <h3>Danger Zone</h3>
-        <div style={{ marginTop: 20 }}>
-          <p style={{ color: "var(--text-secondary)", marginBottom: 16 }}>
-            These actions are irreversible. Please proceed with caution.
-          </p>
-          <div
-            className="admin-danger-actions"
-            style={{ display: "flex", gap: 16, flexWrap: "wrap" }}
-          >
-            <button
-              className="btn btn-danger"
-              onClick={() => {
-                if (
-                  confirm(
-                    "Are you sure you want to clear all system cache? This action cannot be undone.",
-                  )
-                ) {
-                  alert(
-                    "Cache cleared! (Demo mode - no actual action performed)",
-                  );
-                }
-              }}
-            >
-              Clear System Cache
-            </button>
-            <button
-              className="btn btn-danger"
-              onClick={() => {
-                if (
-                  confirm(
-                    "Are you sure you want to reset all settings to default? This action cannot be undone.",
-                  )
-                ) {
-                  setSettings({
-                    systemName: "Shubham Advertise",
-                    emailNotifications: true,
-                    smsNotifications: false,
-                    rentReminderDays: 7,
-                    sessionTimeout: 30,
-                  });
-                  alert("Settings reset to default!");
-                }
-              }}
-            >
-              Reset to Defaults
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div
         className="admin-footer-actions"
         style={{ marginTop: 24, display: "flex", gap: 16 }}

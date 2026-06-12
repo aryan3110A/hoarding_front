@@ -80,6 +80,8 @@ export default function ProposalDetailPage() {
         globalDiscountPct: Number(proposal.globalDiscountPct ?? 0),
         includeGst: !!proposal.includeGst,
         gstRatePct: Number(proposal.gstRatePct ?? 18),
+        printingCharges: Number(proposal.printingCharges ?? 0),
+        mountingCharges: Number(proposal.mountingCharges ?? 0),
         hoardings: (proposal.hoardings || []).map((h: any) => ({
           hoardingId: h.hoardingId,
           discountPct: Number(h.discountPct ?? 0),
@@ -240,6 +242,42 @@ export default function ProposalDetailPage() {
             ) : (
               <div className="font-semibold">
                 {String(proposal.gstRatePct ?? 18)}
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="text-xs text-gray-600">Printing Charges (₹)</div>
+            {canEdit ? (
+              <input
+                type="number"
+                value={Number(proposal.printingCharges ?? 0)}
+                onChange={(e) =>
+                  updateProposal({ printingCharges: Number(e.target.value) })
+                }
+                className="border rounded px-2 py-1 text-sm w-32"
+                min={0}
+              />
+            ) : (
+              <div className="font-semibold">
+                {String(proposal.printingCharges ?? 0)}
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="text-xs text-gray-600">Mounting Charges (₹)</div>
+            {canEdit ? (
+              <input
+                type="number"
+                value={Number(proposal.mountingCharges ?? 0)}
+                onChange={(e) =>
+                  updateProposal({ mountingCharges: Number(e.target.value) })
+                }
+                className="border rounded px-2 py-1 text-sm w-32"
+                min={0}
+              />
+            ) : (
+              <div className="font-semibold">
+                {String(proposal.mountingCharges ?? 0)}
               </div>
             )}
           </div>

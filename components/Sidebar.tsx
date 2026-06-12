@@ -91,6 +91,12 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       roles: ["owner", "manager", "sales", "admin"],
     },
     {
+      title: "Client History",
+      href: "/clients/history",
+      icon: "🕰️",
+      roles: ["owner", "manager", "sales", "admin"],
+    },
+    {
       title: "Enquiry Reminders",
       href: "/sales/enquiry-reminders",
       icon: "⏰",
@@ -149,6 +155,12 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       href: "/tasks",
       icon: "✅",
       roles: ["owner", "sales", "designer", "supervisor", "admin"], // All roles see tasks (filtered by role)
+    },
+    {
+      title: "Recycle Bin",
+      href: "/recycle-bin",
+      icon: "♻️",
+      roles: ["owner", "admin"],
     },
     {
       title: "Admin Settings",

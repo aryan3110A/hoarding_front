@@ -234,7 +234,6 @@ const AVAILABILITY_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "blocked", label: "Blocked" },
   { value: "booked", label: "Booked" },
   { value: "under_process", label: "Under Process" },
-  { value: "on_rent", label: "On Rent" },
   { value: "", label: "All" },
 ];
 

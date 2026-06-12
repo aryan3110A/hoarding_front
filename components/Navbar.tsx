@@ -98,6 +98,13 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       roles: ["owner", "manager", "sales", "admin"],
     },
     {
+      id: "client-history",
+      title: "Client History",
+      href: "/clients/history",
+      iconName: "History",
+      roles: ["owner", "manager", "sales", "admin"],
+    },
+    {
       id: "enquiry-reminders",
       title: "Enquiry Reminders",
       href: "/sales/enquiry-reminders",
@@ -159,6 +166,21 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       href: "/reports",
       iconName: "BarChart2",
       roles: ["owner", "manager", "sales", "sales_head", "admin"],
+    },
+    {
+      id: "tasks",
+      title: "Tasks",
+      href: "/tasks",
+      iconName: "CheckSquare",
+      roles: [
+        "owner",
+        "manager",
+        "sales",
+        "designer",
+        "supervisor",
+        "accountant",
+        "admin",
+      ],
     },
     {
       id: "admin-settings",

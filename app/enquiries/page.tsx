@@ -195,6 +195,7 @@ export default function Enquiries() {
     source: "WALK_IN",
     categoryId: "",
     assignedSalesId: "",
+    interestedHoardings: "",
   });
   const [categories, setCategories] = useState<
     Array<{ id: string; name: string }>
@@ -203,6 +204,31 @@ export default function Enquiries() {
     Array<{ id: string; name: string }>
   >([]);
   const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [hoardingsList, setHoardingsList] = useState<any[]>([]);
+
+  const selectedHoardings = useMemo(() => {
+    return formData.interestedHoardings
+      ? formData.interestedHoardings.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+  }, [formData.interestedHoardings]);
+
+  const handleAddHoarding = (code: string) => {
+    if (!code) return;
+    if (selectedHoardings.includes(code)) return;
+    const nextList = [...selectedHoardings, code];
+    setFormData((prev) => ({
+      ...prev,
+      interestedHoardings: nextList.join(","),
+    }));
+  };
+
+  const handleRemoveHoarding = (code: string) => {
+    const nextList = selectedHoardings.filter((c) => c !== code);
+    setFormData((prev) => ({
+      ...prev,
+      interestedHoardings: nextList.join(","),
+    }));
+  };
 
   const [phoneConflictMessage, setPhoneConflictMessage] = useState("");
   const [matchedClientByPhone, setMatchedClientByPhone] = useState<{
@@ -271,6 +297,20 @@ export default function Enquiries() {
         );
       } catch {
         setCityOptions([]);
+      }
+
+      try {
+        const hRes = await hoardingsAPI.getAll({ limit: 1000 });
+        if (hRes?.success && hRes?.data) {
+          const rows = Array.isArray(hRes.data.hoardings)
+            ? hRes.data.hoardings
+            : Array.isArray(hRes.data)
+            ? hRes.data
+            : [];
+          setHoardingsList(rows);
+        }
+      } catch (err) {
+        console.error("Failed to load hoardings for selector:", err);
       }
 
       const roleName = String(getRoleFromUser(user) || "").toLowerCase();
@@ -344,6 +384,7 @@ export default function Enquiries() {
         source: formData.source,
         categoryId: formData.categoryId || undefined,
         assignedSalesId: formData.assignedSalesId || undefined,
+        interestedHoardings: formData.interestedHoardings || undefined,
       };
 
       if (
@@ -371,6 +412,7 @@ export default function Enquiries() {
         source: "WALK_IN",
         categoryId: "",
         assignedSalesId: "",
+        interestedHoardings: "",
       });
       setMatchedClientByPhone(null);
       // If backend returns existing inquiry (owner), it returns 200 with message.
@@ -612,8 +654,10 @@ export default function Enquiries() {
   );
 
   const categoryOptions = useMemo(
-    () =>
-      categories.map((c) => ({ value: String(c.id), label: String(c.name) })),
+    () => [
+      ...categories.map((c) => ({ value: String(c.id), label: String(c.name) })),
+      { value: "ADD_NEW_CATEGORY", label: "✅ ADD A HOARDING CATEGORY" }
+    ],
     [categories],
   );
 
@@ -755,9 +799,25 @@ export default function Enquiries() {
                   <label>Category</label>
                   <StatusDropdown
                     value={formData.categoryId}
-                    onChange={(v) =>
-                      setFormData({ ...formData, categoryId: v })
-                    }
+                    onChange={async (v) => {
+                      if (v === "ADD_NEW_CATEGORY") {
+                        const name = window.prompt("Enter new category name:");
+                        if (!name || !name.trim()) return;
+                        try {
+                          const res = await categoriesAPI.create({ name: name.trim() });
+                          if (res && res.data) {
+                            const newCat = res.data;
+                            const catRes = await categoriesAPI.list();
+                            setCategories(Array.isArray(catRes?.data) ? catRes.data : []);
+                            setFormData((prev) => ({ ...prev, categoryId: newCat.id }));
+                          }
+                        } catch (err: any) {
+                          showError(err?.response?.data?.message || "Failed to create category");
+                        }
+                      } else {
+                        setFormData({ ...formData, categoryId: v });
+                      }
+                    }}
                     placeholder="Select category"
                     options={categoryOptions}
                     buttonClassName="w-full"
@@ -882,6 +942,46 @@ export default function Enquiries() {
                     }
                     required
                   />
+                </div>
+                <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                  <label>Interested Hoardings</label>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {selectedHoardings.map((code) => (
+                      <span
+                        key={code}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-sky-800 text-xs font-semibold"
+                      >
+                        {code}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveHoarding(code)}
+                          className="text-sky-500 hover:text-sky-700 font-bold ml-0.5"
+                          style={{ fontSize: "14px", lineHeight: "1" }}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                    {selectedHoardings.length === 0 && (
+                      <span className="text-xs text-slate-400 italic">No hoardings selected yet.</span>
+                    )}
+                  </div>
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      handleAddHoarding(e.target.value);
+                    }}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none"
+                  >
+                    <option value="">-- Click to Select a Hoarding --</option>
+                    {hoardingsList
+                      .filter((h) => !selectedHoardings.includes(h.code))
+                      .map((h) => (
+                        <option key={h.id} value={h.code}>
+                          {h.code} - {h.landmark || h.area} ({h.city})
+                        </option>
+                      ))}
+                  </select>
                 </div>
                 <div className="form-group" style={{ gridColumn: "1 / -1" }}>
                   <label>Purpose / Notes</label>
@@ -1033,6 +1133,7 @@ export default function Enquiries() {
                     <th>City</th>
                     <th>Area</th>
                     <th>Location</th>
+                    <th>Interested Hoardings</th>
                     <th>First Contact</th>
                     <th>Next Follow-up</th>
                     <th>Follow-up</th>
@@ -1063,6 +1164,22 @@ export default function Enquiries() {
                         <td>{inquiry.city}</td>
                         <td>{inquiry.area}</td>
                         <td>{inquiry.location}</td>
+                        <td>
+                          {inquiry.interestedHoardings ? (
+                            <div className="flex flex-wrap gap-1 max-w-[200px]">
+                              {inquiry.interestedHoardings.split(",").map((h: string) => (
+                                <span
+                                  key={h}
+                                  className="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[10px] font-bold border border-sky-200"
+                                >
+                                  {h}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
                         <td>
                           {inquiry.firstContactDate
                             ? new Date(

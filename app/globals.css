@@ -4,6 +4,18 @@
 p {
   color: rgba(255, 255, 255, 0.8);
 }
+
+.text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.card p {
+  color: var(--text-secondary);
+}
+
+.card p strong {
+  color: var(--text-primary);
+}
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
 @tailwind base;

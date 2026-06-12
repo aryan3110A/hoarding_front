@@ -25,6 +25,7 @@ export default function HoardingDetailPage() {
     email: string;
   }>({ name: "", phone: "", email: "" });
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Load user from context or localStorage
   useEffect(() => {
@@ -126,15 +127,16 @@ export default function HoardingDetailPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this hoarding?")) {
-      return;
-    }
+  const handleDelete = () => {
+    if (!canDeleteHoarding) return;
+    setShowDeleteModal(true);
+  };
 
+  const executeDelete = async (mode: "recycle" | "permanent") => {
     try {
-      const response = await hoardingsAPI.delete(hoardingId);
+      const response = await hoardingsAPI.delete(hoardingId, mode);
       if (response.success) {
-        alert("Hoarding deleted successfully!");
+        alert(mode === "recycle" ? "Hoarding moved to Recycle Bin." : "Hoarding deleted successfully!");
         router.push("/hoardings");
       } else {
         alert("Failed to delete: " + (response.message || "Unknown error"));
@@ -144,6 +146,8 @@ export default function HoardingDetailPage() {
         "Error deleting hoarding: " +
           (error.response?.data?.message || "Unknown error"),
       );
+    } finally {
+      setShowDeleteModal(false);
     }
   };
 
@@ -501,6 +505,66 @@ export default function HoardingDetailPage() {
           </>
         )}
       </div>
+      {showDeleteModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10000,
+            padding: "16px"
+          }}
+          onClick={() => setShowDeleteModal(false)}
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: "480px",
+              width: "100%",
+              padding: "24px",
+              background: "white",
+              borderRadius: "16px",
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+              margin: 0
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ marginBottom: "12px", color: "var(--text-primary)" }}>Delete Hoarding</h3>
+            <p style={{ color: "var(--text-secondary)", marginBottom: "20px", fontSize: "14px" }}>
+              How would you like to delete this hoarding? Soft-deleted hoardings go to the Recycle Bin and are automatically purged after 30 days.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <button
+                type="button"
+                className="btn btn-primary w-full"
+                onClick={() => executeDelete("recycle")}
+              >
+                ♻️ Move to Recycle Bin (Soft Delete)
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger w-full"
+                onClick={() => executeDelete("permanent")}
+              >
+                🗑️ Delete Permanently (Hard Delete)
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary w-full"
+                style={{ marginTop: "10px" }}
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }

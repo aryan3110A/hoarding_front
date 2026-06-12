@@ -211,13 +211,12 @@ export default function NewHoarding() {
     );
   }, [landlords, landlordSearch]);
 
-  const categoryOptions = useMemo(
-    () => [
-      { value: "", label: "Select category" },
+  const categoryOptions = useMemo(() => {
+    return [
       ...categories.map((c) => ({ value: c.id, label: c.name })),
-    ],
-    [categories],
-  );
+      { value: "ADD_NEW_CATEGORY", label: "✅ ADD A HOARDING CATEGORY" }
+    ];
+  }, [categories]);
 
   const ownershipOptions = [
     { value: "Private", label: "Private" },
@@ -725,9 +724,25 @@ export default function NewHoarding() {
               <label>Category</label>
               <CustomSelect
                 value={formData.categoryId}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, categoryId: value }))
-                }
+                onChange={async (value) => {
+                  if (value === "ADD_NEW_CATEGORY") {
+                    const name = window.prompt("Enter new category name:");
+                    if (!name || !name.trim()) return;
+                    try {
+                      const res = await categoriesAPI.create({ name: name.trim() });
+                      if (res && res.data) {
+                        const newCat = res.data;
+                        const listRes = await categoriesAPI.list();
+                        setCategories(Array.isArray(listRes?.data) ? listRes.data : []);
+                        setFormData((prev) => ({ ...prev, categoryId: newCat.id }));
+                      }
+                    } catch (err: any) {
+                      showError(err?.response?.data?.message || "Failed to create category");
+                    }
+                  } else {
+                    setFormData((prev) => ({ ...prev, categoryId: value }));
+                  }
+                }}
                 options={categoryOptions}
                 placeholder="Select category"
               />

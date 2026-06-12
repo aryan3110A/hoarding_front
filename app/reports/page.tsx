@@ -43,6 +43,12 @@ type SalesOverview = {
     activeClients?: number;
     activeHoardings?: number;
     totalEnquiries?: number;
+    dealConversionPct?: number;
+    deadConversionPct?: number;
+    inProcessConversionPct?: number;
+    renewalConversionPct?: number;
+    totalContractsDue?: number;
+    renewedContractsCount?: number;
   };
   enquiryFunnel?: {
     total?: number;
@@ -414,6 +420,26 @@ export default function ReportsPage() {
         label: "Active Hoardings",
         value: String(overview?.summary?.activeHoardings || 0),
         note: "Hoardings contributing revenue",
+      },
+      {
+        label: "Deal Conversion",
+        value: `${overview?.summary?.dealConversionPct ?? 0}%`,
+        note: "Inquiries won / Total inquiries",
+      },
+      {
+        label: "Renewal Conversion",
+        value: `${overview?.summary?.renewalConversionPct ?? 0}%`,
+        note: `${overview?.summary?.renewedContractsCount || 0} renewed out of ${overview?.summary?.totalContractsDue || 0} due`,
+      },
+      {
+        label: "In-Process Conversion",
+        value: `${overview?.summary?.inProcessConversionPct ?? 0}%`,
+        note: "Inquiries currently active",
+      },
+      {
+        label: "Dead/Not Interested",
+        value: `${overview?.summary?.deadConversionPct ?? 0}%`,
+        note: "Inquiries marked dead",
       },
     ],
     [overview],

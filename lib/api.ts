@@ -142,8 +142,8 @@ export const hoardingsAPI = {
     return response.data;
   },
 
-  delete: async (id: string) => {
-    const response = await api.delete(`/hoardings/${id}`);
+  delete: async (id: string, mode?: "recycle" | "permanent") => {
+    const response = await api.delete(`/hoardings/${id}`, { params: { mode } });
     return response.data;
   },
 
@@ -521,6 +521,11 @@ export const clientsAPI = {
     companyName?: string;
   }) => {
     const response = await api.post("/clients", data);
+    return response.data;
+  },
+
+  getHistory: async (id: string) => {
+    const response = await api.get(`/clients/${id}/history`);
     return response.data;
   },
 };
@@ -1223,6 +1228,58 @@ export const locationAPI = {
     endDate?: string;
   }) => {
     const response = await api.get("/location/checkins", { params });
+    return response.data;
+  },
+};
+
+// Recycle Bin API
+export const recycleBinAPI = {
+  list: async () => {
+    const response = await api.get("/recycle-bin");
+    return response.data;
+  },
+  restore: async (id: string) => {
+    const response = await api.post(`/recycle-bin/${id}/restore`);
+    return response.data;
+  },
+  purge: async (id: string) => {
+    const response = await api.delete(`/recycle-bin/${id}`);
+    return response.data;
+  },
+};
+
+// Todos API
+export const todosAPI = {
+  list: async () => {
+    const response = await api.get("/todos");
+    return response.data;
+  },
+  create: async (data: {
+    title: string;
+    description?: string;
+    dueDate?: string;
+    visibility?: string;
+    roleName?: string;
+  }) => {
+    const response = await api.post("/todos", data);
+    return response.data;
+  },
+  update: async (
+    id: string,
+    data: {
+      title?: string;
+      description?: string;
+      dueDate?: string | null;
+      status?: string;
+      visibility?: string;
+      roleName?: string;
+    }
+  ) => {
+    const response = await api.patch(`/todos/${id}`, data);
+    return response.data;
+  },
+  delete: async (id: string) => {
+    const response = await api.delete(`/todos/${id}`);
     return response.data;
   },
 };

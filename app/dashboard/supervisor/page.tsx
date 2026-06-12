@@ -38,6 +38,9 @@ type BoardRow = {
   executionType?: string | null;
   groupKey?: string | null;
   executionImages?: ExecutionImage[];
+  widthCm?: number | null;
+  heightCm?: number | null;
+  type?: string | null;
   supervisorChecklist?: {
     isCorrectSize?: boolean | null;
     isGoodCondition?: boolean | null;
@@ -393,6 +396,88 @@ export default function SupervisorExecutionBoardPage() {
     setPage(1);
   };
 
+  const exportToExcel = () => {
+    const rowsToExport = filteredGroups.flatMap((g) => g.rows);
+    if (!rowsToExport.length) {
+      showError("No data to export");
+      return;
+    }
+
+    const headers = [
+      "Date",
+      "Client Name",
+      "Hoarding ID/Name",
+      "City",
+      "Area/Zone",
+      "Landmark/Location",
+      "Size",
+      "Hoarding Type",
+      "Task Type",
+      "Status",
+      "Notes/Remarks"
+    ];
+
+    const csvRows = [headers.join(",")];
+
+    for (const r of rowsToExport) {
+      const rawDate = activeTab === "unmounting" ? r.expiryDate : r.plannedLiveDate;
+      const dateVal = rawDate ? new Date(String(rawDate)).toLocaleDateString("en-IN") : "-";
+      const clientName = r.clientName || "-";
+      const hoardingCode = r.code || r.id || "-";
+      const city = r.city || "-";
+      const area = r.area || "-";
+      const location = [r.landmark, r.roadName].filter(Boolean).join(", ") || "-";
+
+      let sizeLabel = "-";
+      if (r.widthCm && r.heightCm) {
+        sizeLabel = `${Math.round(r.widthCm / 30.48)}ft x ${Math.round(r.heightCm / 30.48)}ft`;
+      }
+
+      const type = r.type || "-";
+      const taskType = activeTab === "unmounting" ? "Unmount" : "Mount";
+      const statusText = statusStyle(r.executionStatus).text;
+
+      let notes = "-";
+      if (activeTab === "pending" && r.supervisorChecklist) {
+        const c = r.supervisorChecklist;
+        notes = `Size OK: ${c.isCorrectSize ? 'Y' : 'N'}, Cond OK: ${c.isGoodCondition ? 'Y' : 'N'}, Flex: ${c.isFlexReceived ? 'Y' : 'N'}, Ready: ${c.isReadyForInstall ? 'Y' : 'N'}`;
+      }
+
+      const formatCSVCell = (str: string) => {
+        const escaped = String(str).replace(/"/g, '""');
+        return `"${escaped}"`;
+      };
+
+      const line = [
+        dateVal,
+        clientName,
+        hoardingCode,
+        city,
+        area,
+        location,
+        sizeLabel,
+        type,
+        taskType,
+        statusText,
+        notes
+      ].map(formatCSVCell).join(",");
+
+      csvRows.push(line);
+    }
+
+    const csvContent = "\uFEFF" + csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    const filename = `${activeTab === "unmounting" ? "unmounting" : "mounting"}_list_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const hasActiveFilters =
     cityFilter ||
     statusFilter ||
@@ -694,18 +779,47 @@ export default function SupervisorExecutionBoardPage() {
             </div>
 
             {/* Summary Card */}
-            <div className="card" style={{ marginBottom: "14px" }}>
-              <strong>
-                {activeTab === "pending"
-                  ? "Total Pending Clients:"
-                  : activeTab === "live"
-                    ? "Total Live Clients:"
-                    : activeTab === "remounting"
-                      ? "Total Re-mounting Clients:"
-                      : "Total Unmounting Cities:"}
-              </strong>{" "}
-              {filteredGroups.length}
-              &nbsp; | &nbsp; <strong>No. of Hoardings:</strong> {visibleRows}
+            <div
+              className="card"
+              style={{
+                marginBottom: "14px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 12,
+              }}
+            >
+              <div>
+                <strong>
+                  {activeTab === "pending"
+                    ? "Total Pending Clients:"
+                    : activeTab === "live"
+                      ? "Total Live Clients:"
+                      : activeTab === "remounting"
+                        ? "Total Re-mounting Clients:"
+                        : "Total Unmounting Cities:"}
+                </strong>{" "}
+                {filteredGroups.length}
+                &nbsp; | &nbsp; <strong>No. of Hoardings:</strong> {visibleRows}
+              </div>
+              {(activeTab === "pending" || activeTab === "unmounting") && (
+                <button
+                  onClick={exportToExcel}
+                  className="btn btn-secondary"
+                  style={{
+                    fontSize: 13,
+                    padding: "6px 12px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontWeight: 600,
+                  }}
+                >
+                  📥 Export to Excel
+                </button>
+              )}
             </div>
 
             {/* Data Table */}
