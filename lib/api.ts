@@ -383,6 +383,29 @@ export const proposalsAPI = {
     });
     return response;
   },
+
+  requestRateApproval: async (
+    proposalId: string,
+    data: { hoardingId: string; proposedRate: number; reason: string; remarks?: string },
+  ) => {
+    const response = await api.post(`/proposals/${proposalId}/rate-approval`, data);
+    return response.data;
+  },
+
+  listPendingRateApprovals: async () => {
+    const response = await api.get("/proposals/rate-approvals/pending");
+    return response.data;
+  },
+
+  approveRateApproval: async (requestId: string, remarks?: string) => {
+    const response = await api.post(`/proposals/rate-approvals/${requestId}/approve`, { remarks });
+    return response.data;
+  },
+
+  rejectRateApproval: async (requestId: string, remarks?: string) => {
+    const response = await api.post(`/proposals/rate-approvals/${requestId}/reject`, { remarks });
+    return response.data;
+  },
 };
 
 // Users API

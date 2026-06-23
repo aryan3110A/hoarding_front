@@ -54,6 +54,16 @@ export default function ProposalDetailPage() {
 
   const canEdit = proposal?.status === "DRAFT" && roleName === "sales";
 
+  const belowMinHoardings = useMemo(() => {
+    return (proposal?.hoardings || []).filter((h: any) => {
+      if (h.rateApprovalStatus === "PENDING_APPROVAL" || h.rateApprovalStatus === "REJECTED") return true;
+      const min = Number(h.hoarding?.minimumRate || 0);
+      const final = Number(h.finalRate || 0);
+      if (min > 0 && final < min && h.rateApprovalStatus !== "APPROVED") return true;
+      return false;
+    });
+  }, [proposal]);
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -87,6 +97,8 @@ export default function ProposalDetailPage() {
           discountPct: Number(h.discountPct ?? 0),
           illumination: !!h.illumination,
           illuminationCost: Number(h.illuminationCost ?? 0),
+          printingRate: Number(h.printingRate ?? 0),
+          mountingRate: Number(h.mountingRate ?? 0),
         })),
       });
       setProposal(resp.data);
@@ -152,14 +164,21 @@ export default function ProposalDetailPage() {
               </button>
               <button
                 onClick={generatePdf}
-                disabled={acting}
+                disabled={acting || belowMinHoardings.length > 0}
                 className="px-3 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
               >
                 {acting ? "Generating..." : "Generate PDF"}
               </button>
               <button
-                onClick={() => router.push(`/proposals/${id}/finalize`)}
-                className="px-3 py-2 rounded bg-green-600 text-white"
+                onClick={() => {
+                  if (belowMinHoardings.length > 0) {
+                    alert("Cannot finalize proposal with pending or rejected below-minimum rate approvals.");
+                    return;
+                  }
+                  router.push(`/proposals/${id}/finalize`);
+                }}
+                disabled={belowMinHoardings.length > 0}
+                className="px-3 py-2 rounded bg-green-600 text-white disabled:opacity-50"
               >
                 Finalize Hoardings
               </button>
@@ -168,6 +187,20 @@ export default function ProposalDetailPage() {
         </div>
       </div>
 
+      {belowMinHoardings.length > 0 && (
+        <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900">
+          <div className="flex items-center gap-2 font-semibold text-amber-800 text-sm">
+            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>Below-Minimum Rate Warning ({belowMinHoardings.length} hoarding(s))</span>
+          </div>
+          <p className="text-xs text-amber-700 mt-1">
+            This proposal contains rates that are below the standard minimum rate. PDF generation, finalizing, and sending are blocked until all rate approval requests are approved by Owner/Manager.
+          </p>
+        </div>
+      )}
+ 
       <div className="bg-white border rounded p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
@@ -307,7 +340,10 @@ export default function ProposalDetailPage() {
               <th className="text-left p-2">Discount %</th>
               <th className="text-left p-2">Illum</th>
               <th className="text-left p-2">Illum Cost</th>
-              <th className="text-left p-2">Final Rate</th>
+              <th className="text-right p-2">Print Rate (₹)</th>
+              <th className="text-right p-2">Mount Rate (₹)</th>
+              <th className="text-right p-2">Final Rate</th>
+              <th className="text-left p-2">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -367,19 +403,20 @@ export default function ProposalDetailPage() {
                   {canEdit ? (
                     <input
                       type="number"
-                      value={Number(h.illuminationCost ?? 0)}
-                      onChange={(e) =>
+                      value={h.illuminationCost ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
                         updateProposal({
                           hoardings: (proposal.hoardings || []).map((x: any) =>
                             x.id === h.id
                               ? {
                                   ...x,
-                                  illuminationCost: Number(e.target.value),
+                                  illuminationCost: val === "" ? "" : Number(val),
                                 }
                               : x,
                           ),
-                        })
-                      }
+                        });
+                      }}
                       className="w-28 border rounded px-2 py-1 text-sm"
                       min={0}
                       step={0.01}
@@ -389,12 +426,71 @@ export default function ProposalDetailPage() {
                     <span>{String(h.illuminationCost ?? 0)}</span>
                   )}
                 </td>
-                <td className="p-2">{String(h.finalRate ?? "0")}</td>
+                <td className="p-2 text-right">
+                  {canEdit ? (
+                    <input
+                      type="number"
+                      value={h.printingRate ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateProposal({
+                          hoardings: (proposal.hoardings || []).map((x: any) =>
+                            x.id === h.id
+                              ? {
+                                  ...x,
+                                  printingRate: val === "" ? "" : Number(val),
+                                }
+                              : x,
+                          ),
+                        });
+                      }}
+                      className="w-24 border rounded px-2 py-1 text-sm text-right"
+                      min={0}
+                    />
+                  ) : (
+                    <span>{String(h.printingRate ?? 0)}</span>
+                  )}
+                </td>
+                <td className="p-2 text-right">
+                  {canEdit ? (
+                    <input
+                      type="number"
+                      value={h.mountingRate ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateProposal({
+                          hoardings: (proposal.hoardings || []).map((x: any) =>
+                            x.id === h.id
+                              ? {
+                                  ...x,
+                                  mountingRate: val === "" ? "" : Number(val),
+                                }
+                              : x,
+                          ),
+                        });
+                      }}
+                      className="w-24 border rounded px-2 py-1 text-sm text-right"
+                      min={0}
+                    />
+                  ) : (
+                    <span>{String(h.mountingRate ?? 0)}</span>
+                  )}
+                </td>
+                <td className="p-2 text-right">{String(h.finalRate ?? "0")}</td>
+                <td className="p-2">
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                    h.rateApprovalStatus === "PENDING_APPROVAL" ? "bg-amber-100 text-amber-800" :
+                    h.rateApprovalStatus === "REJECTED" ? "bg-rose-100 text-rose-800" :
+                    h.rateApprovalStatus === "APPROVED" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-800"
+                  }`}>
+                    {h.rateApprovalStatus || "APPROVED"}
+                  </span>
+                </td>
               </tr>
             ))}
             {(proposal.hoardings || []).length === 0 ? (
               <tr>
-                <td className="p-3 text-gray-500" colSpan={9}>
+                <td className="p-3 text-gray-500" colSpan={12}>
                   No hoardings
                 </td>
               </tr>

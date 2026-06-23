@@ -194,7 +194,7 @@ export default function OptionAutocomplete({
         ? createPortal(
             <div
               ref={menuRef}
-              className="fixed z-[9999] rounded-xl border border-slate-200 bg-white shadow-lg"
+              className="fixed z-[20000] rounded-xl border border-slate-200 bg-white shadow-lg"
               onWheel={(e) => e.stopPropagation()}
               style={{
                 top: menuRect.top,

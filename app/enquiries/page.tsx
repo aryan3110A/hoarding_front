@@ -129,7 +129,7 @@ function StatusDropdown({
             <div
               ref={menuRef}
               role="listbox"
-              className="fixed z-[9999] overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg"
+              className="fixed z-[20000] overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg"
               style={{ top: pos.top, left: pos.left, width: pos.width }}
             >
               {options.map((opt) => {
@@ -205,6 +205,82 @@ export default function Enquiries() {
   >([]);
   const [cityOptions, setCityOptions] = useState<string[]>([]);
   const [hoardingsList, setHoardingsList] = useState<any[]>([]);
+
+  // Advanced Hoarding Search Modal States
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [modalFilters, setModalFilters] = useState({
+    code: "",
+    city: "",
+    area: "",
+    landmark: "",
+    type: "",
+    size: "",
+    availability: "",
+  });
+  const [modalHoardings, setModalHoardings] = useState<any[]>([]);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalTotal, setModalTotal] = useState(0);
+  const [modalPage, setModalPage] = useState(1);
+  const MODAL_PAGE_SIZE = 10;
+  const [landmarkOptions, setLandmarkOptions] = useState<string[]>([]);
+
+  // City-filtered area and landmark options derived from hoardingsList
+  const filteredAreaOptions = useMemo(() => {
+    const city = modalFilters.city.trim().toLowerCase();
+    const source = city
+      ? hoardingsList.filter((h: any) => String(h.city || "").toLowerCase() === city)
+      : hoardingsList;
+    return Array.from(
+      new Set(source.map((h: any) => String(h.area || "").trim()).filter(Boolean))
+    ).sort();
+  }, [hoardingsList, modalFilters.city]);
+
+  const filteredLandmarkOptions = useMemo(() => {
+    const city = modalFilters.city.trim().toLowerCase();
+    const source = city
+      ? hoardingsList.filter((h: any) => String(h.city || "").toLowerCase() === city)
+      : hoardingsList;
+    return Array.from(
+      new Set(source.map((h: any) => String(h.landmark || "").trim()).filter(Boolean))
+    ).sort();
+  }, [hoardingsList, modalFilters.city]);
+
+  const loadModalHoardings = async (nextPage: number) => {
+    setModalLoading(true);
+    try {
+      const resp = await hoardingsAPI.getAll({
+        page: nextPage,
+        limit: MODAL_PAGE_SIZE,
+        location: modalFilters.code || undefined,
+        city: modalFilters.city || undefined,
+        area: modalFilters.area || undefined,
+        landmark: modalFilters.landmark || undefined,
+        type: modalFilters.type || undefined,
+        size: modalFilters.size || undefined,
+        availability: modalFilters.availability || undefined,
+      });
+      const payload = resp?.data || {};
+      const rows = Array.isArray(payload.hoardings) ? payload.hoardings : [];
+      setModalHoardings(rows);
+      setModalTotal(Number(payload.total || 0));
+      setModalPage(Number(payload.page || nextPage));
+    } catch (e) {
+      console.error(e);
+      setModalHoardings([]);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const toggleModalHoarding = (h: any) => {
+    const code = h.code;
+    if (!code) return;
+    if (selectedHoardings.includes(code)) {
+      handleRemoveHoarding(code);
+    } else {
+      handleAddHoarding(code);
+    }
+  };
 
   const selectedHoardings = useMemo(() => {
     return formData.interestedHoardings
@@ -311,6 +387,15 @@ export default function Enquiries() {
         }
       } catch (err) {
         console.error("Failed to load hoardings for selector:", err);
+      }
+
+      try {
+        const landmarksRes = await hoardingsAPI.getLandmarks();
+        setLandmarkOptions(
+          Array.isArray(landmarksRes?.data) ? landmarksRes.data.map(String) : [],
+        );
+      } catch {
+        setLandmarkOptions([]);
       }
 
       const roleName = String(getRoleFromUser(user) || "").toLowerCase();
@@ -966,22 +1051,27 @@ export default function Enquiries() {
                       <span className="text-xs text-slate-400 italic">No hoardings selected yet.</span>
                     )}
                   </div>
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      handleAddHoarding(e.target.value);
-                    }}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none"
-                  >
-                    <option value="">-- Click to Select a Hoarding --</option>
-                    {hoardingsList
-                      .filter((h) => !selectedHoardings.includes(h.code))
-                      .map((h) => (
-                        <option key={h.id} value={h.code}>
-                          {h.code} - {h.landmark || h.area} ({h.city})
-                        </option>
-                      ))}
-                  </select>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSearchModalOpen(true);
+                        setModalFilters({
+                          code: "",
+                          city: "",
+                          area: "",
+                          landmark: "",
+                          type: "",
+                          size: "",
+                          availability: "",
+                        });
+                        setTimeout(() => loadModalHoardings(1), 50);
+                      }}
+                      className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold transition"
+                    >
+                      🔍 Search & Select Hoardings
+                    </button>
+                  </div>
                 </div>
                 <div className="form-group" style={{ gridColumn: "1 / -1" }}>
                   <label>Purpose / Notes</label>
@@ -1373,6 +1463,245 @@ export default function Enquiries() {
           )}
         </div>
       </div>
+
+      {isSearchModalOpen && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200">
+            {/* Modal Header */}
+            <div className="p-4 border-b flex items-center justify-between bg-slate-50 text-slate-800">
+              <h3 className="text-lg font-semibold">🔍 Advanced Hoarding Search</h3>
+              <button
+                type="button"
+                onClick={() => setIsSearchModalOpen(false)}
+                className="text-slate-500 hover:text-slate-700 text-2xl font-bold leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Filters */}
+            <div className="p-4 border-b bg-slate-50/50 grid grid-cols-1 sm:grid-cols-4 gap-3 text-slate-800">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Code / Keyword</label>
+                <input
+                  type="text"
+                  value={modalFilters.code}
+                  onChange={(e) => setModalFilters(p => ({ ...p, code: e.target.value }))}
+                  className="w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none"
+                  placeholder="Search code..."
+                />
+              </div>
+              <div className="relative">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">City</label>
+                <OptionAutocomplete
+                  value={modalFilters.city}
+                  onChange={(val) => setModalFilters(p => ({ ...p, city: val, area: "", landmark: "" }))}
+                  options={cityOptions}
+                  placeholder="Select city"
+                  className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-400/30 bg-white"
+                />
+              </div>
+              <div className="relative">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Area
+                </label>
+                <OptionAutocomplete
+                  value={modalFilters.area}
+                  onChange={(val) => setModalFilters(p => ({ ...p, area: val }))}
+                  options={filteredAreaOptions}
+                  placeholder="Search area..."
+                  className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-400/30 bg-white"
+                />
+              </div>
+              <div className="relative">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Landmark
+                </label>
+                <OptionAutocomplete
+                  value={modalFilters.landmark}
+                  onChange={(val) => setModalFilters(p => ({ ...p, landmark: val }))}
+                  options={filteredLandmarkOptions}
+                  placeholder="Select landmark"
+                  className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-400/30 bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Type</label>
+                <StatusDropdown
+                  value={modalFilters.type}
+                  onChange={(val) => setModalFilters(p => ({ ...p, type: val }))}
+                  placeholder="All Types"
+                  matchButtonWidth
+                  buttonClassName="w-full text-xs"
+                  options={[
+                    { value: "", label: "All Types" },
+                    { value: "Lit", label: "Lit" },
+                    { value: "Non-Lit", label: "Non-Lit" },
+                  ]}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Size</label>
+                <StatusDropdown
+                  value={modalFilters.size}
+                  onChange={(val) => setModalFilters(p => ({ ...p, size: val }))}
+                  placeholder="Any Size"
+                  matchButtonWidth
+                  buttonClassName="w-full text-xs"
+                  options={[
+                    { value: "", label: "Any Size" },
+                    { value: "10x20", label: "10x20" },
+                    { value: "10x30", label: "10x30" },
+                    { value: "10x40", label: "10x40" },
+                    { value: "12x24", label: "12x24" },
+                    { value: "20x40", label: "20x40" },
+                    { value: "20x50", label: "20x50" },
+                    { value: "30x40", label: "30x40" },
+                    { value: "30x60", label: "30x60" },
+                  ]}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Availability</label>
+                <StatusDropdown
+                  value={modalFilters.availability}
+                  onChange={(val) => setModalFilters(p => ({ ...p, availability: val }))}
+                  placeholder="All Status"
+                  matchButtonWidth
+                  buttonClassName="w-full text-xs"
+                  options={[
+                    { value: "", label: "All Status" },
+                    { value: "available", label: "Available" },
+                    { value: "occupied", label: "Occupied" },
+                    { value: "blocked", label: "Blocked" },
+                    { value: "booked", label: "Booked" },
+                    { value: "under_process", label: "Under Process" },
+                    { value: "live", label: "Live" },
+                  ]}
+                />
+              </div>
+              <div className="flex items-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => loadModalHoardings(1)}
+                  className="flex-1 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold"
+                >
+                  Search
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalFilters({
+                      code: "",
+                      city: "",
+                      area: "",
+                      landmark: "",
+                      type: "",
+                      size: "",
+                      availability: "",
+                    });
+                    loadModalHoardings(1);
+                  }}
+                  className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-semibold"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Results */}
+            <div className="flex-1 overflow-auto p-4 text-slate-800">
+              {modalLoading ? (
+                <div className="text-center py-8 text-sm">Searching...</div>
+              ) : modalHoardings.length > 0 ? (
+                <table className="w-full text-xs text-left border-collapse">
+                  <thead>
+                    <tr className="border-b bg-slate-50 text-slate-600 uppercase font-semibold">
+                      <th className="p-2 text-center w-12">Select</th>
+                      <th className="p-2">Code</th>
+                      <th className="p-2">City</th>
+                      <th className="p-2">Area / Location</th>
+                      <th className="p-2">Landmark</th>
+                      <th className="p-2">Dimensions</th>
+                      <th className="p-2">Type</th>
+                      <th className="p-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {modalHoardings.map((h: any) => {
+                      const isSelected = selectedHoardings.includes(h.code);
+                      return (
+                        <tr key={h.id} className="border-b hover:bg-slate-50/50">
+                          <td className="p-2 text-center">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleModalHoarding(h)}
+                              className="accent-sky-600"
+                            />
+                          </td>
+                          <td className="p-2 font-semibold text-slate-900">{h.code}</td>
+                          <td className="p-2">{h.city || "—"}</td>
+                          <td className="p-2">{h.area || "—"}</td>
+                          <td className="p-2">{h.landmark || "—"}</td>
+                          <td className="p-2">
+                            {h.widthCm && h.heightCm
+                              ? `${Math.round(h.widthCm / 30.48)}ft x ${Math.round(h.heightCm / 30.48)}ft`
+                              : "—"}
+                          </td>
+                          <td className="p-2">{h.type || "—"}</td>
+                          <td className="p-2">
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              String(h.status).toLowerCase() === "available" ? "bg-emerald-100 text-emerald-800" :
+                              String(h.status).toLowerCase() === "booked" ? "bg-rose-100 text-rose-800" : "bg-amber-100 text-amber-800"
+                            }`}>
+                              {String(h.status).toUpperCase()}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center py-8 text-sm text-slate-500">No hoardings found. Try broadening your filters.</div>
+              )}
+            </div>
+
+            {/* Modal Pagination / Footer */}
+            <div className="p-4 border-t bg-slate-50 flex items-center justify-between">
+              <div className="text-xs text-slate-500">
+                Page <strong>{modalPage}</strong> of {Math.max(1, Math.ceil(modalTotal / MODAL_PAGE_SIZE))} · {modalTotal} result(s)
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => loadModalHoardings(Math.max(1, modalPage - 1))}
+                  disabled={modalLoading || modalPage <= 1}
+                  className="px-3 py-1.5 border rounded-lg text-xs font-semibold hover:bg-white disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  onClick={() => loadModalHoardings(Math.min(Math.ceil(modalTotal / MODAL_PAGE_SIZE), modalPage + 1))}
+                  disabled={modalLoading || modalPage >= Math.ceil(modalTotal / MODAL_PAGE_SIZE)}
+                  className="px-3 py-1.5 border rounded-lg text-xs font-semibold hover:bg-white disabled:opacity-50"
+                >
+                  Next
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsSearchModalOpen(false)}
+                  className="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold transition ml-4"
+                >
+                  Done ({selectedHoardings.length})
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }

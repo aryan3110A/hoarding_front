@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useUser } from "@/components/AppLayout";
 import OptionAutocomplete from "@/components/OptionAutocomplete";
@@ -50,6 +50,28 @@ export default function Hoardings() {
   const [cityOptions, setCityOptions] = useState<string[]>([]);
   const [landmarkOptions, setLandmarkOptions] = useState<string[]>([]);
   const [typeOptions, setTypeOptions] = useState<string[]>([]);
+  const [hoardingsList, setHoardingsList] = useState<any[]>([]);
+
+  // City-filtered area and landmark options derived from hoardingsList
+  const filteredAreaOptions = useMemo(() => {
+    const city = filters.city.trim().toLowerCase();
+    const source = city
+      ? hoardingsList.filter((h: any) => String(h.city || "").toLowerCase() === city)
+      : hoardingsList;
+    return Array.from(
+      new Set(source.map((h: any) => String(h.area || "").trim()).filter(Boolean))
+    ).sort();
+  }, [hoardingsList, filters.city]);
+
+  const filteredLandmarkOptions = useMemo(() => {
+    const city = filters.city.trim().toLowerCase();
+    const source = city
+      ? hoardingsList.filter((h: any) => String(h.city || "").toLowerCase() === city)
+      : hoardingsList;
+    return Array.from(
+      new Set(source.map((h: any) => String(h.landmark || "").trim()).filter(Boolean))
+    ).sort();
+  }, [hoardingsList, filters.city]);
 
   const userRole = getRoleFromUser(user);
   const canCreateHoarding = canCreate(userRole, "hoardings");
@@ -90,26 +112,29 @@ export default function Hoardings() {
   useEffect(() => {
     const loadAutocompleteData = async () => {
       try {
-        const [citiesRes, landmarksRes, typesRes] = await Promise.all([
+        const [citiesRes, typesRes, hRes] = await Promise.all([
           hoardingsAPI.getCities(),
-          hoardingsAPI.getLandmarks(),
           hoardingsAPI.getTypes(),
+          hoardingsAPI.getAll({ limit: 1000 }),
         ]);
         setCityOptions(
           Array.isArray(citiesRes?.data) ? citiesRes.data.map(String) : [],
         );
-        setLandmarkOptions(
-          Array.isArray(landmarksRes?.data)
-            ? landmarksRes.data.map(String)
-            : [],
-        );
         setTypeOptions(
           Array.isArray(typesRes?.data) ? typesRes.data.map(String) : [],
         );
+        if (hRes?.success && hRes?.data) {
+          const rows = Array.isArray(hRes.data.hoardings)
+            ? hRes.data.hoardings
+            : Array.isArray(hRes.data)
+            ? hRes.data
+            : [];
+          setHoardingsList(rows);
+        }
       } catch {
         setCityOptions([]);
-        setLandmarkOptions([]);
         setTypeOptions([]);
+        setHoardingsList([]);
       }
     };
 
@@ -275,7 +300,7 @@ export default function Hoardings() {
               <OptionAutocomplete
                 value={filters.city}
                 onChange={(value) =>
-                  setFilters((prev) => ({ ...prev, city: value }))
+                  setFilters((prev) => ({ ...prev, city: value, area: "", landmark: "" }))
                 }
                 options={cityOptions}
                 placeholder="Filter by city"
@@ -287,13 +312,14 @@ export default function Hoardings() {
               <label style={{ display: "block", marginBottom: "6px" }}>
                 Area / Zone
               </label>
-              <input
-                type="text"
+              <OptionAutocomplete
                 value={filters.area}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, area: e.target.value }))
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, area: value }))
                 }
+                options={filteredAreaOptions}
                 placeholder="Filter by area"
+                className="w-full border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-md"
               />
             </div>
 
@@ -306,7 +332,7 @@ export default function Hoardings() {
                 onChange={(value) =>
                   setFilters((prev) => ({ ...prev, landmark: value }))
                 }
-                options={landmarkOptions}
+                options={filteredLandmarkOptions}
                 placeholder="Filter by landmark"
                 className="w-full border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-md"
               />

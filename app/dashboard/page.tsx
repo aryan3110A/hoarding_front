@@ -51,6 +51,9 @@ function DashboardContent() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [sendingReminders, setSendingReminders] = useState(false);
+  const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
+  const [actingApprovalId, setActingApprovalId] = useState<string | null>(null);
+  const [approverRemarks, setApproverRemarks] = useState<Record<string, string>>({});
 
   // Sales-specific data
   const [salesStats, setSalesStats] = useState<any>(null);
@@ -97,26 +100,66 @@ function DashboardContent() {
   const user = useUser();
   const router = useRouter();
 
+  const handleApproveRate = async (reqId: string) => {
+    setActingApprovalId(reqId);
+    try {
+      const remarks = approverRemarks[reqId] || "";
+      const resp = await proposalsAPI.approveRateApproval(reqId, remarks);
+      if (resp.success) {
+        showSuccess("Rate approved successfully");
+        await fetchDashboardData();
+      } else {
+        showError(resp.message || "Failed to approve");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to approve");
+    } finally {
+      setActingApprovalId(null);
+    }
+  };
+
+  const handleRejectRate = async (reqId: string) => {
+    const reason = prompt("Please enter the reason for rejection:");
+    if (reason === null) return;
+    if (!reason.trim()) {
+      alert("Rejection reason is required.");
+      return;
+    }
+    setActingApprovalId(reqId);
+    try {
+      const resp = await proposalsAPI.rejectRateApproval(reqId, reason);
+      if (resp.success) {
+        showSuccess("Rate rejected successfully");
+        await fetchDashboardData();
+      } else {
+        showError(resp.message || "Failed to reject");
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.message || "Failed to reject");
+    } finally {
+      setActingApprovalId(null);
+    }
+  };
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       const userRole = user?.role?.toLowerCase() || "";
       console.log("Fetching dashboard data for role:", userRole);
 
-      // Owner/Manager: Fetch rent overview
+      // Owner/Manager: Fetch rent overview and pending rate approvals
       if (["owner", "manager", "admin"].includes(userRole)) {
         try {
-          const response = await dashboardAPI.getOwnerDashboard();
-          console.log("Dashboard API response:", response);
-          if (response && response.success && response.data) {
-            setStats(response.data);
-            setUpcomingDues(response.data.upcomingDues || []);
+          const [ownerDashboardRes, pendingApprovalsRes] = await Promise.allSettled([
+            dashboardAPI.getOwnerDashboard(),
+            proposalsAPI.listPendingRateApprovals()
+          ]);
+
+          if (ownerDashboardRes.status === "fulfilled" && ownerDashboardRes.value?.success) {
+            const data = ownerDashboardRes.value.data;
+            setStats(data);
+            setUpcomingDues(data.upcomingDues || []);
           } else {
-            console.warn(
-              "Dashboard API returned unexpected response:",
-              response,
-            );
-            // If response is not successful, set empty stats
             setStats({
               totalHoardingsOnRent: 0,
               totalRentAmount: 0,
@@ -124,14 +167,21 @@ function DashboardContent() {
             });
             setUpcomingDues([]);
           }
+
+          if (pendingApprovalsRes.status === "fulfilled" && pendingApprovalsRes.value?.success) {
+            setPendingApprovals(pendingApprovalsRes.value.data || []);
+          } else {
+            setPendingApprovals([]);
+          }
         } catch (error) {
-          console.error("Failed to fetch owner dashboard:", error);
+          console.error("Failed to fetch owner dashboard data:", error);
           setStats({
             totalHoardingsOnRent: 0,
             totalRentAmount: 0,
             totalAnnualizedRent: 0,
           });
           setUpcomingDues([]);
+          setPendingApprovals([]);
         }
       }
       // Sales: Fetch hoardings, bookings, enquiries stats
@@ -1430,6 +1480,119 @@ function DashboardContent() {
                 </div>
               </div>
             )}
+
+            {/* Pending Rate Approvals */}
+            <div className="card" style={{ marginTop: "24px" }}>
+              <h3 style={{ display: "flex", alignItems: "center", gap: "8px", color: "#fff" }}>
+                <span>📋 Pending Rate Approvals</span>
+                <span className="badge badge-warning" style={{ fontSize: "12px", padding: "2px 8px" }}>
+                  {pendingApprovals.length} Request(s)
+                </span>
+              </h3>
+
+              {pendingApprovals.length > 0 ? (
+                <div style={{ overflowX: "auto" }}>
+                  <table className="table" style={{ width: "100%", color: "#fff" }}>
+                    <thead>
+                      <tr>
+                        <th>View Proposal</th>
+                        <th>Client</th>
+                        <th>Hoarding Code</th>
+                        <th>Std Rate</th>
+                        <th>Min Rate</th>
+                        <th>Proposed Rate</th>
+                        <th>Difference</th>
+                        <th>Sales Reason</th>
+                        <th>Action Note</th>
+                        <th style={{ textAlign: "right" }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingApprovals.map((req: any) => {
+                        const standardRate = Number(req.hoarding?.standardRate || 0);
+                        const minimumRate = Number(req.hoarding?.minimumRate || 0);
+                        const proposedRate = Number(req.proposedRate || 0);
+                        const diff = minimumRate - proposedRate;
+
+                        return (
+                          <tr key={req.id}>
+                            <td>
+                              <button
+                                className="btn-link"
+                                style={{ color: "#38bdf8", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+                                onClick={() => router.push(`/proposals/${req.proposalId}`)}
+                              >
+                                View
+                              </button>
+                            </td>
+                            <td>
+                              <div><strong>{req.proposal?.client?.name || "N/A"}</strong></div>
+                              <div style={{ fontSize: "11px", color: "#94a3b8" }}>{req.proposal?.client?.phone}</div>
+                            </td>
+                            <td>
+                              <div><strong>{req.hoarding?.code || "N/A"}</strong></div>
+                              <div style={{ fontSize: "11px", color: "#94a3b8" }}>{[req.hoarding?.city, req.hoarding?.area].filter(Boolean).join(", ")}</div>
+                            </td>
+                            <td>₹{standardRate.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                            <td>₹{minimumRate.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                            <td style={{ color: "#fbbf24", fontWeight: "bold" }}>₹{proposedRate.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                            <td style={{ color: "#f87171" }}>-₹{diff.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                            <td style={{ maxWidth: "200px", whiteSpace: "normal", fontSize: "12px" }}>
+                              {req.reason}
+                              {req.remarks && (
+                                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>Note: {req.remarks}</div>
+                              )}
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                placeholder="Add optional note..."
+                                value={approverRemarks[req.id] || ""}
+                                onChange={(e) => setApproverRemarks(prev => ({ ...prev, [req.id]: e.target.value }))}
+                                style={{
+                                  background: "#0f172a",
+                                  border: "1px solid #475569",
+                                  borderRadius: "6px",
+                                  padding: "4px 8px",
+                                  fontSize: "12px",
+                                  color: "#fff",
+                                  width: "140px"
+                                }}
+                                disabled={actingApprovalId === req.id}
+                              />
+                            </td>
+                            <td style={{ textAlign: "right" }}>
+                              <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                                <button
+                                  className="btn btn-success"
+                                  style={{ padding: "4px 8px", fontSize: "12px", backgroundColor: "#22c55e", borderColor: "#22c55e", color: "#fff" }}
+                                  onClick={() => handleApproveRate(req.id)}
+                                  disabled={actingApprovalId === req.id}
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  className="btn btn-danger"
+                                  style={{ padding: "4px 8px", fontSize: "12px", backgroundColor: "#ef4444", borderColor: "#ef4444", color: "#fff" }}
+                                  onClick={() => handleRejectRate(req.id)}
+                                  disabled={actingApprovalId === req.id}
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "24px 0", color: "#94a3b8" }}>
+                  No pending rate approval requests.
+                </div>
+              )}
+            </div>
           </>
         )}
 

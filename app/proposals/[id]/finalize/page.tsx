@@ -33,6 +33,54 @@ export default function FinalizeProposalPage() {
   >({});
   const [submitting, setSubmitting] = useState(false);
 
+  // Below-minimum rate approval states
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  const [approvalModalData, setApprovalModalData] = useState<{
+    proposalId: string;
+    hoardingId: string;
+    hoardingCode: string;
+    proposedRate: number;
+    minimumRate: number;
+    standardRate: number;
+  } | null>(null);
+  const [approvalReason, setApprovalReason] = useState("");
+  const [approvalRemarks, setApprovalRemarks] = useState("");
+  const [submittingApproval, setSubmittingApproval] = useState(false);
+
+  const handleRequestApproval = (h: any) => {
+    const hid = String(h.hoardingId || "");
+    const enteredRate = Number(finalRates[hid] ?? h.finalRate ?? 0);
+    const min = Number(h.hoarding?.minimumRate || 0);
+    const std = Number(h.baseRate || h.hoarding?.standardRate || 0);
+    setApprovalModalData({
+      proposalId: id,
+      hoardingId: hid,
+      hoardingCode: h.hoardingCode || h.hoarding?.code || "",
+      proposedRate: enteredRate,
+      minimumRate: min,
+      standardRate: std,
+    });
+    setIsApprovalModalOpen(true);
+  };
+
+  const isBelowMinAndNotApproved = (h: any) => {
+    const hid = String(h.hoardingId || "");
+    const enteredRate = Number(finalRates[hid] ?? h.finalRate ?? 0);
+    const min = Number(h.hoarding?.minimumRate || 0);
+
+    // If there's no minimum rate set, or the entered rate is >= minimum, never flag it
+    if (min <= 0 || enteredRate >= min) {
+      return false;
+    }
+
+    // Rate IS below minimum — only block if not yet approved
+    return h.rateApprovalStatus !== "APPROVED";
+  };
+
+  const belowMinHoardings = useMemo(() => {
+    return (proposal?.hoardings || []).filter(isBelowMinAndNotApproved);
+  }, [proposal, finalRates]);
+
   const canFinalize = roleName === "sales";
 
   const isNonFinalizable = (statusRaw: unknown) => {
@@ -285,6 +333,11 @@ export default function FinalizeProposalPage() {
       return;
     }
 
+    if (belowMinHoardings.length > 0) {
+      showError("Cannot finalize proposal with pending or rejected below-minimum rate approvals.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const resp = await proposalsAPI.finalize(id, {
@@ -352,6 +405,32 @@ export default function FinalizeProposalPage() {
               {proposal.client?.name} ({proposal.client?.phone})
             </div>
 
+            {belowMinHoardings.length > 0 && (
+              <div className="mb-4 p-4 rounded-xl border border-amber-200 bg-amber-50 text-sm text-amber-900">
+                <div className="flex items-center gap-2 font-semibold text-amber-800">
+                  <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>Below-Minimum Rate Warning ({belowMinHoardings.length} hoarding(s))</span>
+                </div>
+                <div className="text-xs text-amber-700 mt-1">
+                  The following hoardings have rates below the standard minimum rate and are not approved. Finalization is blocked until approved by Owner/Manager.
+                </div>
+                <ul className="list-disc pl-5 mt-2 text-xs text-amber-800 space-y-1">
+                  {belowMinHoardings.map((h: any) => {
+                    const hid = String(h.hoardingId || "");
+                    const rate = Number(finalRates[hid] ?? h.finalRate ?? 0);
+                    const min = Number(h.hoarding?.minimumRate || 0);
+                    return (
+                      <li key={h.id}>
+                        <span className="font-semibold">{h.hoardingCode}</span>: Entered ₹{rate.toFixed(2)} (Min: ₹{min.toFixed(2)}) · Status: <span className="font-semibold">{h.rateApprovalStatus || "PENDING_APPROVAL"}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
             <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
               Need to include more hoardings for this same client? Use{" "}
               <span className="font-semibold">Add Hoarding</span> to reopen the
@@ -391,6 +470,8 @@ export default function FinalizeProposalPage() {
                     <th className="text-left p-2">City</th>
                     <th className="text-left p-2">Location</th>
                     <th className="text-left p-2">Status</th>
+                    <th className="text-right p-2">Min Rate</th>
+                    <th className="text-left p-2">Approval</th>
                     <th className="text-right p-2">Final Rate</th>
                     <th className="text-right p-2">Actions</th>
                   </tr>
@@ -427,6 +508,18 @@ export default function FinalizeProposalPage() {
                           </span>
                         </td>
                         <td className="p-2 text-right">
+                          {Number(h.hoarding?.minimumRate || 0).toFixed(2)}
+                        </td>
+                        <td className="p-2 text-left">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            h.rateApprovalStatus === "PENDING_APPROVAL" ? "bg-amber-100 text-amber-800" :
+                            h.rateApprovalStatus === "REJECTED" ? "bg-rose-100 text-rose-800" :
+                            h.rateApprovalStatus === "APPROVED" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-800"
+                          }`}>
+                            {h.rateApprovalStatus || "APPROVED"}
+                          </span>
+                        </td>
+                        <td className="p-2 text-right">
                           <div className="text-sm font-semibold">
                             {Number(pricing.perRowPayable?.[hid] ?? 0).toFixed(
                               2,
@@ -457,7 +550,16 @@ export default function FinalizeProposalPage() {
                           </div>
                         </td>
                         <td className="p-2 text-right">
-                          <div className="flex justify-end gap-2">
+                          <div className="flex justify-end gap-2 items-center">
+                            {status !== "blocked" && isBelowMinAndNotApproved(h) && (
+                              <button
+                                type="button"
+                                onClick={() => handleRequestApproval(h)}
+                                className="px-2.5 py-1.5 rounded bg-amber-600 text-white hover:bg-amber-700 text-xs font-semibold shrink-0"
+                              >
+                                Request Approval
+                              </button>
+                            )}
                             <button
                               type="button"
                               disabled={
@@ -465,14 +567,15 @@ export default function FinalizeProposalPage() {
                                 rowBusy ||
                                 status === "booked" ||
                                 status === "live" ||
-                                status === "under_process"
+                                status === "under_process" ||
+                                (status !== "blocked" && isBelowMinAndNotApproved(h))
                               }
                               onClick={() =>
                                 status === "blocked"
                                   ? unblockHoarding(hid)
                                   : blockHoarding(hid)
                               }
-                              className="px-2.5 py-1.5 rounded bg-slate-600 text-white hover:bg-slate-700 disabled:opacity-50"
+                              className="px-2.5 py-1.5 rounded bg-slate-600 text-white hover:bg-slate-700 disabled:opacity-50 shrink-0"
                             >
                               {rowActionLoading[hid] === "blocking"
                                 ? status === "blocked"
@@ -502,7 +605,7 @@ export default function FinalizeProposalPage() {
               </div>
               <button
                 onClick={confirm}
-                disabled={!canFinalize || submitting}
+                disabled={!canFinalize || submitting || belowMinHoardings.length > 0}
                 className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
               >
                 {submitting ? "Finalizing..." : "Confirm Finalize"}
@@ -511,6 +614,100 @@ export default function FinalizeProposalPage() {
           </div>
         )}
       </div>
+
+      {/* Rate Approval Modal */}
+      {isApprovalModalOpen && approvalModalData && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 text-slate-900 border border-slate-200 shadow-2xl space-y-4">
+            <h2 className="text-xl font-semibold border-b pb-2">Request Rate Approval</h2>
+            <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
+              <div>Client: <span className="font-semibold text-slate-800">{proposal?.client?.name || "Client"}</span></div>
+              <div>Hoarding: <span className="font-semibold text-slate-800">{approvalModalData.hoardingCode}</span></div>
+              <div>Standard Rate: <span className="font-semibold text-slate-800">₹{approvalModalData.standardRate.toFixed(2)}</span></div>
+              <div>Minimum Rate: <span className="font-semibold text-slate-800">₹{approvalModalData.minimumRate.toFixed(2)}</span></div>
+              <div className="col-span-2 text-amber-700 font-semibold border-t pt-1 mt-1">
+                Proposed Rate: ₹{approvalModalData.proposedRate.toFixed(2)} (Difference: -₹{(approvalModalData.minimumRate - approvalModalData.proposedRate).toFixed(2)})
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Reason for offering below minimum rate *
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Enter reason..."
+                  value={approvalReason}
+                  onChange={(e) => setApprovalReason(e.target.value)}
+                  className="w-full border rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Remarks / Supporting Note (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Enter optional remarks..."
+                  value={approvalRemarks}
+                  onChange={(e) => setApprovalRemarks(e.target.value)}
+                  className="w-full border rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t pt-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsApprovalModalOpen(false);
+                  setApprovalModalData(null);
+                  setApprovalReason("");
+                  setApprovalRemarks("");
+                }}
+                className="px-4 py-2 border rounded-xl text-sm font-semibold hover:bg-slate-50"
+                disabled={submittingApproval}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!approvalReason.trim()) {
+                    alert("Please enter a reason.");
+                    return;
+                  }
+                  setSubmittingApproval(true);
+                  try {
+                    await proposalsAPI.requestRateApproval(approvalModalData.proposalId, {
+                      hoardingId: approvalModalData.hoardingId,
+                      proposedRate: approvalModalData.proposedRate,
+                      reason: approvalReason,
+                      remarks: approvalRemarks,
+                    });
+                    showSuccess("Approval request submitted!");
+                    await loadProposal();
+                    setIsApprovalModalOpen(false);
+                    setApprovalModalData(null);
+                    setApprovalReason("");
+                    setApprovalRemarks("");
+                  } catch (e: any) {
+                    showError(e?.response?.data?.message || "Failed to submit approval request");
+                  } finally {
+                    setSubmittingApproval(false);
+                  }
+                }}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                disabled={submittingApproval}
+              >
+                {submittingApproval ? "Submitting..." : "Submit Request"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }

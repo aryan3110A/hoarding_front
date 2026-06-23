@@ -70,6 +70,9 @@ type SelectedHoarding = {
   discountPct: number;
   illumination: boolean;
   illuminationCost: number;
+  printingRate: number;
+  mountingRate: number;
+  rateApprovalStatus?: string;
 };
 
 const toFtLabel = (widthCm?: number | null, heightCm?: number | null) => {
@@ -289,6 +292,44 @@ export default function ProposalBuilder({
   } | null>(null);
   const [portalReady, setPortalReady] = useState(false);
 
+  // Below-minimum rate approval states
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  const [approvalModalData, setApprovalModalData] = useState<{
+    proposalId: string;
+    hoardingId: string;
+    hoardingCode: string;
+    proposedRate: number;
+    minimumRate: number;
+    standardRate: number;
+  } | null>(null);
+  const [approvalReason, setApprovalReason] = useState("");
+  const [approvalRemarks, setApprovalRemarks] = useState("");
+  const [submittingApproval, setSubmittingApproval] = useState(false);
+
+  const handleRequestApproval = async (hoarding: SelectedHoarding) => {
+    let id: string = activeProposalId;
+    if (!id) {
+      const createdId = await createOrUpdateDraft();
+      if (!createdId) return;
+      id = createdId;
+      router.replace(`/proposals/${id}/edit`);
+    }
+    const final = computeFinalRate({
+      baseRate: hoarding.baseRate,
+      discountPct: hoarding.discountPct,
+      illuminationCost: hoarding.illumination ? hoarding.illuminationCost : 0,
+    });
+    setApprovalModalData({
+      proposalId: id,
+      hoardingId: hoarding.hoardingId,
+      hoardingCode: hoarding.hoardingCode || "",
+      proposedRate: final,
+      minimumRate: hoarding.minimumRate,
+      standardRate: hoarding.baseRate,
+    });
+    setIsApprovalModalOpen(true);
+  };
+
   const [filters, setFilters] = useState({
     city: "",
     area: "",
@@ -318,6 +359,18 @@ export default function ProposalBuilder({
 
   const [selected, setSelected] = useState<SelectedHoarding[]>([]);
 
+  const belowMinHoardings = useMemo(() => {
+    return selected.filter((s) => {
+      if (mode !== "WITH_RATE") return false;
+      const final = computeFinalRate({
+        baseRate: s.baseRate,
+        discountPct: s.discountPct,
+        illuminationCost: s.illumination ? s.illuminationCost : 0,
+      });
+      return final < s.minimumRate && s.rateApprovalStatus !== "APPROVED";
+    });
+  }, [selected, mode]);
+
   const selectedAreaSqFt = useMemo(
     () =>
       (selected || []).reduce(
@@ -326,8 +379,19 @@ export default function ProposalBuilder({
       ),
     [selected],
   );
-  const printingChargesTotal = Math.max(0, printingCharges) * selectedAreaSqFt;
-  const mountingChargesTotal = Math.max(0, mountingCharges) * selectedAreaSqFt;
+  const printingChargesTotal = useMemo(() => {
+    return selected.reduce(
+      (sum, s) => sum + getAreaSqFtFromSelection(s) * (s.printingRate || 0),
+      0,
+    );
+  }, [selected]);
+
+  const mountingChargesTotal = useMemo(() => {
+    return selected.reduce(
+      (sum, s) => sum + getAreaSqFtFromSelection(s) * (s.mountingRate || 0),
+      0,
+    );
+  }, [selected]);
 
   const persistDraftToLocal = () => {
     try {
@@ -805,6 +869,9 @@ export default function ProposalBuilder({
             discountPct: 0,
             illumination: false,
             illuminationCost: 0,
+            printingRate: printingCharges,
+            mountingRate: mountingCharges,
+            rateApprovalStatus: "APPROVED",
           });
         }
       }
@@ -863,6 +930,9 @@ export default function ProposalBuilder({
           discountPct: 0,
           illumination: false,
           illuminationCost: 0,
+          printingRate: printingCharges,
+          mountingRate: mountingCharges,
+          rateApprovalStatus: "APPROVED",
         },
       ];
     });
@@ -873,12 +943,38 @@ export default function ProposalBuilder({
     patch: Partial<
       Pick<
         SelectedHoarding,
-        "discountPct" | "illumination" | "illuminationCost"
+        | "discountPct"
+        | "illumination"
+        | "illuminationCost"
+        | "printingRate"
+        | "mountingRate"
+        | "rateApprovalStatus"
       >
     >,
   ) => {
     setSelected((prev) =>
-      prev.map((s) => (s.hoardingId === hoardingId ? { ...s, ...patch } : s)),
+      prev.map((s) => {
+        if (s.hoardingId !== hoardingId) return s;
+        const next = { ...s, ...patch };
+        const final = computeFinalRate({
+          baseRate: next.baseRate,
+          discountPct: next.discountPct,
+          illuminationCost: next.illumination ? next.illuminationCost : 0,
+        });
+        if (final < next.minimumRate) {
+          const prevFinal = computeFinalRate({
+            baseRate: s.baseRate,
+            discountPct: s.discountPct,
+            illuminationCost: s.illumination ? s.illuminationCost : 0,
+          });
+          if (final !== prevFinal) {
+            next.rateApprovalStatus = "PENDING_APPROVAL";
+          }
+        } else {
+          next.rateApprovalStatus = "APPROVED";
+        }
+        return next;
+      }),
     );
   };
 
@@ -894,7 +990,9 @@ export default function ProposalBuilder({
             : 0,
         });
         if (line < Math.max(0, s.minimumRate || 0)) {
-          return `Final rate for ${s.hoardingCode || "selected hoarding"} cannot be below minimum rate`;
+          if (s.rateApprovalStatus !== "APPROVED") {
+            return `Final rate for ${s.hoardingCode || "selected hoarding"} is below minimum rate. Rate approval is required.`;
+          }
         }
       }
     }
@@ -903,16 +1001,15 @@ export default function ProposalBuilder({
 
   const getClientPayload = () => {
     if (!selectedClient) return null;
-    if (!selectedClient.phone) return null;
     return {
-      name: selectedClient.name,
-      phone: String(selectedClient.phone),
+            name: selectedClient.name,
+      phone: String(selectedClient.phone || ""),
       email: selectedClient.email || undefined,
       companyName: selectedClient.companyName || undefined,
     };
   };
 
-  const createOrUpdateDraft = async () => {
+  const createOrUpdateDraft = async (options?: { validateRates?: boolean }) => {
     const client = getClientPayload();
     if (!client) {
       alert("Select a client");
@@ -923,10 +1020,12 @@ export default function ProposalBuilder({
       return null;
     }
 
-    const pricingError = validatePricing();
-    if (pricingError) {
-      alert(pricingError);
-      return null;
+    if (options?.validateRates) {
+      const pricingError = validatePricing();
+      if (pricingError) {
+        alert(pricingError);
+        return null;
+      }
     }
 
     setSaving(true);
@@ -947,6 +1046,8 @@ export default function ProposalBuilder({
           discountPct: clampPctLocal(s.discountPct),
           illumination: s.illumination,
           illuminationCost: Math.max(0, s.illuminationCost),
+          printingRate: Math.max(0, s.printingRate || 0),
+          mountingRate: Math.max(0, s.mountingRate || 0),
         })),
       };
 
@@ -980,7 +1081,7 @@ export default function ProposalBuilder({
   const handleGeneratePdf = async () => {
     setActing(true);
     try {
-      const id = await createOrUpdateDraft();
+      const id = await createOrUpdateDraft({ validateRates: true });
       if (!id) return;
 
       const selectedBeforeGenerate = [...selected];
@@ -1233,14 +1334,6 @@ export default function ProposalBuilder({
                 ) : null}
               </div>
 
-              {/* <div className="flex items-center gap-3 px-1">
-                <span className="h-px flex-1 bg-slate-300/70" />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                  
-                </span>
-                <span className="h-px flex-1 bg-slate-300/70" />
-              </div> */}
-
               <div className="bg-white/95  backdrop-blur rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(15,23,42,0.12)] p-4 text-slate-900 relative z-10">
                 <h2 className="font-semibold mb-1 text-slate-900">
                   Proposal Settings
@@ -1287,7 +1380,7 @@ export default function ProposalBuilder({
                       type="number"
                       min={0}
                       max={discountType === "PERCENT" ? 100 : undefined}
-                      value={discountValue}
+                      value={discountValue === 0 ? "" : discountValue}
                       onChange={(e) =>
                         setDiscountValue(
                           discountType === "PERCENT"
@@ -1305,10 +1398,14 @@ export default function ProposalBuilder({
                     <input
                       type="number"
                       min={0}
-                      value={printingCharges}
-                      onChange={(e) =>
-                        setPrintingCharges(Math.max(0, toMoney(e.target.value)))
-                      }
+                      value={printingCharges === 0 ? "" : printingCharges}
+                      onChange={(e) => {
+                        const val = Math.max(0, toMoney(e.target.value));
+                        setPrintingCharges(val);
+                        setSelected((prev) =>
+                          prev.map((s) => ({ ...s, printingRate: val }))
+                        );
+                      }}
                       className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                     />
                     <div className="mt-1 text-xs text-slate-500">
@@ -1324,10 +1421,14 @@ export default function ProposalBuilder({
                     <input
                       type="number"
                       min={0}
-                      value={mountingCharges}
-                      onChange={(e) =>
-                        setMountingCharges(Math.max(0, toMoney(e.target.value)))
-                      }
+                      value={mountingCharges === 0 ? "" : mountingCharges}
+                      onChange={(e) => {
+                        const val = Math.max(0, toMoney(e.target.value));
+                        setMountingCharges(val);
+                        setSelected((prev) =>
+                          prev.map((s) => ({ ...s, mountingRate: val }))
+                        );
+                      }}
                       className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                     />
                     <div className="mt-1 text-xs text-slate-500">
@@ -1706,7 +1807,7 @@ export default function ProposalBuilder({
             </div>
 
             <div className="mt-4 bg-white/95 backdrop-blur rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(15,23,42,0.12)] p-4 text-slate-900 pb-2">
-              <div className="flex items-center justify-between ">
+              <div className="flex items-center justify-between mb-3">
                 <h2 className="font-semibold text-slate-900">
                   Selected Hoardings
                 </h2>
@@ -1714,6 +1815,49 @@ export default function ProposalBuilder({
                   Number of Proposal: {selected.length}
                 </div>
               </div>
+
+              {belowMinHoardings.length > 0 && (
+                <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-slate-900 space-y-2">
+                  <div className="flex items-center gap-2 text-amber-800 font-semibold text-sm">
+                    <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>Below-Minimum Rate Warning ({belowMinHoardings.length} hoarding(s))</span>
+                  </div>
+                  <div className="text-xs text-amber-700">
+                    The following hoardings have rates below their standard minimum. They must be submitted for approval and approved by a Manager/Owner before this proposal can be finalized.
+                  </div>
+                  <div className="divide-y divide-amber-100 text-xs">
+                    {belowMinHoardings.map((h) => {
+                      const final = computeFinalRate({
+                        baseRate: h.baseRate,
+                        discountPct: h.discountPct,
+                        illuminationCost: h.illumination ? h.illuminationCost : 0,
+                      });
+                      const diff = h.minimumRate - final;
+                      return (
+                        <div key={h.hoardingId} className="py-2 flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <span className="font-semibold text-slate-800">{h.hoardingCode}</span> - {h.location}
+                            <div className="text-slate-500">
+                              Standard: <span className="font-medium">₹{h.baseRate.toFixed(2)}</span> · Min: <span className="font-medium">₹{h.minimumRate.toFixed(2)}</span> · Proposed: <span className="font-medium text-amber-800">₹{final.toFixed(2)}</span> · Diff: <span className="font-medium text-rose-600">-₹{diff.toFixed(2)}</span>
+                            </div>
+                          </div>
+                          {h.rateApprovalStatus !== "PENDING_APPROVAL" && (
+                            <button
+                              type="button"
+                              onClick={() => handleRequestApproval(h)}
+                              className="px-3 py-1 bg-amber-605 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold transition"
+                            >
+                              Request Approval
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-3 overflow-auto border border-slate-200 rounded-2xl">
                 <table className="w-full text-sm">
@@ -1730,9 +1874,14 @@ export default function ProposalBuilder({
                           <th className="text-center p-2">Illum</th>
                           <th className="text-right p-2">Illum Cost</th>
                           <th className="text-right p-2">Final</th>
+                          <th className="text-right p-2">Print Rate (₹/sqft)</th>
+                          <th className="text-right p-2">Print Chg</th>
+                          <th className="text-right p-2">Mount Rate (₹/sqft)</th>
+                          <th className="text-right p-2">Mount Chg</th>
                           {includeGst ? (
                             <th className="text-right p-2">GST</th>
                           ) : null}
+                          <th className="text-left p-2">Status</th>
                         </>
                       ) : (
                         <>
@@ -1756,6 +1905,9 @@ export default function ProposalBuilder({
                       const gstAmt = includeGst
                         ? Math.max(0, final) * (clampPctLocal(gstRatePct) / 100)
                         : 0;
+                      const sqft = getAreaSqFtFromSelection(s);
+                      const printCharges = sqft * (s.printingRate || 0);
+                      const mountCharges = sqft * (s.mountingRate || 0);
 
                       return (
                         <tr
@@ -1778,7 +1930,7 @@ export default function ProposalBuilder({
                                   type="number"
                                   min={0}
                                   max={100}
-                                  value={s.discountPct}
+                                  value={s.discountPct === 0 ? "" : s.discountPct}
                                   onChange={(e) =>
                                     updateSelected(s.hoardingId, {
                                       discountPct: clampPctLocal(
@@ -1786,7 +1938,7 @@ export default function ProposalBuilder({
                                       ),
                                     })
                                   }
-                                  className="w-24 border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                                  className="w-20 border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                                 />
                               </td>
                               <td className="p-2 text-center">
@@ -1805,7 +1957,7 @@ export default function ProposalBuilder({
                                 <input
                                   type="number"
                                   min={0}
-                                  value={s.illuminationCost}
+                                  value={s.illuminationCost === 0 ? "" : s.illuminationCost}
                                   onChange={(e) =>
                                     updateSelected(s.hoardingId, {
                                       illuminationCost: Math.max(
@@ -1815,17 +1967,64 @@ export default function ProposalBuilder({
                                     })
                                   }
                                   disabled={!s.illumination}
-                                  className="w-28 border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 disabled:opacity-60"
+                                  className="w-24 border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 disabled:opacity-60"
                                 />
                               </td>
-                              <td className="p-2 text-right">
+                              <td className="p-2 text-right text-slate-900 font-medium">
                                 {Math.max(0, final).toFixed(2)}
+                              </td>
+                              <td className="p-2 text-right">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={s.printingRate === 0 ? "" : s.printingRate}
+                                  onChange={(e) =>
+                                    updateSelected(s.hoardingId, {
+                                      printingRate: Math.max(
+                                        0,
+                                        toMoney(e.target.value),
+                                      ),
+                                    })
+                                  }
+                                  className="w-20 border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                                />
+                              </td>
+                              <td className="p-2 text-right text-slate-600">
+                                {printCharges.toFixed(2)}
+                              </td>
+                              <td className="p-2 text-right">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={s.mountingRate === 0 ? "" : s.mountingRate}
+                                  onChange={(e) =>
+                                    updateSelected(s.hoardingId, {
+                                      mountingRate: Math.max(
+                                        0,
+                                        toMoney(e.target.value),
+                                      ),
+                                    })
+                                  }
+                                  className="w-20 border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                                />
+                              </td>
+                              <td className="p-2 text-right text-slate-600">
+                                {mountCharges.toFixed(2)}
                               </td>
                               {includeGst ? (
                                 <td className="p-2 text-right">
                                   {gstAmt.toFixed(2)}
                                 </td>
                               ) : null}
+                              <td className="p-2 text-left">
+                                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                  s.rateApprovalStatus === "PENDING_APPROVAL" ? "bg-amber-100 text-amber-800" :
+                                  s.rateApprovalStatus === "REJECTED" ? "bg-rose-100 text-rose-800" :
+                                  s.rateApprovalStatus === "APPROVED" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-800"
+                                }`}>
+                                  {s.rateApprovalStatus || "APPROVED"}
+                                </span>
+                              </td>
                             </>
                           ) : (
                             <>
@@ -1838,22 +2037,20 @@ export default function ProposalBuilder({
                                       illumination: e.target.checked,
                                     })
                                   }
+                                  className="accent-blue-600"
                                 />
                               </td>
                             </>
                           )}
-
                           <td className="p-2 text-right">
                             <button
                               type="button"
-                              onClick={() =>
+                              onClick={() => {
                                 setSelected((prev) =>
-                                  prev.filter(
-                                    (x) => x.hoardingId !== s.hoardingId,
-                                  ),
-                                )
-                              }
-                              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm"
+                                  prev.filter((item) => item.hoardingId !== s.hoardingId)
+                                );
+                              }}
+                              className="text-rose-600 hover:text-rose-800 transition"
                             >
                               Remove
                             </button>
@@ -1861,34 +2058,106 @@ export default function ProposalBuilder({
                         </tr>
                       );
                     })}
-
-                    {selected.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={
-                            mode === "WITH_RATE" ? (includeGst ? 11 : 10) : 5
-                          }
-                          className="p-4 text-center text-gray-500"
-                        >
-                          No hoardings selected yet.
-                        </td>
-                      </tr>
-                    ) : null}
                   </tbody>
                 </table>
               </div>
-
-              {mode === "WITH_RATE" ? (
-                <div className="mt-3 text-xs text-gray-600">
-                  PDF includes standard rate, GST, discount, final rate,
-                  printing, mounting, and grand total.
-                </div>
-              ) : (
-                <div className="mt-3 text-xs text-gray-600">
-                  WITHOUT_RATE mode: rates are hidden in the PDF table.
-                </div>
-              )}
             </div>
+
+            {/* Rate Approval Modal */}
+            {isApprovalModalOpen && approvalModalData && (
+              <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                <div className="bg-white rounded-2xl max-w-lg w-full p-6 text-slate-900 border border-slate-200 shadow-2xl space-y-4">
+                  <h2 className="text-xl font-semibold border-b pb-2">Request Rate Approval</h2>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
+                    <div>Client: <span className="font-semibold text-slate-800">{selectedClient?.name}</span></div>
+                    <div>Hoarding: <span className="font-semibold text-slate-800">{approvalModalData.hoardingCode}</span></div>
+                    <div>Standard Rate: <span className="font-semibold text-slate-800">₹{approvalModalData.standardRate.toFixed(2)}</span></div>
+                    <div>Minimum Rate: <span className="font-semibold text-slate-800">₹{approvalModalData.minimumRate.toFixed(2)}</span></div>
+                    <div className="col-span-2 text-amber-700 font-semibold border-t pt-1 mt-1">
+                      Proposed Rate: ₹{approvalModalData.proposedRate.toFixed(2)} (Difference: -₹{(approvalModalData.minimumRate - approvalModalData.proposedRate).toFixed(2)})
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Reason for offering below minimum rate *
+                      </label>
+                      <textarea
+                        rows={3}
+                        required
+                        placeholder="Enter reason..."
+                        value={approvalReason}
+                        onChange={(e) => setApprovalReason(e.target.value)}
+                        className="w-full border rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Remarks / Supporting Note (Optional)
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder="Enter optional remarks..."
+                        value={approvalRemarks}
+                        onChange={(e) => setApprovalRemarks(e.target.value)}
+                        className="w-full border rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 border-t pt-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsApprovalModalOpen(false);
+                        setApprovalModalData(null);
+                        setApprovalReason("");
+                        setApprovalRemarks("");
+                      }}
+                      className="px-4 py-2 border rounded-xl text-sm font-semibold hover:bg-slate-50"
+                      disabled={submittingApproval}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!approvalReason.trim()) {
+                          alert("Please enter a reason.");
+                          return;
+                        }
+                        setSubmittingApproval(true);
+                        try {
+                          await proposalsAPI.requestRateApproval(approvalModalData.proposalId, {
+                            hoardingId: approvalModalData.hoardingId,
+                            proposedRate: approvalModalData.proposedRate,
+                            reason: approvalReason,
+                            remarks: approvalRemarks,
+                          });
+                          showSuccess("Approval request submitted!");
+                          updateSelected(approvalModalData.hoardingId, {
+                            rateApprovalStatus: "PENDING_APPROVAL",
+                          });
+                          setIsApprovalModalOpen(false);
+                          setApprovalModalData(null);
+                          setApprovalReason("");
+                          setApprovalRemarks("");
+                        } catch (e: any) {
+                          showError(e?.response?.data?.message || "Failed to submit approval request");
+                        } finally {
+                          setSubmittingApproval(false);
+                        }
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-indigo-700"
+                      disabled={submittingApproval}
+                    >
+                      {submittingApproval ? "Submitting..." : "Submit Request"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
