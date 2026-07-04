@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
 import AccessDenied from "@/components/AccessDenied";
 import { dashboardAPI, enquiriesAPI } from "@/lib/api";
@@ -245,6 +246,7 @@ const downloadCsv = (filename: string, rows: string[][]) => {
 };
 
 export default function ReportsPage() {
+  const searchParams = useSearchParams();
   const user = useUser();
   const role = String(user?.role || "")
     .toLowerCase()
@@ -283,9 +285,21 @@ export default function ReportsPage() {
   const [savingMarketVisit, setSavingMarketVisit] = useState(false);
 
   useEffect(() => {
+    const spId = searchParams?.get("salespersonId");
+    const sd = searchParams?.get("startDate");
+    const ed = searchParams?.get("endDate");
+    const gb = searchParams?.get("groupBy");
+    if (spId) setSalespersonId(spId);
+    if (sd) setStartDate(sd);
+    if (ed) setEndDate(ed);
+    if (gb === "day" || gb === "month") setGroupBy(gb);
+  }, [searchParams]);
+
+  useEffect(() => {
     if (!user?.id || role !== "sales") return;
-    setSalespersonId(user.id);
-  }, [role, user?.id]);
+    const fromUrl = searchParams?.get("salespersonId");
+    if (!fromUrl) setSalespersonId(user.id);
+  }, [role, user?.id, searchParams]);
 
   useEffect(() => {
     if (!user?.id || !canAccess || !isManagement) return;

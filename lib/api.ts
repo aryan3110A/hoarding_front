@@ -632,12 +632,12 @@ export const enquiriesAPI = {
     assignedToMe?: boolean;
     status?: "OPEN" | "LOCKED" | "CLOSED" | string;
     performanceStage?:
-      | "IN_PROCESS"
-      | "WON"
-      | "FOLLOW_UP_LATER"
-      | "DEAD"
-      | "NOT_INTERESTED"
-      | string;
+    | "IN_PROCESS"
+    | "WON"
+    | "FOLLOW_UP_LATER"
+    | "DEAD"
+    | "NOT_INTERESTED"
+    | string;
     createdByRole?: "owner" | "sales" | string;
   }) => {
     // Backend supports both /enquiries and /inquiries; prefer /inquiries.
@@ -663,20 +663,20 @@ export const enquiriesAPI = {
     nextFollowupDate?: string;
     followupStatus?: "PENDING" | "DONE";
     performanceStage?:
-      | "IN_PROCESS"
-      | "WON"
-      | "FOLLOW_UP_LATER"
-      | "DEAD"
-      | "NOT_INTERESTED"
-      | string;
+    | "IN_PROCESS"
+    | "WON"
+    | "FOLLOW_UP_LATER"
+    | "DEAD"
+    | "NOT_INTERESTED"
+    | string;
     source:
-      | "WALK_IN"
-      | "SELF_GENERATED"
-      | "VIA_TELEPHONIC"
-      | "VIA_WHATSAPP"
-      | "REFERENCE"
-      | "OTHERS"
-      | string;
+    | "WALK_IN"
+    | "SELF_GENERATED"
+    | "VIA_TELEPHONIC"
+    | "VIA_WHATSAPP"
+    | "REFERENCE"
+    | "OTHERS"
+    | string;
     assignedSalesId?: string;
     categoryId?: string;
   }) => {
@@ -699,11 +699,11 @@ export const enquiriesAPI = {
       nextFollowupDate: string | null;
       followupStatus: "PENDING" | "DONE";
       performanceStage:
-        | "IN_PROCESS"
-        | "WON"
-        | "FOLLOW_UP_LATER"
-        | "DEAD"
-        | "NOT_INTERESTED";
+      | "IN_PROCESS"
+      | "WON"
+      | "FOLLOW_UP_LATER"
+      | "DEAD"
+      | "NOT_INTERESTED";
       assignedSalesId: string | null;
       categoryId: string | null;
       status: "OPEN" | "LOCKED" | "CLOSED";

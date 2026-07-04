@@ -1,0 +1,36 @@
+export type ChatbotIntent =
+  | "SALES_TOTAL_MONTH"
+  | "SALES_COMPARE_MONTHS"
+  | "SALES_REMAINING_REVENUE"
+  | "SALES_PERSON_PERFORMANCE"
+  | "SALES_TOP_PERFORMER"
+  | "HOARDING_STATUS_COUNT"
+  | "HOARDING_EMPTY_MONTH"
+  | "HOARDING_CITY_BREAKDOWN"
+  | "HOARDING_EXPIRING"
+  | "HOARDING_OCCUPANCY_SNAPSHOT"
+  | "RENT_DUE"
+  | "RENT_OVERDUE"
+  | "RENT_LANDLORD_WISE"
+  | "ENQUIRY_COUNT"
+  | "ENQUIRY_BY_SOURCE"
+  | "ENQUIRY_PENDING_FOLLOWUP"
+  | "ENQUIRY_IN_PROCESS"
+  | "ENQUIRY_INTEREST_BY_LOCATION"
+  | "PROPOSAL_STATS"
+  | "PROPOSAL_NEW_PARTY"
+  | "FOLLOWUP_STATS"
+  | "CLIENT_SUMMARY"
+  | "CLIENT_RENEWALS_DUE"
+  | "CLIENT_TOP_BY_REVENUE"
+  | "CLIENT_ACTIVE_HOARDINGS"
+  | "GENERAL_HELP"
+  | "CLARIFICATION_NEEDED";
+
+export type ChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  response?: import("@/lib/chatbotApi").ChatbotResponse;
+  loading?: boolean;
+};

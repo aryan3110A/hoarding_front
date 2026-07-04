@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, createContext, useContext } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import Toast from "./Toast";
+import ChatbotWidget from "./chatbot/ChatbotWidget";
 import { getRoleFromUser } from "@/lib/rbac";
 import { authAPI, devicesAPI } from "@/lib/api";
 
@@ -364,6 +365,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
   // For protected routes, if user is still missing, render nothing (redirect fired above)
   if (!user) return null;
 
+  const userRole = getRoleFromUser(user);
+  const showChatbot = ["owner", "admin"].includes(userRole);
+
   return (
     <UserContext.Provider value={user}>
       <div className="app-layout">
@@ -372,6 +376,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <main className="main-content">
           <div className="content-wrapper">{children}</div>
         </main>
+        {showChatbot && <ChatbotWidget />}
       </div>
     </UserContext.Provider>
   );
