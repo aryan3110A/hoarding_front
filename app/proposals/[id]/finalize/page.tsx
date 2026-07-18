@@ -402,7 +402,9 @@ export default function FinalizeProposalPage() {
           <div className="bg-white border rounded-xl shadow-sm p-4">
             <div className="text-sm mb-3">
               <span className="font-semibold">Client:</span>{" "}
-              {proposal.client?.name} ({proposal.client?.phone})
+              {proposal.client?.companyName?.trim() ||
+                proposal.client?.name}{" "}
+              ({proposal.client?.phone})
             </div>
 
             {belowMinHoardings.length > 0 && (
@@ -621,7 +623,14 @@ export default function FinalizeProposalPage() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 text-slate-900 border border-slate-200 shadow-2xl space-y-4">
             <h2 className="text-xl font-semibold border-b pb-2">Request Rate Approval</h2>
             <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
-              <div>Client: <span className="font-semibold text-slate-800">{proposal?.client?.name || "Client"}</span></div>
+              <div>
+                Client:{" "}
+                <span className="font-semibold text-slate-800">
+                  {proposal?.client?.companyName?.trim() ||
+                    proposal?.client?.name ||
+                    "Client"}
+                </span>
+              </div>
               <div>Hoarding: <span className="font-semibold text-slate-800">{approvalModalData.hoardingCode}</span></div>
               <div>Standard Rate: <span className="font-semibold text-slate-800">₹{approvalModalData.standardRate.toFixed(2)}</span></div>
               <div>Minimum Rate: <span className="font-semibold text-slate-800">₹{approvalModalData.minimumRate.toFixed(2)}</span></div>

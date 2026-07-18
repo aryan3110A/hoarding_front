@@ -139,7 +139,8 @@ const isSelectionDisabledStatus = (status?: string | null) => {
   const s = String(status || "")
     .toLowerCase()
     .trim();
-  return s === "booked" || s === "blocked" || s === "live";
+  // Blocked stays selectable so it can still be proposed to other clients.
+  return s === "booked" || s === "live";
 };
 
 // Must match backend computeLineFinalRate() exactly.
@@ -785,7 +786,7 @@ export default function ProposalBuilder({
           setClientInput(`${c.name}${c.phone ? ` (${c.phone})` : ""}`);
         }
         const rows = Array.isArray(p.hoardings) ? p.hoardings : [];
-        const restoredSelection = rows
+        const restoredSelection: SelectedHoarding[] = rows
           .filter((h: any) => !!h?.hoardingId)
           .map((h: any) => ({
             hoardingId: String(h.hoardingId),
@@ -803,25 +804,59 @@ export default function ProposalBuilder({
             discountPct: toMoney(h.discountPct),
             illumination: !!h.illumination,
             illuminationCost: toMoney(h.illuminationCost),
+            printingRate: (() => {
+              const rate = Math.max(0, toMoney(h.printingRate));
+              if (rate > 0) return rate;
+              const charges = Math.max(0, toMoney(h.printingCharges));
+              const sqft = getAreaSqFtFromSelection({
+                widthCm: h.hoarding?.widthCm ?? null,
+                heightCm: h.hoarding?.heightCm ?? null,
+                sizeLabel: h.sizeLabel ?? null,
+              } as SelectedHoarding);
+              return sqft > 0 && charges > 0 ? charges / sqft : 0;
+            })(),
+            mountingRate: (() => {
+              const rate = Math.max(0, toMoney(h.mountingRate));
+              if (rate > 0) return rate;
+              const charges = Math.max(0, toMoney(h.mountingCharges));
+              const sqft = getAreaSqFtFromSelection({
+                widthCm: h.hoarding?.widthCm ?? null,
+                heightCm: h.hoarding?.heightCm ?? null,
+                sizeLabel: h.sizeLabel ?? null,
+              } as SelectedHoarding);
+              return sqft > 0 && charges > 0 ? charges / sqft : 0;
+            })(),
           }));
         const restoredAreaSqFt = restoredSelection.reduce(
           (sum: number, row: SelectedHoarding) =>
             sum + getAreaSqFtFromSelection(row),
           0,
         );
+        const printingFromLines = restoredSelection.reduce(
+          (sum, row) =>
+            sum + getAreaSqFtFromSelection(row) * (row.printingRate || 0),
+          0,
+        );
+        const mountingFromLines = restoredSelection.reduce(
+          (sum, row) =>
+            sum + getAreaSqFtFromSelection(row) * (row.mountingRate || 0),
+          0,
+        );
         setPrintingCharges(
           restoredAreaSqFt > 0
-            ? toMoney(p.printingCharges ?? 0) / restoredAreaSqFt
+            ? (printingFromLines > 0
+                ? printingFromLines
+                : toMoney(p.printingCharges ?? 0)) / restoredAreaSqFt
             : toMoney(p.printingCharges ?? 0),
         );
         setMountingCharges(
           restoredAreaSqFt > 0
-            ? toMoney(p.mountingCharges ?? 0) / restoredAreaSqFt
+            ? (mountingFromLines > 0
+                ? mountingFromLines
+                : toMoney(p.mountingCharges ?? 0)) / restoredAreaSqFt
             : toMoney(p.mountingCharges ?? 0),
         );
-        setSelected(
-          restoredSelection,
-        );
+        setSelected(restoredSelection);
       } catch {
         // ignore
       }
@@ -1089,7 +1124,7 @@ export default function ProposalBuilder({
       // Generate + store PDF but keep proposal as DRAFT (not SENT)
       await proposalsAPI.generatePdf(String(id));
 
-      // Re-fetch proposal to detect rows excluded by booked/blocked re-validation.
+      // Re-fetch proposal to detect rows excluded by booked re-validation.
       const fresh = await proposalsAPI.getById(String(id));
       const latestRows = Array.isArray(fresh?.data?.hoardings)
         ? fresh.data.hoardings
@@ -1110,7 +1145,7 @@ export default function ProposalBuilder({
         const suffix =
           excluded.length > 3 ? ` and ${excluded.length - 3} more` : "";
         showInfo(
-          `${excluded.length} hoarding(s) were excluded because they are booked/blocked.${sampleCodes ? ` (${sampleCodes}${suffix})` : ""}`,
+          `${excluded.length} hoarding(s) were excluded because they are booked.${sampleCodes ? ` (${sampleCodes}${suffix})` : ""}`,
         );
       } else {
         showSuccess("PDF generated. All selected hoardings are available.");
@@ -1315,7 +1350,8 @@ export default function ProposalBuilder({
                     <div>
                       Selected:{" "}
                       <span className="font-semibold">
-                        {selectedClient.name}
+                        {selectedClient.companyName?.trim() ||
+                          selectedClient.name}
                       </span>
                       {selectedClient.phone ? ` (${selectedClient.phone})` : ""}
                     </div>
@@ -1720,6 +1756,7 @@ export default function ProposalBuilder({
                       {hoardings.map((h) => {
                         const unavailable = isSelectionDisabledStatus(h.status);
                         const st = String(h.status || "").toLowerCase();
+                        const isBlocked = st === "blocked" || st === "tokenized";
                         return (
                           <tr
                             key={h.id}
@@ -1746,11 +1783,13 @@ export default function ProposalBuilder({
                                 <span className="inline-flex items-center rounded-full bg-slate-300 px-2 py-0.5 text-xs font-semibold text-slate-700">
                                   {st === "booked"
                                     ? "Booked"
-                                    : st === "blocked"
-                                      ? "Blocked"
-                                      : st === "live"
-                                        ? "Live"
-                                        : String(h.status || "—")}
+                                    : st === "live"
+                                      ? "Live"
+                                      : String(h.status || "—")}
+                                </span>
+                              ) : isBlocked ? (
+                                <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                                  Blocked
                                 </span>
                               ) : (
                                 String(h.status || "—")
@@ -2069,7 +2108,14 @@ export default function ProposalBuilder({
                 <div className="bg-white rounded-2xl max-w-lg w-full p-6 text-slate-900 border border-slate-200 shadow-2xl space-y-4">
                   <h2 className="text-xl font-semibold border-b pb-2">Request Rate Approval</h2>
                   <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
-                    <div>Client: <span className="font-semibold text-slate-800">{selectedClient?.name}</span></div>
+                    <div>
+                      Client:{" "}
+                      <span className="font-semibold text-slate-800">
+                        {selectedClient?.companyName?.trim() ||
+                          selectedClient?.name ||
+                          "—"}
+                      </span>
+                    </div>
                     <div>Hoarding: <span className="font-semibold text-slate-800">{approvalModalData.hoardingCode}</span></div>
                     <div>Standard Rate: <span className="font-semibold text-slate-800">₹{approvalModalData.standardRate.toFixed(2)}</span></div>
                     <div>Minimum Rate: <span className="font-semibold text-slate-800">₹{approvalModalData.minimumRate.toFixed(2)}</span></div>
