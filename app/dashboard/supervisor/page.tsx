@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useUser } from "@/components/AppLayout";
 import CustomSelect from "@/components/CustomSelect";
@@ -606,9 +607,14 @@ export default function SupervisorExecutionBoardPage() {
     <ProtectedRoute component="hoardings">
       <div className="page-container">
         <h1 style={{ marginBottom: "12px" }}>Execution Board</h1>
-        <p style={{ marginBottom: "20px", color: "var(--text-secondary)" }}>
+        <p style={{ marginBottom: "12px", color: "var(--text-secondary)" }}>
           Track pending, live, re-mounting and unmounting hoardings.
         </p>
+        <div style={{ marginBottom: 16 }}>
+          <Link href="/maintenance" className="btn btn-primary">
+            Maintenance
+          </Link>
+        </div>
 
         {!canViewBoard ? (
           <div className="card">You are not allowed to access this module.</div>

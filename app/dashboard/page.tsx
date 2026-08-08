@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useUser } from "@/components/AppLayout";
 import CustomSelect from "@/components/CustomSelect";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/lib/api";
 import { canViewRent, canAssignTasks } from "@/lib/rbac";
 import { showError, showSuccess, showToast } from "@/lib/toast";
+import PayRentModal from "@/components/PayRentModal";
 
 const toProposalFilenamePart = (value?: string | null) => {
   const raw = String(value || "")
@@ -54,6 +56,7 @@ function DashboardContent() {
   const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
   const [actingApprovalId, setActingApprovalId] = useState<string | null>(null);
   const [approverRemarks, setApproverRemarks] = useState<Record<string, string>>({});
+  const [payRentTarget, setPayRentTarget] = useState<any | null>(null);
 
   // Sales-specific data
   const [salesStats, setSalesStats] = useState<any>(null);
@@ -513,6 +516,10 @@ function DashboardContent() {
   const welcomeName = String(user?.name || "").trim();
   const welcomeFallback = displayRole;
   const canViewRentInfo = canViewRent(userRole);
+  const canPayRent = ["owner", "admin"].includes(userRoleLower);
+  const canManageMaintenance = ["owner", "admin", "supervisor", "manager"].includes(
+    userRoleLower,
+  );
   const executionTypeOptions = [
     { value: "", label: "Select..." },
     { value: "CLIENT_CDR", label: "Client CDR" },
@@ -1206,6 +1213,88 @@ function DashboardContent() {
         {/* Rent Overview Cards - Only for Owner/Manager */}
         {canViewRentInfo && (
           <>
+            {canPayRent && stats?.salesSummary ? (
+              <div className="grid" style={{ marginBottom: 12 }}>
+                <div className="stat-card">
+                  <h3>
+                    ₹
+                    {Number(stats.salesSummary.totalSaleToday || 0).toLocaleString(
+                      "en-IN",
+                    )}
+                  </h3>
+                  <p>Total Sale Today</p>
+                </div>
+                <div className="stat-card">
+                  <h3>
+                    ₹
+                    {Number(
+                      stats.salesSummary.totalSaleThisWeek || 0,
+                    ).toLocaleString("en-IN")}
+                  </h3>
+                  <p>Total Sale This Week</p>
+                </div>
+                <div className="stat-card">
+                  <h3>
+                    ₹
+                    {Number(
+                      stats.salesSummary.totalSaleThisMonth || 0,
+                    ).toLocaleString("en-IN")}
+                  </h3>
+                  <p>Total Sale This Month</p>
+                </div>
+              </div>
+            ) : null}
+
+            {canPayRent && stats?.rentPaymentTotals ? (
+              <div className="grid" style={{ marginBottom: 12 }}>
+                <div className="stat-card">
+                  <h3>
+                    ₹
+                    {Number(
+                      stats.rentPaymentTotals.totalRentPaidToday || 0,
+                    ).toLocaleString("en-IN")}
+                  </h3>
+                  <p>Rent Paid Today</p>
+                </div>
+                <div className="stat-card">
+                  <h3>
+                    ₹
+                    {Number(
+                      stats.rentPaymentTotals.totalRentPaidThisWeek || 0,
+                    ).toLocaleString("en-IN")}
+                  </h3>
+                  <p>Rent Paid This Week</p>
+                </div>
+                <div className="stat-card">
+                  <h3>
+                    ₹
+                    {Number(
+                      stats.rentPaymentTotals.totalRentPaidThisMonth || 0,
+                    ).toLocaleString("en-IN")}
+                  </h3>
+                  <p>Rent Paid This Month</p>
+                </div>
+                <div className="stat-card">
+                  <h3>
+                    ₹
+                    {Number(
+                      stats.rentPaymentTotals.totalOverdueRent || 0,
+                    ).toLocaleString("en-IN")}
+                  </h3>
+                  <p>Total Overdue Rent</p>
+                </div>
+                <div className="stat-card">
+                  <h3>
+                    ₹
+                    {Number(
+                      stats.rentPaymentTotals.totalUpcomingRentDue || 0,
+                    ).toLocaleString("en-IN")}
+                  </h3>
+                  <p>Upcoming Rent Due</p>
+                </div>
+              </div>
+            ) : null}
+
             <div className="grid">
               {stats?.mode === "property" ? (
                 <>
@@ -1264,6 +1353,82 @@ function DashboardContent() {
                 </>
               )}
             </div>
+
+            {canPayRent &&
+            Array.isArray(stats?.overduePayments) &&
+            stats.overduePayments.length > 0 ? (
+              <div className="card" style={{ marginBottom: 24 }}>
+                <h3 style={{ marginTop: 0 }}>Overdue Rent (Owner/Admin)</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th className="text-left p-2">Landlord</th>
+                        <th className="text-left p-2">Due Date</th>
+                        <th className="text-left p-2">Amount Due</th>
+                        <th className="text-left p-2">Overdue</th>
+                        <th className="text-left p-2">Status</th>
+                        <th className="text-left p-2">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.overduePayments.map((row: any) => (
+                        <tr key={row.id} className="border-t">
+                          <td className="p-2">{row.landlord || "—"}</td>
+                          <td className="p-2">
+                            {row.nextDueDate
+                              ? String(row.nextDueDate).slice(0, 10)
+                              : "—"}
+                          </td>
+                          <td className="p-2">
+                            ₹
+                            {Number(
+                              row.currentDueAmount ?? row.rentAmount ?? 0,
+                            ).toLocaleString("en-IN")}
+                          </td>
+                          <td className="p-2">
+                            {Number(row.overdueDays || 0)} day(s)
+                          </td>
+                          <td className="p-2">{row.paymentStatus || "Overdue"}</td>
+                          <td className="p-2">
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={() => setPayRentTarget(row)}
+                            >
+                              Pay Rent
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
+
+            {canManageMaintenance ? (
+              <div className="card" style={{ marginBottom: 24 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <div>
+                    <h3 style={{ margin: 0 }}>Hoarding Maintenance</h3>
+                    <p style={{ margin: "6px 0 0", color: "var(--text-secondary)" }}>
+                      Record Lakdani Patti, Wiring, Banner change, etc. without changing status.
+                    </p>
+                  </div>
+                  <Link href="/maintenance" className="btn btn-primary">
+                    Maintenance
+                  </Link>
+                </div>
+              </div>
+            ) : null}
 
             {/* Send Reminders Button */}
             <div className="card" style={{ marginBottom: "24px" }}>
@@ -3006,6 +3171,15 @@ function DashboardContent() {
           }
         }
       `}</style>
+
+      <PayRentModal
+        open={!!payRentTarget}
+        rent={payRentTarget}
+        onClose={() => setPayRentTarget(null)}
+        onPaid={() => {
+          void fetchDashboardData();
+        }}
+      />
     </>
   );
 }

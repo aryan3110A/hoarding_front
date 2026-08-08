@@ -106,6 +106,14 @@ export const rolePermissions: RolePermissions = {
       update: true,
       delete: true,
     },
+    maintenance: {
+      component: "maintenance",
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Hoarding maintenance records (does not change status)",
+    },
     designAssignments: {
       component: "designAssignments",
       create: true,
@@ -237,6 +245,14 @@ export const rolePermissions: RolePermissions = {
       read: true,
       update: true,
       delete: true,
+    },
+    maintenance: {
+      component: "maintenance",
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Hoarding maintenance records (does not change status)",
     },
     designAssignments: {
       component: "designAssignments",
@@ -648,6 +664,14 @@ export const rolePermissions: RolePermissions = {
       delete: false,
       notes: "Execution checklist",
     },
+    maintenance: {
+      component: "maintenance",
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Hoarding maintenance records (does not change status)",
+    },
     designAssignments: {
       component: "designAssignments",
       create: true,
@@ -906,6 +930,14 @@ export const rolePermissions: RolePermissions = {
       read: true,
       update: true,
       delete: true,
+    },
+    maintenance: {
+      component: "maintenance",
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Hoarding maintenance records (does not change status)",
     },
     designAssignments: {
       component: "designAssignments",

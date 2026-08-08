@@ -707,9 +707,18 @@ h4 {
 .navbar-menu-desktop {
   display: flex;
   align-items: center;
-  gap: 20px; /* increased spacing between tabs for better separation */
-  margin-left: 20px;
-  flex: 1;
+  gap: 4px;
+  margin-left: 0;
+  flex: 0 0 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow: visible;
+  padding: 0 8px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  justify-content: center;
+  z-index: 2;
 }
 
 .navbar-link {
@@ -729,43 +738,45 @@ h4 {
   transition: all 0.18s ease;
 }
 
-/* Desktop: show icons only by default, reveal label on hover; active shows label */
+/* Desktop: icon-only + hover name tooltip; active tab also shows its label */
 @media (min-width: 769px) {
   .navbar-menu-desktop .navbar-link {
-    /* collapsed default using max-width to allow smooth transition */
-    max-width: 48px;
-    padding: 8px;
+    position: relative;
+    max-width: 44px;
+    min-width: 40px;
+    width: auto;
+    height: 40px;
+    padding: 0 11px;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     white-space: nowrap;
+    flex-shrink: 0;
     transition:
-      max-width 260ms cubic-bezier(0.2, 0, 0, 1),
-      padding 260ms cubic-bezier(0.2, 0, 0, 1),
+      max-width 200ms ease,
+      padding 200ms ease,
       background 220ms ease,
       box-shadow 220ms ease,
       color 180ms ease;
   }
 
   .navbar-menu-desktop .navbar-link .navbar-text {
-    display: inline-block;
-    opacity: 0;
-    transform: translateX(6px);
-    margin-left: 8px;
-    white-space: nowrap;
+    display: none;
     font-weight: 600;
-    transition:
-      opacity 180ms ease,
-      transform 180ms ease;
+    font-size: 13px;
+    margin-left: 8px;
   }
 
-  .navbar-menu-desktop .navbar-link:hover,
+  /* Active page: show icon + name so current section is obvious */
   .navbar-menu-desktop .navbar-link.active {
-    max-width: 260px; /* expands smoothly to reveal text */
-    padding: 8px 14px;
+    max-width: 220px;
+    padding: 0 14px;
     justify-content: flex-start;
   }
 
-  /* Prevent color change on hover for active tab */
+  .navbar-menu-desktop .navbar-link.active .navbar-text {
+    display: inline-block;
+  }
+
   .navbar-menu-desktop .navbar-link.active:hover {
     color: white;
     background: linear-gradient(
@@ -775,10 +786,66 @@ h4 {
     );
   }
 
-  .navbar-menu-desktop .navbar-link:hover .navbar-text,
-  .navbar-menu-desktop .navbar-link.active .navbar-text {
+  /* Instant name tooltip on hover for non-active icons */
+  .navbar-menu-desktop .navbar-link:not(.active)[data-tooltip]::after,
+  .navbar-notify-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 10px);
+    transform: translateX(-50%) translateY(4px);
+    background: #0f172a;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 6px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1300;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+    transition:
+      opacity 120ms ease,
+      transform 120ms ease,
+      visibility 120ms ease;
+  }
+
+  .navbar-menu-desktop .navbar-link:not(.active)[data-tooltip]::before,
+  .navbar-notify-btn[data-tooltip]::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 4px);
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: #0f172a;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1300;
+    transition:
+      opacity 120ms ease,
+      visibility 120ms ease;
+  }
+
+  .navbar-menu-desktop .navbar-link:not(.active):hover[data-tooltip]::after,
+  .navbar-menu-desktop .navbar-link:not(.active):focus-visible[data-tooltip]::after,
+  .navbar-notify-btn:hover[data-tooltip]::after,
+  .navbar-notify-btn:focus-visible[data-tooltip]::after {
     opacity: 1;
-    transform: translateX(0);
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .navbar-menu-desktop .navbar-link:not(.active):hover[data-tooltip]::before,
+  .navbar-menu-desktop .navbar-link:not(.active):focus-visible[data-tooltip]::before,
+  .navbar-notify-btn:hover[data-tooltip]::before,
+  .navbar-notify-btn:focus-visible[data-tooltip]::before {
+    opacity: 1;
+    visibility: visible;
   }
 }
 
@@ -1131,6 +1198,7 @@ h4 {
   justify-content: space-between;
   height: 44px;
   gap: 28px;
+  position: relative;
 }
 
 .navbar-brand {
@@ -1159,17 +1227,99 @@ h4 {
 .navbar-menu-desktop {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex: 1;
+  gap: 4px;
+  flex: 0 0 auto;
   flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding: 0 16px;
+  overflow: visible;
+  min-width: 0;
+  padding: 0 8px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  justify-content: center;
+  z-index: 2;
 }
 
 .navbar-menu-desktop::-webkit-scrollbar {
   display: none;
+}
+
+.navbar-more {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.navbar-more-btn {
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.navbar-more-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  max-height: min(70vh, 420px);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid rgba(31, 92, 169, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+  padding: 6px;
+  z-index: 1200;
+}
+
+.navbar-more-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #0f172a;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.navbar-more-item:hover {
+  background: rgba(0, 187, 241, 0.1);
+  color: var(--primary-hover);
+}
+
+.navbar-more-item.active {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-hover) 100%
+  );
+  color: #fff;
+}
+
+.navbar-notify-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: #075985;
+  text-decoration: none;
+  background: rgba(0, 187, 241, 0.08);
+  border: 1px solid rgba(31, 92, 169, 0.12);
+  transition: background 0.2s ease;
+}
+
+.navbar-notify-btn:hover {
+  background: rgba(0, 187, 241, 0.16);
+}
+
+.navbar-notify-btn .navbar-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
 }
 
 .navbar-link {
@@ -1756,7 +1906,6 @@ h4 {
 }
 
 /* ---- Navbar icon/text visibility fixes (final overrides) ---- */
-/* Ensure Lucide SVG icons are visible by default */
 .navbar-link .navbar-icon svg {
   width: 20px;
   height: 20px;
@@ -1766,85 +1915,126 @@ h4 {
   display: block;
 }
 
-/* Desktop: show only icons by default, reveal text on hover/active */
-@media (min-width: 980px) {
-  /* Increase spacing between tabs and prevent horizontal scroll */
+/* Desktop final: compact icons, active label, hover name tooltips */
+@media (min-width: 769px) {
   .navbar-menu-desktop {
-    gap: 26px;
-    overflow-x: visible; /* override earlier auto scrolling */
-    flex-wrap: nowrap;
-    min-width: 0; /* allow flex item to shrink so profile stays visible */
-    justify-content: center; /* keep icons centered between brand and profile */
-    padding-right: 120px; /* increased right space for location tab label */
-    padding-left: 96px; /* reserve space so leftmost label never overlaps logo */
-  }
-
-  /* Smooth background/color/position transitions */
-  .navbar-menu-desktop .navbar-link {
-    max-width: none; /* prevent clipping */
+    gap: 4px;
     overflow: visible;
-    padding: 10px 14px;
+    flex-wrap: nowrap;
+    min-width: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    justify-content: center;
+    flex: 0 0 auto;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .navbar-menu-desktop .navbar-link {
     position: relative;
-    transition:
-      background 520ms cubic-bezier(0.22, 0.61, 0.36, 1),
-      color 520ms cubic-bezier(0.22, 0.61, 0.36, 1),
-      transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
-      box-shadow 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
-  }
-
-  /* Animated underline indicator */
-  /* Removed underline from selected tab */
-
-  /* Label reveal animation on hover/active */
-  .navbar-menu-desktop .navbar-link .navbar-text {
-    max-width: 0;
-    opacity: 0;
-    margin-left: 0;
-    overflow: hidden;
+    max-width: 44px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 11px;
+    justify-content: center;
+    overflow: visible;
     white-space: nowrap;
-    transform: translateX(4px);
+    flex-shrink: 0;
     transition:
-      max-width 540ms cubic-bezier(0.22, 0.61, 0.36, 1),
-      opacity 540ms cubic-bezier(0.22, 0.61, 0.36, 1),
-      transform 540ms cubic-bezier(0.22, 0.61, 0.36, 1),
-      margin-left 540ms cubic-bezier(0.22, 0.61, 0.36, 1);
-  }
-  .navbar-menu-desktop .navbar-link:hover .navbar-text,
-  .navbar-menu-desktop .navbar-link.active .navbar-text {
-    max-width: 160px;
-    opacity: 1;
-    margin-left: 8px;
-    transform: translateX(0);
+      max-width 180ms ease,
+      padding 180ms ease,
+      background 200ms ease,
+      box-shadow 200ms ease,
+      color 160ms ease;
   }
 
-  /* Subtle lift and icon micro-motion */
-  .navbar-menu-desktop .navbar-link:hover {
-    transform: translateY(-2px);
+  .navbar-menu-desktop .navbar-link .navbar-text {
+    display: none;
+    font-weight: 600;
+    font-size: 13px;
+    margin-left: 8px;
+    max-width: none;
+    opacity: 1;
+    overflow: visible;
+    transform: none;
   }
+
+  /* Current page shows its name next to the icon */
   .navbar-menu-desktop .navbar-link.active {
+    max-width: 220px;
+    padding: 0 14px;
+    justify-content: flex-start;
     box-shadow: 0 4px 12px rgba(31, 92, 169, 0.25);
   }
-  .navbar-menu-desktop .navbar-link .navbar-icon,
-  .navbar-menu-desktop .navbar-link .navbar-badge {
+
+  .navbar-menu-desktop .navbar-link.active .navbar-text {
+    display: inline-block;
+  }
+
+  /* Hover name bubble for other icons */
+  .navbar-menu-desktop .navbar-link:not(.active)[data-tooltip]::after,
+  .navbar-notify-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 10px);
+    transform: translateX(-50%) translateY(4px);
+    background: #0f172a;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 6px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1300;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
     transition:
-      transform 180ms ease,
-      color 180ms ease;
+      opacity 120ms ease,
+      transform 120ms ease,
+      visibility 120ms ease;
   }
-  .navbar-menu-desktop .navbar-link.active .navbar-icon {
-    transform: translateY(-1px);
+
+  .navbar-menu-desktop .navbar-link:not(.active)[data-tooltip]::before,
+  .navbar-notify-btn[data-tooltip]::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 4px);
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: #0f172a;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1300;
+    transition:
+      opacity 120ms ease,
+      visibility 120ms ease;
+  }
+
+  .navbar-menu-desktop .navbar-link:not(.active):hover[data-tooltip]::after,
+  .navbar-menu-desktop .navbar-link:not(.active):focus-visible[data-tooltip]::after,
+  .navbar-notify-btn:hover[data-tooltip]::after,
+  .navbar-notify-btn:focus-visible[data-tooltip]::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .navbar-menu-desktop .navbar-link:not(.active):hover[data-tooltip]::before,
+  .navbar-menu-desktop .navbar-link:not(.active):focus-visible[data-tooltip]::before,
+  .navbar-notify-btn:hover[data-tooltip]::before,
+  .navbar-notify-btn:focus-visible[data-tooltip]::before {
+    opacity: 1;
+    visibility: visible;
   }
 }
 
-/* Adjust spacing on narrower desktops to prevent crowding */
-@media (min-width: 980px) and (max-width: 1280px) {
-  .navbar-menu-desktop {
-    gap: 18px;
-    padding-right: 104px;
-    padding-left: 80px;
-  }
-}
-
-/* Keep profile section on top of any expanding labels */
 .navbar-user-section {
   position: relative;
   z-index: 10;

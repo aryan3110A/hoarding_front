@@ -1,14 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { notificationsAPI } from "@/lib/api";
-import {
-  canViewRent,
-  canAccessLocationTracking,
-  canAccessAdminSettings,
-} from "@/lib/rbac";
 import * as LucideIcons from "lucide-react";
 
 interface NavbarProps {
@@ -16,13 +11,27 @@ interface NavbarProps {
   onLogout: () => void;
 }
 
+/** Always-visible desktop icons; everything else goes under "More". */
+const PRIMARY_NAV_IDS = new Set([
+  "dashboard",
+  "supervisor-status",
+  "accountant",
+  "hoardings",
+  "maintenance",
+  "bookings",
+  "enquiries",
+  "tasks",
+  "reports",
+]);
+
 export default function Navbar({ user, onLogout }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const router = useRouter();
   const pathname = usePathname();
   const profileRef = useRef<HTMLDivElement | null>(null);
+  const moreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchUnreadCount();
@@ -31,8 +40,8 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
   }, []);
 
   useEffect(() => {
-    // Close mobile menu when route changes
     setIsMobileMenuOpen(false);
+    setIsMoreOpen(false);
   }, [pathname]);
 
   const fetchUnreadCount = async () => {
@@ -41,7 +50,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       if (response.success && response.data) {
         setUnreadCount(response.data.count || 0);
       }
-    } catch (error) {
+    } catch {
       // Silently fail
     }
   };
@@ -82,6 +91,13 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       href: "/hoardings",
       iconName: "Box",
       roles: ["owner", "manager", "sales", "admin"],
+    },
+    {
+      id: "maintenance",
+      title: "Maintenance",
+      href: "/maintenance",
+      iconName: "Hammer",
+      roles: ["owner", "admin", "supervisor", "manager"],
     },
     {
       id: "bookings",
@@ -189,35 +205,12 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       iconName: "Settings",
       roles: ["owner", "admin"],
     },
-    {
-      id: "notifications",
-      title: "Notifications",
-      href: "/notifications",
-      iconName: "Bell",
-      roles: [
-        "owner",
-        "manager",
-        "sales",
-        "designer",
-        "supervisor",
-        "accountant",
-        "admin",
-      ],
-      badge: unreadCount > 0 ? unreadCount : null,
-    },
-    // {
-    //   title: "Location",
-    //   href: "/location",
-    //   iconName: "MapPin",
-    //   roles: ["owner", "supervisor", "admin"],
-    // },
   ];
 
   const roleFilteredItems = menuItems.filter((item) =>
     item.roles.includes(userRole),
   );
 
-  // Guard against accidental duplicate tabs in supervisor navbar.
   const filteredMenuItems =
     userRole === "supervisor"
       ? roleFilteredItems.filter(
@@ -226,12 +219,27 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
         )
       : roleFilteredItems;
 
+  const { primaryItems, moreItems } = useMemo(() => {
+    const primary = filteredMenuItems.filter((item) =>
+      PRIMARY_NAV_IDS.has(item.id),
+    );
+    const more = filteredMenuItems.filter(
+      (item) => !PRIMARY_NAV_IDS.has(item.id),
+    );
+    return { primaryItems: primary, moreItems: more };
+  }, [filteredMenuItems]);
+
   const isActive = (href: string) => {
     if (href === "/dashboard") {
       return pathname === "/dashboard";
     }
-    return pathname === href;
+    if (href === "/maintenance") {
+      return pathname === "/maintenance" || pathname?.startsWith("/maintenance/");
+    }
+    return pathname === href || pathname?.startsWith(`${href}/`);
   };
+
+  const moreHasActive = moreItems.some((item) => isActive(item.href));
 
   const renderIcon = (iconName?: string, size = 18) => {
     if (!iconName) return null;
@@ -253,16 +261,28 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
 
   const displayTitle = user?.role ? capitalize(user.role) : user?.name || "";
 
-  // close profile dropdown on outside click or Escape
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
-      if (!profileRef.current) return;
-      if (e.target instanceof Node && !profileRef.current.contains(e.target)) {
+      if (
+        profileRef.current &&
+        e.target instanceof Node &&
+        !profileRef.current.contains(e.target)
+      ) {
         setIsProfileOpen(false);
+      }
+      if (
+        moreRef.current &&
+        e.target instanceof Node &&
+        !moreRef.current.contains(e.target)
+      ) {
+        setIsMoreOpen(false);
       }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsProfileOpen(false);
+      if (e.key === "Escape") {
+        setIsProfileOpen(false);
+        setIsMoreOpen(false);
+      }
     };
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onKey);
@@ -272,11 +292,22 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
     };
   }, []);
 
+  const renderNavLink = (item: (typeof menuItems)[number]) => (
+    <Link
+      href={item.href}
+      aria-label={item.title}
+      data-tooltip={item.title}
+      className={`navbar-link ${isActive(item.href) ? "active" : ""}`}
+    >
+      <span className="navbar-icon">{renderIcon(item.iconName)}</span>
+      <span className="navbar-text">{item.title}</span>
+    </Link>
+  );
+
   return (
     <>
       <nav className="navbar">
         <div className="navbar-container">
-          {/* Logo and Brand */}
           <Link
             href={dashboardHref}
             className="navbar-brand"
@@ -289,35 +320,24 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
             />
           </Link>
 
-          {/* Desktop Menu */}
           <div className="navbar-menu-desktop">
-            {filteredMenuItems.map((item) => (
+            {primaryItems.map((item) => (
               <div
-                key={(item as any).id || `${item.href}-${item.title}`}
+                key={item.id}
+                className="navbar-item-wrap"
                 style={{ display: "inline-flex", alignItems: "center" }}
               >
-                <Link
-                  href={item.href}
-                  className={`navbar-link ${
-                    isActive(item.href) ? "active" : ""
-                  }`}
-                >
-                  <span className="navbar-icon">
-                    {renderIcon((item as any).iconName)}
-                  </span>
-                  <span className="navbar-text">{item.title}</span>
-                  {item.badge && item.badge > 0 && (
-                    <span className="navbar-badge">{item.badge}</span>
-                  )}
-                </Link>
+                {renderNavLink(item)}
 
                 {item.href === "/hoardings" && user?.role === "sales" && (
                   <Link
                     href="/proposals/pdf"
+                    aria-label="Generate Proposal PDF"
+                    data-tooltip="Generate Proposal PDF"
                     className={`navbar-link ${
                       isActive("/proposals/pdf") ? "active" : ""
                     }`}
-                    style={{ marginLeft: 10 }}
+                    style={{ marginLeft: 6 }}
                   >
                     <span className="navbar-icon">
                       {renderIcon("FileText")}
@@ -327,10 +347,62 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
                 )}
               </div>
             ))}
+
+            {moreItems.length > 0 && (
+              <div className="navbar-more" ref={moreRef}>
+                <button
+                  type="button"
+                  className={`navbar-link navbar-more-btn ${
+                    moreHasActive || isMoreOpen ? "active" : ""
+                  }`}
+                  data-tooltip="More"
+                  aria-label="More navigation"
+                  aria-expanded={isMoreOpen}
+                  onClick={() => setIsMoreOpen((s) => !s)}
+                >
+                  <span className="navbar-icon">
+                    {renderIcon("MoreHorizontal")}
+                  </span>
+                  <span className="navbar-text">More</span>
+                </button>
+
+                {isMoreOpen && (
+                  <div className="navbar-more-menu" role="menu">
+                    {moreItems.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        role="menuitem"
+                        className={`navbar-more-item ${
+                          isActive(item.href) ? "active" : ""
+                        }`}
+                        onClick={() => setIsMoreOpen(false)}
+                      >
+                        <span className="navbar-icon">
+                          {renderIcon(item.iconName, 16)}
+                        </span>
+                        <span>{item.title}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* User / Profile Section */}
           <div className="navbar-user-section" ref={profileRef}>
+            <Link
+              href="/notifications"
+              className="navbar-notify-btn"
+              data-tooltip="Notifications"
+              aria-label="Notifications"
+            >
+              {renderIcon("Bell", 18)}
+              {unreadCount > 0 && (
+                <span className="navbar-badge">{unreadCount}</span>
+              )}
+            </Link>
+
             <button
               className="profile-button"
               aria-haspopup="true"
@@ -373,7 +445,6 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
           <button
             className="navbar-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -383,24 +454,17 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         <div className={`navbar-menu-mobile ${isMobileMenuOpen ? "open" : ""}`}>
           {filteredMenuItems.map((item) => (
-            <div
-              key={(item as any).id || `${item.href}-${item.title}`}
-              style={{ display: "block" }}
-            >
+            <div key={item.id} style={{ display: "block" }}>
               <Link
                 href={item.href}
                 className={`navbar-link ${isActive(item.href) ? "active" : ""}`}
               >
                 <span className="navbar-icon">
-                  {renderIcon((item as any).iconName)}
+                  {renderIcon(item.iconName)}
                 </span>
                 <span className="navbar-text">{item.title}</span>
-                {item.badge && item.badge > 0 && (
-                  <span className="navbar-badge">{item.badge}</span>
-                )}
               </Link>
 
               {item.href === "/hoardings" && user?.role === "sales" && (
@@ -416,6 +480,18 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
               )}
             </div>
           ))}
+          <Link
+            href="/notifications"
+            className={`navbar-link ${
+              isActive("/notifications") ? "active" : ""
+            }`}
+          >
+            <span className="navbar-icon">{renderIcon("Bell")}</span>
+            <span className="navbar-text">Notifications</span>
+            {unreadCount > 0 && (
+              <span className="navbar-badge">{unreadCount}</span>
+            )}
+          </Link>
           <div className="navbar-mobile-user">
             <div className="navbar-user">
               <div className="navbar-user-avatar">
@@ -433,7 +509,6 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
           </div>
         </div>
       </nav>
-      {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div
           className="navbar-overlay"

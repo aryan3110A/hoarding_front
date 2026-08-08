@@ -79,6 +79,12 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       roles: ["owner", "manager", "sales", "admin"], // Sales can view only
     },
     {
+      title: "Maintenance",
+      href: "/maintenance",
+      icon: "🔧",
+      roles: ["owner", "admin", "supervisor", "manager"],
+    },
+    {
       title: "Bookings",
       href: "/bookings",
       icon: "📅",

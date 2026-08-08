@@ -117,6 +117,11 @@ export const hoardingsAPI = {
     return response.data;
   },
 
+  nextCode: async () => {
+    const response = await api.get("/hoardings/next-code");
+    return response.data;
+  },
+
   getCities: async () => {
     const response = await api.get("/hoardings/cities");
     return response.data;
@@ -287,6 +292,20 @@ export const propertyRentAPI = {
     const response = await api.get("/property-rents", { params });
     return response.data;
   },
+  dueBoard: async () => {
+    const response = await api.get("/property-rents/due-board");
+    return response.data;
+  },
+  paymentTotals: async () => {
+    const response = await api.get("/property-rents/payment-totals");
+    return response.data;
+  },
+  pay: async (formData: FormData) => {
+    const response = await api.post("/property-rents/pay", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
   get: async (propertyGroupId: string) => {
     const response = await api.get(`/property-rents/${propertyGroupId}`);
     return response.data;
@@ -299,6 +318,27 @@ export const propertyRentAPI = {
   },
   save: async (data: any) => {
     const response = await api.post("/property-rents", data);
+    return response.data;
+  },
+};
+
+export const maintenanceAPI = {
+  types: async () => {
+    const response = await api.get("/maintenance/types");
+    return response.data;
+  },
+  list: async (params?: { page?: number; limit?: number }) => {
+    const response = await api.get("/maintenance", { params });
+    return response.data;
+  },
+  listByHoarding: async (hoardingId: string) => {
+    const response = await api.get(`/maintenance/hoarding/${hoardingId}`);
+    return response.data;
+  },
+  create: async (formData: FormData) => {
+    const response = await api.post("/maintenance", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
   },
 };

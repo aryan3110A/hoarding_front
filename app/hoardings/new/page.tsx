@@ -159,6 +159,15 @@ export default function NewHoarding() {
     loadCategories();
     loadLandlords();
     setPortalReady(true);
+    (async () => {
+      try {
+        const res = await hoardingsAPI.nextCode();
+        const code = res?.data?.code || res?.code || "";
+        if (code) setFormData((prev) => ({ ...prev, code: prev.code || code }));
+      } catch {
+        // ignore — blank still auto-generates on create
+      }
+    })();
   }, []);
 
   const normalizeText = (value: unknown) =>
@@ -380,13 +389,6 @@ export default function NewHoarding() {
     setLoading(true);
 
     try {
-      if (!formData.code.trim()) {
-        const message = "Hoarding Code is required";
-        showError(message);
-        setLoading(false);
-        return;
-      }
-
       if (!formData.city.trim()) {
         const message = "City is required";
         showError(message);
@@ -497,7 +499,7 @@ export default function NewHoarding() {
       }
 
       const payload: Record<string, unknown> = {
-        code: formData.code.trim(),
+        code: formData.code.trim() || undefined,
         landlordId: formData.landlordId,
         city: formData.city.trim(),
         area: formData.area.trim() || undefined,
@@ -688,16 +690,38 @@ export default function NewHoarding() {
               )}
             </div>
             <div className="form-group">
-              <label>Hoarding Code *</label>
-              <input
-                type="text"
-                value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                required
-                placeholder="e.g., MENG-AH-S"
-              />
+              <label>Hoarding Code (auto SA - 001)</label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <input
+                  type="text"
+                  value={formData.code}
+                  onChange={(e) =>
+                    setFormData({ ...formData, code: e.target.value })
+                  }
+                  placeholder="Auto: SA - 001"
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={async () => {
+                    try {
+                      const res = await hoardingsAPI.nextCode();
+                      const code = res?.data?.code || res?.code || "";
+                      if (code) setFormData((prev) => ({ ...prev, code }));
+                    } catch (err: any) {
+                      showError(
+                        err?.response?.data?.message ||
+                          "Failed to generate code",
+                      );
+                    }
+                  }}
+                >
+                  Generate
+                </button>
+              </div>
+              <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: 4 }}>
+                Leave blank to auto-generate unique code like SA - 001
+              </div>
             </div>
             <div className="form-group">
               <label>City *</label>

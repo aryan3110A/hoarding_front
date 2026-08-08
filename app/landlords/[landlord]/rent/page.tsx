@@ -26,27 +26,12 @@ function addMonthsClamped(base: Date, months: number) {
   return next;
 }
 
-function nextDueFromStart(startDate: string, frequency: Frequency) {
+function nextDueFromStart(startDate: string, _frequency: Frequency) {
   if (!startDate) return "";
   const start = new Date(startDate);
   if (Number.isNaN(start.getTime())) return "";
-
-  const months =
-    frequency === "Monthly"
-      ? 1
-      : frequency === "Quarterly"
-        ? 3
-        : frequency === "HalfYearly"
-          ? 6
-          : 12;
-
-  let due = addMonthsClamped(start, months);
-  const now = new Date();
-  while (due.getTime() <= now.getTime()) {
-    due = addMonthsClamped(due, months);
-  }
-
-  return due.toISOString().split("T")[0];
+  // First unpaid due stays on rent start date — do not auto-skip past today.
+  return start.toISOString().split("T")[0];
 }
 
 function defaultManualIncrements(): ManualIncrementRow[] {
