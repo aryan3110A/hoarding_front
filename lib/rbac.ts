@@ -5,8 +5,10 @@ export type Role =
   | "owner"
   | "manager"
   | "sales"
+  | "sales_head"
   | "designer"
   | "supervisor"
+  | "fitter"
   | "accountant"
   | "admin";
 
@@ -163,6 +165,14 @@ export const rolePermissions: RolePermissions = {
       read: true,
       update: true,
       delete: true,
+    },
+    recycleBin: {
+      component: "recycleBin",
+      create: false,
+      read: true,
+      update: true,
+      delete: true,
+      notes: "Restore or purge soft-deleted hoardings",
     },
   },
   manager: {
@@ -415,10 +425,10 @@ export const rolePermissions: RolePermissions = {
     reports: {
       component: "reports",
       create: false,
-      read: false,
+      read: true,
       update: false,
       delete: false,
-      notes: "No access",
+      notes: "Own sales performance",
     },
     adminSettings: {
       component: "adminSettings",
@@ -435,6 +445,282 @@ export const rolePermissions: RolePermissions = {
       update: false,
       delete: false,
       notes: "Read-only blocked hoardings dashboard",
+    },
+    notifications: {
+      component: "notifications",
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+      notes: "Own notifications",
+    },
+    locationTracking: {
+      component: "locationTracking",
+      create: true,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Sales field check-ins and GPS tracking",
+    },
+  },
+  sales_head: {
+    proposals: {
+      component: "proposals",
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Sales proposal workflow",
+    },
+    hoardings: {
+      component: "hoardings",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "View only",
+    },
+    bookings: {
+      component: "bookings",
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Can edit own",
+    },
+    bookingTokens: {
+      component: "bookingTokens",
+      create: true,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Can create and view own tokens",
+    },
+    enquiries: {
+      component: "enquiries",
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Can edit own and assign sales",
+    },
+    contracts: {
+      component: "contracts",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Read own due contracts and send renewal reminders",
+    },
+    renewalsDue: {
+      component: "renewalsDue",
+      create: false,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Can send renewal reminders for own contracts",
+    },
+    rentRecords: {
+      component: "rentRecords",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    vendors: {
+      component: "vendors",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    users: {
+      component: "users",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    roles: {
+      component: "roles",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    tasks: {
+      component: "tasks",
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Team task visibility",
+    },
+    designAssignments: {
+      component: "designAssignments",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    reports: {
+      component: "reports",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Team sales performance",
+    },
+    adminSettings: {
+      component: "adminSettings",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    blockedHoardings: {
+      component: "blockedHoardings",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Read-only blocked hoardings dashboard",
+    },
+    notifications: {
+      component: "notifications",
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+      notes: "Own notifications",
+    },
+    locationTracking: {
+      component: "locationTracking",
+      create: true,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Sales field check-ins and GPS tracking",
+    },
+  },
+  fitter: {
+    hoardings: {
+      component: "hoardings",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    bookings: {
+      component: "bookings",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    bookingTokens: {
+      component: "bookingTokens",
+      create: false,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Assigned installation tokens only",
+    },
+    enquiries: {
+      component: "enquiries",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    contracts: {
+      component: "contracts",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    rentRecords: {
+      component: "rentRecords",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    vendors: {
+      component: "vendors",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    users: {
+      component: "users",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    roles: {
+      component: "roles",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    tasks: {
+      component: "tasks",
+      create: false,
+      read: true,
+      update: true,
+      delete: false,
+      notes: "Assigned installation tasks",
+    },
+    designAssignments: {
+      component: "designAssignments",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    reports: {
+      component: "reports",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    adminSettings: {
+      component: "adminSettings",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
+    },
+    blockedHoardings: {
+      component: "blockedHoardings",
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+      notes: "No access",
     },
     notifications: {
       component: "notifications",
@@ -695,6 +981,14 @@ export const rolePermissions: RolePermissions = {
       update: false,
       delete: false,
       notes: "No access",
+    },
+    blockedHoardings: {
+      component: "blockedHoardings",
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+      notes: "Read-only blocked hoardings dashboard",
     },
     notifications: {
       component: "notifications",
@@ -989,6 +1283,14 @@ export const rolePermissions: RolePermissions = {
       update: true,
       delete: true,
     },
+    recycleBin: {
+      component: "recycleBin",
+      create: false,
+      read: true,
+      update: true,
+      delete: true,
+      notes: "Restore or purge soft-deleted hoardings",
+    },
   },
 };
 
@@ -1154,12 +1456,14 @@ export function canEditRent(role: string): boolean {
 
 export function canViewReports(role: string): boolean {
   const normalizedRole = role?.toLowerCase() || "";
-  return ["owner", "manager", "accountant", "admin"].includes(normalizedRole);
+  return ["owner", "manager", "accountant", "admin", "sales", "sales_head"].includes(
+    normalizedRole,
+  );
 }
 
 export function canAccessLocationTracking(role: string): boolean {
   const normalizedRole = role?.toLowerCase() || "";
-  return ["owner", "supervisor", "admin"].includes(normalizedRole);
+  return ["owner", "supervisor", "admin", "sales", "sales_head"].includes(normalizedRole);
 }
 
 export function canAccessAdminSettings(role: string): boolean {
@@ -1192,12 +1496,14 @@ export function getRoleLevel(role: string): number {
   const normalizedRole = role?.toLowerCase() || "";
   const levels: { [key: string]: number } = {
     owner: 5,
+    admin: 5,
     manager: 4,
+    sales_head: 4,
     sales: 3,
+    accountant: 3,
     designer: 2,
     supervisor: 2,
-    accountant: 3,
-    admin: 5,
+    fitter: 2,
   };
   return levels[normalizedRole] || 0;
 }

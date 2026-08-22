@@ -150,7 +150,7 @@ export default function BookingTokenDetailPage() {
 
   const userRole = useMemo(() => getRoleFromUser(user), [user]);
   const roleLower = String(userRole || "").toLowerCase();
-  const fitterWorkflowEnabled = false;
+  const fitterWorkflowEnabled = true;
 
   const canConfirm = useMemo(() => {
     return (
@@ -1361,7 +1361,7 @@ export default function BookingTokenDetailPage() {
                       )
                     ) : (
                       <div style={{ color: "var(--text-secondary)" }}>
-                        Only Owner/Manager can assign a fitter.
+                        Only Owner/Manager/Supervisor can assign a fitter.
                       </div>
                     )}
                   </div>

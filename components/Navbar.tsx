@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { notificationsAPI } from "@/lib/api";
+import { canAccess } from "@/lib/rbac";
 import * as LucideIcons from "lucide-react";
 
 interface NavbarProps {
@@ -63,153 +64,183 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
   const dashboardHref =
     userRole === "accountant" ? "/dashboard/accountant" : "/dashboard";
 
-  const menuItems = [
+  const menuItems: Array<{
+    id: string;
+    title: string;
+    href: string;
+    iconName: string;
+    component?: string;
+    roles?: string[];
+  }> = [
     {
       id: "dashboard",
       title: "Dashboard",
       href: dashboardHref,
       iconName: "BarChart2",
-      roles: ["owner", "manager", "sales", "designer", "supervisor", "admin"],
+      roles: [
+        "owner",
+        "manager",
+        "sales",
+        "sales_head",
+        "designer",
+        "supervisor",
+        "fitter",
+        "admin",
+      ],
     },
     {
       id: "supervisor-status",
       title: "Status",
       href: "/dashboard/supervisor",
       iconName: "Wrench",
-      roles: ["owner", "manager", "supervisor", "admin", "sales"],
+      component: "hoardings",
     },
     {
       id: "accountant",
       title: "Accountant",
       href: "/dashboard/accountant",
       iconName: "Briefcase",
-      roles: ["accountant", "admin"],
+      component: "accounting",
     },
     {
       id: "hoardings",
       title: "Hoardings",
       href: "/hoardings",
       iconName: "Box",
-      roles: ["owner", "manager", "sales", "admin"],
+      component: "hoardings",
     },
     {
       id: "maintenance",
       title: "Maintenance",
       href: "/maintenance",
       iconName: "Hammer",
-      roles: ["owner", "admin", "supervisor", "manager"],
+      component: "maintenance",
     },
     {
       id: "bookings",
       title: "Bookings",
       href: "/bookings",
       iconName: "Calendar",
-      roles: ["owner", "manager", "admin"],
+      component: "bookings",
     },
     {
       id: "enquiries",
       title: "Enquiries",
       href: "/enquiries",
       iconName: "Clipboard",
-      roles: ["owner", "manager", "sales", "admin"],
+      component: "enquiries",
     },
     {
       id: "client-history",
       title: "Client History",
       href: "/clients/history",
       iconName: "History",
-      roles: ["owner", "manager", "sales", "admin"],
+      component: "bookings",
     },
     {
       id: "enquiry-reminders",
       title: "Enquiry Reminders",
       href: "/sales/enquiry-reminders",
       iconName: "AlarmClock",
-      roles: ["owner", "manager", "sales", "admin"],
+      component: "enquiries",
     },
     {
       id: "blocked-hoardings",
       title: "Blocked Hoardings",
       href: "/blocked-hoardings",
       iconName: "ShieldAlert",
-      roles: ["manager", "sales", "supervisor", "admin"],
+      component: "blockedHoardings",
     },
     {
       id: "contracts",
       title: "Contracts",
       href: "/contracts",
       iconName: "FileText",
-      roles: ["owner", "accountant", "admin"],
+      component: "contracts",
     },
     {
       id: "sales-status",
       title: "Status",
       href: "/sales/renewals-due",
       iconName: "MessageCircleWarning",
-      roles: ["manager", "sales", "accountant", "admin"],
+      component: "renewalsDue",
     },
     {
       id: "remount-renew",
       title: "Remount / Renew",
       href: "/sales/remount-renew",
       iconName: "RefreshCcw",
-      roles: ["manager", "sales", "supervisor", "admin"],
+      component: "hoardings",
     },
     {
       id: "vendors",
       title: "Vendors & Landlord",
       href: "/vendors",
       iconName: "DollarSign",
-      roles: ["owner", "admin"],
+      component: "vendors",
     },
     {
       id: "users",
       title: "Users & Roles",
       href: "/users",
       iconName: "Users",
-      roles: ["owner", "admin"],
+      component: "users",
     },
     {
       id: "design",
       title: "Design",
       href: "/design",
       iconName: "Brush",
-      roles: ["designer", "admin"],
+      component: "designAssignments",
     },
     {
       id: "reports",
       title: "Reports",
       href: "/reports",
       iconName: "BarChart2",
-      roles: ["owner", "manager", "sales", "sales_head", "admin"],
+      component: "reports",
     },
     {
       id: "tasks",
       title: "Tasks",
       href: "/tasks",
       iconName: "CheckSquare",
-      roles: [
-        "owner",
-        "manager",
-        "sales",
-        "designer",
-        "supervisor",
-        "accountant",
-        "admin",
-      ],
+      component: "tasks",
+    },
+    {
+      id: "recycle-bin",
+      title: "Recycle Bin",
+      href: "/recycle-bin",
+      iconName: "Trash2",
+      component: "recycleBin",
+    },
+    {
+      id: "location",
+      title: "Location",
+      href: "/location",
+      iconName: "MapPin",
+      component: "locationTracking",
     },
     {
       id: "admin-settings",
       title: "Admin Settings",
       href: "/admin",
       iconName: "Settings",
-      roles: ["owner", "admin"],
+      component: "adminSettings",
     },
   ];
 
-  const roleFilteredItems = menuItems.filter((item) =>
-    item.roles.includes(userRole),
-  );
+  const canSeeNavItem = (item: (typeof menuItems)[number]) => {
+    if (item.component) {
+      return canAccess(userRole, item.component);
+    }
+    if (item.roles) {
+      return item.roles.includes(userRole);
+    }
+    return true;
+  };
+
+  const roleFilteredItems = menuItems.filter(canSeeNavItem);
 
   const filteredMenuItems =
     userRole === "supervisor"

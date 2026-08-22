@@ -93,7 +93,7 @@ export default function RecycleBinPage() {
   };
 
   return (
-    <ProtectedRoute component="hoardings">
+    <ProtectedRoute component="recycleBin">
       <div className="container" style={{ padding: "24px 0" }}>
         <div style={{ marginBottom: "24px" }}>
           <h1 style={{ color: "#ffffff" }}>Recycle Bin</h1>

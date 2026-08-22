@@ -1,4 +1,5 @@
 import axios from "axios";
+import { clearAuthCookie } from "@/lib/auth-cookie";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 const SALES_IDLE_STORAGE_KEY = "salesLastActivityAt";
@@ -47,6 +48,7 @@ api.interceptors.response.use(
           localStorage.removeItem("refreshToken");
           localStorage.removeItem("user");
           localStorage.removeItem(SALES_IDLE_STORAGE_KEY);
+          clearAuthCookie();
           window.location.href = "/login";
           return Promise.reject(refreshError);
         }

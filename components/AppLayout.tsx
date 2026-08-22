@@ -6,6 +6,7 @@ import Navbar from "./Navbar";
 import Toast from "./Toast";
 import ChatbotWidget from "./chatbot/ChatbotWidget";
 import { getRoleFromUser } from "@/lib/rbac";
+import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
 import { authAPI, devicesAPI } from "@/lib/api";
 
 interface AppLayoutProps {
@@ -52,6 +53,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
     localStorage.removeItem(SALES_IDLE_STORAGE_KEY);
+    clearAuthCookie();
   };
 
   const notifyServerLogout = async () => {
@@ -118,6 +120,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
+        setAuthCookie();
         setLoading(false);
         // If we are on /login but already authenticated, go to dashboard
         if (pathname === "/login") {

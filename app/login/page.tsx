@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authAPI, devicesAPI } from "@/lib/api";
+import { setAuthCookie } from "@/lib/auth-cookie";
 import { showInfo } from "@/lib/toast";
 
 // Simple UUID generator (no external dependency needed)
@@ -114,6 +115,7 @@ export default function Login() {
     const user = localStorage.getItem("user");
     if (token && user) {
       try {
+        setAuthCookie();
         const parsedUser = JSON.parse(user);
         router.replace(getDefaultRouteForRole(parsedUser?.role));
       } catch {
@@ -160,6 +162,7 @@ export default function Login() {
         localStorage.setItem("token", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
         localStorage.setItem("user", JSON.stringify(response.data.user));
+        setAuthCookie();
         sessionStorage.setItem(
           "dashboardWelcomeToast",
           JSON.stringify({
