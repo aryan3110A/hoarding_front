@@ -14,6 +14,7 @@ import {
   categoriesAPI,
   clientsAPI,
   hoardingsAPI,
+  isHoardingListFresh,
   proposalsAPI,
 } from "@/lib/api";
 import AccessDenied from "@/components/AccessDenied";
@@ -139,8 +140,37 @@ const isSelectionDisabledStatus = (status?: string | null) => {
   const s = String(status || "")
     .toLowerCase()
     .trim();
-  // Blocked stays selectable so it can still be proposed to other clients.
+  // Available and blocked stay selectable. Booked/live follow booked restrictions.
   return s === "booked" || s === "live";
+};
+
+const parentCodeOf = (code: string): string | null => {
+  const match = String(code || "")
+    .trim()
+    .match(/^(.*)-\d+$/);
+  return match?.[1] || null;
+};
+
+const conflictsWithProposalSelection = (
+  code: string,
+  selectedCodes: string[],
+) => {
+  const current = String(code || "").trim();
+  if (!current) return false;
+  const others = selectedCodes.filter((item) => item !== current);
+  let parent = parentCodeOf(current);
+  while (parent) {
+    if (others.includes(parent)) return true;
+    parent = parentCodeOf(parent);
+  }
+  return others.some((item) => {
+    let ancestor = parentCodeOf(item);
+    while (ancestor) {
+      if (ancestor === current) return true;
+      ancestor = parentCodeOf(ancestor);
+    }
+    return false;
+  });
 };
 
 // Must match backend computeLineFinalRate() exactly.
@@ -612,7 +642,6 @@ export default function ProposalBuilder({
   }, [normalizedClientInput, roleName]);
 
   const loadHoardings = async (nextPage: number) => {
-    setLoading(true);
     try {
       const isRangeMode = filters.availability === "available_in_range";
       if (
@@ -625,7 +654,7 @@ export default function ProposalBuilder({
         return;
       }
 
-      const resp = await hoardingsAPI.getAll({
+      const request = {
         page: nextPage,
         limit,
         city: filters.city || undefined,
@@ -641,7 +670,9 @@ export default function ProposalBuilder({
         endDate: isRangeMode
           ? filters.availabilityEndDate || undefined
           : undefined,
-      });
+      };
+      if (!isHoardingListFresh(request)) setLoading(true);
+      const resp = await hoardingsAPI.getAll(request);
       const payload = resp?.data || {};
       setHoardings(Array.isArray(payload.hoardings) ? payload.hoardings : []);
       setTotal(Number(payload.total || 0));
@@ -887,6 +918,14 @@ export default function ProposalBuilder({
       const byId = new Map(prev.map((x) => [x.hoardingId, x]));
       for (const h of hoardings) {
         if (!h?.id || isSelectionDisabledStatus(h.status)) continue;
+        if (
+          conflictsWithProposalSelection(
+            String(h.code || ""),
+            Array.from(byId.values()).map((item) => String(item.hoardingCode || "")),
+          )
+        ) {
+          continue;
+        }
         if (!byId.has(h.id)) {
           byId.set(h.id, {
             hoardingId: h.id,
@@ -942,6 +981,16 @@ export default function ProposalBuilder({
 
   const toggleSelect = (h: HoardingRow) => {
     if (isSelectionDisabledStatus(h.status)) return;
+    const alreadySelected = selected.some((item) => item.hoardingId === h.id);
+    if (
+      !alreadySelected &&
+      conflictsWithProposalSelection(
+        String(h.code || ""),
+        selected.map((item) => String(item.hoardingCode || "")),
+      )
+    ) {
+      return;
+    }
     const baseRate = standardRateOf(h);
     const minimumRate = minimumRateOf(h);
     setSelected((prev) => {
@@ -1755,19 +1804,31 @@ export default function ProposalBuilder({
                     <tbody>
                       {hoardings.map((h) => {
                         const unavailable = isSelectionDisabledStatus(h.status);
+                        const parentChildBlocked =
+                          !selectedSet.has(h.id) &&
+                          conflictsWithProposalSelection(
+                            String(h.code || ""),
+                            selected.map((item) => String(item.hoardingCode || "")),
+                          );
+                        const cannotSelect = unavailable || parentChildBlocked;
                         const st = String(h.status || "").toLowerCase();
                         const isBlocked = st === "blocked" || st === "tokenized";
                         return (
                           <tr
                             key={h.id}
-                            className={`border-t ${unavailable ? "bg-slate-100 text-slate-500" : "hover:bg-slate-50/60"}`}
+                            className={`border-t ${cannotSelect ? "bg-slate-100 text-slate-500" : "hover:bg-slate-50/60"}`}
                           >
                             <td className="p-2">
                               <input
                                 type="checkbox"
                                 checked={selectedSet.has(h.id)}
                                 onChange={() => toggleSelect(h)}
-                                disabled={unavailable}
+                                disabled={cannotSelect}
+                                title={
+                                  parentChildBlocked
+                                    ? "Parent and its sub-parts cannot be selected in the same proposal"
+                                    : undefined
+                                }
                                 className="accent-blue-600"
                               />
                             </td>
@@ -1779,7 +1840,11 @@ export default function ProposalBuilder({
                             </td>
                             <td className="p-2">{h.type || "—"}</td>
                             <td className="p-2">
-                              {unavailable ? (
+                              {parentChildBlocked ? (
+                                <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                                  Parent/sub-part
+                                </span>
+                              ) : unavailable ? (
                                 <span className="inline-flex items-center rounded-full bg-slate-300 px-2 py-0.5 text-xs font-semibold text-slate-700">
                                   {st === "booked"
                                     ? "Booked"

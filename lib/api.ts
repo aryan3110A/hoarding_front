@@ -1,8 +1,62 @@
 import axios from "axios";
 import { clearAuthCookie } from "@/lib/auth-cookie";
+import {
+  HOARDING_AVAILABILITY_STALE_MS,
+  HOARDING_CATALOG_LIMIT,
+  HOARDING_DETAIL_STALE_MS,
+  HOARDING_LIST_STALE_MS,
+  HOARDING_LOOKUP_STALE_MS,
+  clearQueryCache,
+  invalidateCategoryQueries,
+  invalidateHoardingQueries,
+  invalidateResource,
+  isQueryFresh,
+  isUnfilteredHoardingQuery,
+  normalizeQueryParams,
+  readThroughCache,
+  scopedQueryKey,
+} from "@/lib/query-client";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 const SALES_IDLE_STORAGE_KEY = "salesLastActivityAt";
+
+async function cachedGet(
+  resource: string,
+  path: string,
+  params?: object,
+  staleTime = HOARDING_LIST_STALE_MS,
+) {
+  const normalized = normalizeQueryParams(params);
+  return readThroughCache({
+    queryKey: scopedQueryKey([resource, "list", normalized]),
+    staleTime,
+    queryFn: async () => {
+      const response = await api.get(
+        path,
+        Object.keys(normalized).length ? { params: normalized } : undefined,
+      );
+      return response.data;
+    },
+  });
+}
+
+function sliceHoardingCatalog(body: any, page: number, limit: number) {
+  const rows = body?.data?.hoardings;
+  if (!Array.isArray(rows) || !limit) return body;
+  const total = Number(body?.data?.total ?? rows.length);
+  const start = (Math.max(page, 1) - 1) * limit;
+  if (start > 0 && start >= rows.length && rows.length < total) return null;
+  return {
+    ...body,
+    data: {
+      ...body.data,
+      hoardings: rows.slice(start, start + limit),
+      page: Math.max(page, 1),
+      limit,
+      total,
+    },
+  };
+}
 
 // Create axios instance with default config
 const api = axios.create({
@@ -49,6 +103,7 @@ api.interceptors.response.use(
           localStorage.removeItem("user");
           localStorage.removeItem(SALES_IDLE_STORAGE_KEY);
           clearAuthCookie();
+          clearQueryCache();
           window.location.href = "/login";
           return Promise.reject(refreshError);
         }
@@ -92,6 +147,14 @@ export const authAPI = {
   },
 };
 
+export function isHoardingListFresh(params?: object | null) {
+  const normalized = normalizeQueryParams(params);
+  const key = isUnfilteredHoardingQuery(normalized)
+    ? scopedQueryKey(["hoardings", "catalog"])
+    : scopedQueryKey(["hoardings", "list", normalized]);
+  return isQueryFresh(key, HOARDING_LIST_STALE_MS);
+}
+
 // Hoardings API
 export const hoardingsAPI = {
   getAll: async (params?: {
@@ -110,13 +173,41 @@ export const hoardingsAPI = {
     status?: string;
     ownership?: string;
   }) => {
-    const response = await api.get("/hoardings", { params });
-    return response.data;
+    const normalized = normalizeQueryParams(params);
+    if (isUnfilteredHoardingQuery(normalized)) {
+      const page = Number(normalized.page || 1);
+      const limit = Number(normalized.limit || 0);
+      const catalog = await readThroughCache({
+        queryKey: scopedQueryKey(["hoardings", "catalog"]),
+        staleTime: HOARDING_LIST_STALE_MS,
+        queryFn: async () => {
+          const response = await api.get("/hoardings", {
+            params: { page: 1, limit: HOARDING_CATALOG_LIMIT },
+          });
+          return response.data;
+        },
+      });
+      return sliceHoardingCatalog(catalog, page, limit) || catalog;
+    }
+    return readThroughCache({
+      queryKey: scopedQueryKey(["hoardings", "list", normalized]),
+      staleTime: HOARDING_LIST_STALE_MS,
+      queryFn: async () => {
+        const response = await api.get("/hoardings", { params: normalized });
+        return response.data;
+      },
+    });
   },
 
   getById: async (id: string) => {
-    const response = await api.get(`/hoardings/${id}`);
-    return response.data;
+    return readThroughCache({
+      queryKey: scopedQueryKey(["hoardings", "detail", id]),
+      staleTime: HOARDING_DETAIL_STALE_MS,
+      queryFn: async () => {
+        const response = await api.get(`/hoardings/${id}`);
+        return response.data;
+      },
+    });
   },
 
   nextCode: async () => {
@@ -125,32 +216,54 @@ export const hoardingsAPI = {
   },
 
   getCities: async () => {
-    const response = await api.get("/hoardings/cities");
-    return response.data;
+    return readThroughCache({
+      queryKey: scopedQueryKey(["hoardings", "cities"]),
+      staleTime: HOARDING_LOOKUP_STALE_MS,
+      queryFn: async () => {
+        const response = await api.get("/hoardings/cities");
+        return response.data;
+      },
+    });
   },
 
   getLandmarks: async () => {
-    const response = await api.get("/hoardings/landmarks");
-    return response.data;
+    return readThroughCache({
+      queryKey: scopedQueryKey(["hoardings", "landmarks"]),
+      staleTime: HOARDING_LOOKUP_STALE_MS,
+      queryFn: async () => {
+        const response = await api.get("/hoardings/landmarks");
+        return response.data;
+      },
+    });
   },
 
   getTypes: async () => {
-    const response = await api.get("/hoardings/types");
-    return response.data;
+    return readThroughCache({
+      queryKey: scopedQueryKey(["hoardings", "types"]),
+      staleTime: HOARDING_LOOKUP_STALE_MS,
+      queryFn: async () => {
+        const response = await api.get("/hoardings/types");
+        return response.data;
+      },
+    });
   },
 
   create: async (data: any) => {
     const response = await api.post("/hoardings", data);
+    await invalidateHoardingQueries();
     return response.data;
   },
 
   update: async (id: string, data: any) => {
     const response = await api.put(`/hoardings/${id}`, data);
+    await invalidateHoardingQueries();
     return response.data;
   },
 
   delete: async (id: string, mode?: "recycle" | "permanent") => {
     const response = await api.delete(`/hoardings/${id}`, { params: { mode } });
+    await invalidateHoardingQueries();
+    await invalidateResource("recycle-bin");
     return response.data;
   },
 
@@ -163,12 +276,19 @@ export const hoardingsAPI = {
   },
 
   getAvailability: async (id: string) => {
-    const response = await api.get(`/hoardings/${id}/availability`);
-    return response.data;
+    return readThroughCache({
+      queryKey: scopedQueryKey(["hoardings", "availability", id]),
+      staleTime: HOARDING_AVAILABILITY_STALE_MS,
+      queryFn: async () => {
+        const response = await api.get(`/hoardings/${id}/availability`);
+        return response.data;
+      },
+    });
   },
 
   markUnderProcess: async (id: string) => {
     const response = await api.post(`/hoardings/${id}/under-process`);
+    await invalidateHoardingQueries();
     return response.data;
   },
 
@@ -187,16 +307,17 @@ export const hoardingsAPI = {
     const response = await api.post(`/hoardings/${id}/finalize-status`, {
       status,
     });
+    await invalidateHoardingQueries();
     return response.data;
   },
 
   listRemountRenew: async () => {
-    const response = await api.get("/hoardings/remount-renew/list");
-    return response.data;
+    return cachedGet("hoardings-remount", "/hoardings/remount-renew/list", undefined, 60 * 1000);
   },
 
   requestRemount: async (id: string) => {
     const response = await api.post(`/hoardings/${id}/remount-request`);
+    await invalidateHoardingQueries();
     return response.data;
   },
 
@@ -207,6 +328,7 @@ export const hoardingsAPI = {
 
   completeRemount: async (id: string) => {
     const response = await api.post(`/hoardings/${id}/remount-complete`);
+    await invalidateHoardingQueries();
     return response.data;
   },
 
@@ -215,6 +337,7 @@ export const hoardingsAPI = {
     data: { tenure: number; newAmount: number; remountRequired: boolean },
   ) => {
     const response = await api.post(`/hoardings/${id}/renew`, data);
+    await invalidateHoardingQueries();
     return response.data;
   },
 
@@ -227,8 +350,7 @@ export const hoardingsAPI = {
 // Landlords API
 export const landlordsAPI = {
   list: async (params?: { q?: string }) => {
-    const response = await api.get("/landlords", { params });
-    return response.data;
+    return cachedGet("landlords", "/landlords", params);
   },
 
   groupedHoardings: async (params?: { q?: string }) => {
@@ -243,6 +365,7 @@ export const landlordsAPI = {
     address?: string;
   }) => {
     const response = await api.post("/landlords", data);
+    await invalidateResource("landlords");
     return response.data;
   },
 };
@@ -250,11 +373,18 @@ export const landlordsAPI = {
 // Categories API
 export const categoriesAPI = {
   list: async () => {
-    const response = await api.get("/categories");
-    return response.data;
+    return readThroughCache({
+      queryKey: scopedQueryKey(["categories", "list"]),
+      staleTime: HOARDING_LOOKUP_STALE_MS,
+      queryFn: async () => {
+        const response = await api.get("/categories");
+        return response.data;
+      },
+    });
   },
   create: async (data: { name: string }) => {
     const response = await api.post("/categories", data);
+    await invalidateCategoryQueries();
     return response.data;
   },
 };
@@ -326,12 +456,10 @@ export const propertyRentAPI = {
 
 export const maintenanceAPI = {
   types: async () => {
-    const response = await api.get("/maintenance/types");
-    return response.data;
+    return cachedGet("maintenance", "/maintenance/types", undefined, HOARDING_LOOKUP_STALE_MS);
   },
   list: async (params?: { page?: number; limit?: number }) => {
-    const response = await api.get("/maintenance", { params });
-    return response.data;
+    return cachedGet("maintenance", "/maintenance", params);
   },
   listByHoarding: async (hoardingId: string) => {
     const response = await api.get(`/maintenance/hoarding/${hoardingId}`);
@@ -382,8 +510,7 @@ export const locationsAPI = {
 // Proposals API (Phase 2)
 export const proposalsAPI = {
   list: async () => {
-    const response = await api.get("/proposals");
-    return response.data;
+    return cachedGet("proposals", "/proposals");
   },
 
   getById: async (id: string) => {
@@ -393,16 +520,19 @@ export const proposalsAPI = {
 
   createDraft: async (data: any) => {
     const response = await api.post("/proposals", data);
+    await invalidateResource("proposals");
     return response.data;
   },
 
   updateDraft: async (id: string, data: any) => {
     const response = await api.patch(`/proposals/${id}`, data);
+    await invalidateResource("proposals");
     return response.data;
   },
 
   send: async (id: string) => {
     const response = await api.post(`/proposals/${id}/send`);
+    await invalidateResource("proposals");
     return response.data;
   },
 
@@ -416,6 +546,8 @@ export const proposalsAPI = {
     payload?: { hoardingIds?: string[]; finalRates?: Record<string, number> },
   ) => {
     const response = await api.post(`/proposals/${id}/finalize`, payload || {});
+    await invalidateResource("proposals");
+    await invalidateHoardingQueries();
     return response.data;
   },
 
@@ -453,8 +585,7 @@ export const proposalsAPI = {
 // Users API
 export const usersAPI = {
   getAll: async () => {
-    const response = await api.get("/users");
-    return response.data;
+    return cachedGet("users", "/users", undefined, HOARDING_LOOKUP_STALE_MS);
   },
 
   getSalesDeviceStatus: async () => {
@@ -496,8 +627,7 @@ export const devicesAPI = {
 // Roles API
 export const rolesAPI = {
   getAll: async () => {
-    const response = await api.get("/roles");
-    return response.data;
+    return cachedGet("roles", "/roles", undefined, HOARDING_LOOKUP_STALE_MS);
   },
 
   getById: async (id: number) => {
@@ -524,8 +654,7 @@ export const rolesAPI = {
 // Contracts API
 export const contractsAPI = {
   getAll: async () => {
-    const response = await api.get("/contracts");
-    return response.data;
+    return cachedGet("contracts", "/contracts");
   },
   getById: async (id: string) => {
     const response = await api.get(`/contracts/${id}`);
@@ -546,8 +675,7 @@ export const contractsAPI = {
 // Clients API
 export const clientsAPI = {
   getAll: async () => {
-    const response = await api.get("/clients");
-    return response.data;
+    return cachedGet("clients", "/clients");
   },
 
   byPhone: async (phone: string) => {
@@ -584,8 +712,10 @@ export const clientsAPI = {
     phone: string;
     email?: string;
     companyName?: string;
+    billingAddress?: string;
   }) => {
     const response = await api.post("/clients", data);
+    await invalidateResource("clients");
     return response.data;
   },
 
@@ -682,9 +812,7 @@ export const enquiriesAPI = {
     | string;
     createdByRole?: "owner" | "sales" | string;
   }) => {
-    // Backend supports both /enquiries and /inquiries; prefer /inquiries.
-    const response = await api.get("/inquiries", { params });
-    return response.data;
+    return cachedGet("inquiries", "/inquiries", params);
   },
 
   getById: async (id: string) => {
@@ -723,6 +851,7 @@ export const enquiriesAPI = {
     categoryId?: string;
   }) => {
     const response = await api.post("/inquiries", data);
+    await invalidateResource("inquiries");
     return response.data;
   },
 
@@ -752,6 +881,7 @@ export const enquiriesAPI = {
     }>,
   ) => {
     const response = await api.put(`/inquiries/${id}`, data);
+    await invalidateResource("inquiries");
     return response.data;
   },
 
@@ -768,8 +898,7 @@ export const enquiriesAPI = {
   },
 
   listSalesUsers: async () => {
-    const response = await api.get("/inquiries/sales-users");
-    return response.data;
+    return cachedGet("inquiries", "/inquiries/sales-users", undefined, HOARDING_LOOKUP_STALE_MS);
   },
 };
 
@@ -779,8 +908,7 @@ export const inquiriesAPI = enquiriesAPI;
 // Bookings API
 export const bookingsAPI = {
   getAll: async (params?: { createdBy?: string; status?: string }) => {
-    const response = await api.get("/bookings", { params });
-    return response.data;
+    return cachedGet("bookings", "/bookings", params);
   },
 
   getById: async (id: string) => {
@@ -790,16 +918,22 @@ export const bookingsAPI = {
 
   create: async (data: any) => {
     const response = await api.post("/bookings", data);
+    await invalidateHoardingQueries();
+    await invalidateResource("bookings");
     return response.data;
   },
 
   update: async (id: string, data: any) => {
     const response = await api.put(`/bookings/${id}`, data);
+    await invalidateHoardingQueries();
+    await invalidateResource("bookings");
     return response.data;
   },
 
   delete: async (id: string) => {
     const response = await api.delete(`/bookings/${id}`);
+    await invalidateHoardingQueries();
+    await invalidateResource("bookings");
     return response.data;
   },
 };
@@ -821,6 +955,7 @@ export const bookingTokensAPI = {
     };
   }) => {
     const response = await api.post("/booking-tokens", data);
+    await invalidateHoardingQueries();
     return response.data;
   },
   getById: async (id: string) => {
@@ -855,14 +990,17 @@ export const bookingTokensAPI = {
       `/booking-tokens/${id}/confirm`,
       data || {},
     );
+    await invalidateHoardingQueries();
     return response.data;
   },
   cancel: async (id: string) => {
     const response = await api.post(`/booking-tokens/${id}/cancel`);
+    await invalidateHoardingQueries();
     return response.data;
   },
   release: async (id: string) => {
     const response = await api.post(`/booking-tokens/${id}/release`);
+    await invalidateHoardingQueries();
     return response.data;
   },
   requestExtension: async (id: string) => {
@@ -942,18 +1080,15 @@ export const blockedHoardingsAPI = {
 // Dashboard API
 export const dashboardAPI = {
   getOwnerDashboard: async () => {
-    const response = await api.get("/dashboard/owner");
-    return response.data;
+    return cachedGet("dashboard", "/dashboard/owner", undefined, 60 * 1000);
   },
 
   getManagerDashboard: async () => {
-    const response = await api.get("/dashboard/manager");
-    return response.data;
+    return cachedGet("dashboard", "/dashboard/manager", undefined, 60 * 1000);
   },
 
   getSalesDashboard: async () => {
-    const response = await api.get("/dashboard/sales");
-    return response.data;
+    return cachedGet("dashboard", "/dashboard/sales", undefined, 60 * 1000);
   },
 
   getSalesPerformance: async (params?: {
@@ -1114,6 +1249,7 @@ export const supervisorAPI = {
         status,
       },
     );
+    await invalidateHoardingQueries();
     return response.data;
   },
   markFit: async (id: string) => {
@@ -1125,6 +1261,7 @@ export const supervisorAPI = {
       `/supervisor/hoardings/${id}/mark-live`,
       data || {},
     );
+    await invalidateHoardingQueries();
     return response.data;
   },
   markLiveWithBilling: async (
@@ -1139,6 +1276,7 @@ export const supervisorAPI = {
       `/supervisor/hoardings/${id}/mark-live`,
       data || {},
     );
+    await invalidateHoardingQueries();
     return response.data;
   },
   setLiveDate: async (id: string, data: { plannedLiveDate: string }) => {
@@ -1163,6 +1301,7 @@ export const supervisorAPI = {
 
   completeRemount: async (id: string) => {
     const response = await api.post(`/hoardings/${id}/remount-complete`);
+    await invalidateHoardingQueries();
     return response.data;
   },
 };
@@ -1292,19 +1431,19 @@ export const locationAPI = {
     startDate?: string;
     endDate?: string;
   }) => {
-    const response = await api.get("/location/checkins", { params });
-    return response.data;
+    return cachedGet("location", "/location/checkins", params, 60 * 1000);
   },
 };
 
 // Recycle Bin API
 export const recycleBinAPI = {
   list: async () => {
-    const response = await api.get("/recycle-bin");
-    return response.data;
+    return cachedGet("recycle-bin", "/recycle-bin", undefined, 30 * 1000);
   },
   restore: async (id: string) => {
     const response = await api.post(`/recycle-bin/${id}/restore`);
+    await invalidateResource("recycle-bin");
+    await invalidateHoardingQueries();
     return response.data;
   },
   purge: async (id: string) => {
@@ -1316,8 +1455,7 @@ export const recycleBinAPI = {
 // Todos API
 export const todosAPI = {
   list: async () => {
-    const response = await api.get("/todos");
-    return response.data;
+    return cachedGet("todos", "/todos");
   },
   create: async (data: {
     title: string;
@@ -1325,8 +1463,10 @@ export const todosAPI = {
     dueDate?: string;
     visibility?: string;
     roleName?: string;
+    tags?: string;
   }) => {
     const response = await api.post("/todos", data);
+    await invalidateResource("todos");
     return response.data;
   },
   update: async (
@@ -1338,13 +1478,16 @@ export const todosAPI = {
       status?: string;
       visibility?: string;
       roleName?: string;
+      tags?: string | null;
     }
   ) => {
     const response = await api.patch(`/todos/${id}`, data);
+    await invalidateResource("todos");
     return response.data;
   },
   delete: async (id: string) => {
     const response = await api.delete(`/todos/${id}`);
+    await invalidateResource("todos");
     return response.data;
   },
 };

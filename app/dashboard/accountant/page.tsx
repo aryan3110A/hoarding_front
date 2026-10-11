@@ -830,41 +830,76 @@ export default function AccountantDashboardPage() {
             <h3>{billingSummary?.totalBillsGenerated || 0}</h3>
             <p>Total Bills Generated</p>
           </div>
-          <div className="stat-card">
+          <div
+            className="stat-card"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              setActiveQueueTab("to_be_generated");
+              document.getElementById("billing-queue")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
             <h3>
               {billingSummary?.toBeGenerated?.count || 0} /{" "}
               {formatCurrency(billingSummary?.toBeGenerated?.amount)}
             </h3>
             <p>To Be Generated</p>
           </div>
-          <div className="stat-card">
+          <div
+            className="stat-card"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              setActiveQueueTab("pending");
+              document.getElementById("billing-queue")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
             <h3>
               {billingSummary?.pending?.count || 0} /{" "}
               {formatCurrency(billingSummary?.pending?.amount)}
             </h3>
             <p>Pending</p>
           </div>
-          <div className="stat-card">
+          <div
+            className="stat-card"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              setActiveQueueTab("overdue");
+              document.getElementById("billing-queue")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
             <h3>
               {billingSummary?.overdue?.count || 0} /{" "}
               {formatCurrency(billingSummary?.overdue?.amount)}
             </h3>
             <p>Overdue</p>
           </div>
-          <div className="stat-card">
+          <div
+            className="stat-card"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              setActiveQueueTab("completed");
+              document.getElementById("billing-queue")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
             <h3>
               {billingSummary?.completed?.count || 0} /{" "}
               {formatCurrency(billingSummary?.completed?.amount)}
             </h3>
             <p>Completed</p>
           </div>
-          <div className="stat-card">
+          <div
+            className="stat-card"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              setActiveTab("printing");
+              document.getElementById("accountant-desks")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
             <h3>{formatCurrency(summary?.totalPrintingExpense)}</h3>
             <p>Printing Expenses Logged</p>
           </div>
         </div>
 
-        <div className="card" style={{ marginBottom: 24 }}>
+        <div id="billing-queue" className="card" style={{ marginBottom: 24 }}>
           <div
             style={{
               display: "flex",
@@ -1460,7 +1495,7 @@ export default function AccountantDashboardPage() {
             })}
         </div>
 
-        <div className="card">
+        <div id="accountant-desks" className="card">
           <div
             style={{
               display: "flex",

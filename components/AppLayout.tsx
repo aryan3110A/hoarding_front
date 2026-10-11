@@ -5,9 +5,11 @@ import { useRouter, usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import Toast from "./Toast";
 import ChatbotWidget from "./chatbot/ChatbotWidget";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { getRoleFromUser } from "@/lib/rbac";
 import { setAuthCookie, clearAuthCookie } from "@/lib/auth-cookie";
 import { authAPI, devicesAPI } from "@/lib/api";
+import { clearQueryCache, queryClient } from "@/lib/query-client";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -84,6 +86,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     setUser(null);
     setLoading(false);
     clearStoredAuth();
+    clearQueryCache();
     router.push("/login");
   };
 
@@ -362,7 +365,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   // On login route, render page even if not authenticated
   if (pathname === "/login" && !user) {
-    return <>{children}</>;
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   }
 
   // For protected routes, if user is still missing, render nothing (redirect fired above)
@@ -372,6 +375,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const showChatbot = ["owner", "admin"].includes(userRole);
 
   return (
+    <QueryClientProvider client={queryClient}>
     <UserContext.Provider value={user}>
       <div className="app-layout">
         <Toast />
@@ -382,5 +386,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
         {showChatbot && <ChatbotWidget />}
       </div>
     </UserContext.Provider>
+    </QueryClientProvider>
   );
 }

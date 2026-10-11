@@ -300,6 +300,7 @@ function DashboardContent() {
                 ) ||
                 String(e?.followupStatus || "").toLowerCase() === "pending",
             ).length,
+            totalProposals: Array.isArray(proposals) ? proposals.length : 0,
           });
           setRecentBookings(recent);
           setRecentEnquiries(recentEnq);
@@ -312,6 +313,7 @@ function DashboardContent() {
             totalBookings: 0,
             totalEnquiries: 0,
             pendingEnquiries: 0,
+            totalProposals: 0,
           });
           setRecentBookings([]);
           setRecentEnquiries([]);
@@ -1215,7 +1217,7 @@ function DashboardContent() {
           <>
             {canPayRent && stats?.salesSummary ? (
               <div className="grid" style={{ marginBottom: 12 }}>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/bookings")}>
                   <h3>
                     ₹
                     {Number(stats.salesSummary.totalSaleToday || 0).toLocaleString(
@@ -1224,7 +1226,7 @@ function DashboardContent() {
                   </h3>
                   <p>Total Sale Today</p>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/bookings")}>
                   <h3>
                     ₹
                     {Number(
@@ -1233,7 +1235,7 @@ function DashboardContent() {
                   </h3>
                   <p>Total Sale This Week</p>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/bookings")}>
                   <h3>
                     ₹
                     {Number(
@@ -1247,7 +1249,7 @@ function DashboardContent() {
 
             {canPayRent && stats?.rentPaymentTotals ? (
               <div className="grid" style={{ marginBottom: 12 }}>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/reports")}>
                   <h3>
                     ₹
                     {Number(
@@ -1256,7 +1258,7 @@ function DashboardContent() {
                   </h3>
                   <p>Rent Paid Today</p>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/reports")}>
                   <h3>
                     ₹
                     {Number(
@@ -1265,7 +1267,7 @@ function DashboardContent() {
                   </h3>
                   <p>Rent Paid This Week</p>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/reports")}>
                   <h3>
                     ₹
                     {Number(
@@ -1274,7 +1276,7 @@ function DashboardContent() {
                   </h3>
                   <p>Rent Paid This Month</p>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/reports")}>
                   <h3>
                     ₹
                     {Number(
@@ -1283,7 +1285,7 @@ function DashboardContent() {
                   </h3>
                   <p>Total Overdue Rent</p>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/reports")}>
                   <h3>
                     ₹
                     {Number(
@@ -1298,7 +1300,7 @@ function DashboardContent() {
             <div className="grid">
               {stats?.mode === "property" ? (
                 <>
-                  <div className="stat-card">
+                  <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/reports")}>
                     <h3>{stats?.totalProperties || 0}</h3>
                     <p>Total Landlords on Rent</p>
                   </div>
@@ -1329,7 +1331,7 @@ function DashboardContent() {
                 </>
               ) : (
                 <>
-                  <div className="stat-card">
+                  <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/reports")}>
                     <h3>{stats?.totalHoardingsOnRent || 0}</h3>
                     <p>Total Landlords on Rent</p>
                   </div>
@@ -1765,7 +1767,11 @@ function DashboardContent() {
         {userRoleLower === "sales" && (
           <>
             <div className="grid">
-              <div className="stat-card">
+              <div
+                className="stat-card"
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push("/hoardings")}
+              >
                 <h3>
                   {loading ? (
                     <span className="loading-value animate-pulse">•••</span>
@@ -1775,7 +1781,11 @@ function DashboardContent() {
                 </h3>
                 <p>Total Hoardings</p>
               </div>
-              <div className="stat-card">
+              <div
+                className="stat-card"
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push("/hoardings?status=available")}
+              >
                 <h3>
                   {loading ? (
                     <span className="loading-value animate-pulse">•••</span>
@@ -1785,7 +1795,11 @@ function DashboardContent() {
                 </h3>
                 <p>Available Hoardings</p>
               </div>
-              <div className="stat-card">
+              <div
+                className="stat-card"
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push("/bookings")}
+              >
                 <h3>
                   {loading ? (
                     <span className="loading-value animate-pulse">•••</span>
@@ -1795,7 +1809,11 @@ function DashboardContent() {
                 </h3>
                 <p>Total Bookings</p>
               </div>
-              <div className="stat-card">
+              <div
+                className="stat-card"
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push("/enquiries")}
+              >
                 <h3>
                   {loading ? (
                     <span className="loading-value animate-pulse">•••</span>
@@ -1805,7 +1823,11 @@ function DashboardContent() {
                 </h3>
                 <p>Total Enquiries</p>
               </div>
-              <div className="stat-card">
+              <div
+                className="stat-card"
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push("/enquiries?status=OPEN")}
+              >
                 <h3>
                   {loading ? (
                     <span className="loading-value animate-pulse">•••</span>
@@ -1814,6 +1836,44 @@ function DashboardContent() {
                   )}
                 </h3>
                 <p>Pending Enquiries</p>
+              </div>
+              <div
+                className="stat-card"
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push("/proposals")}
+              >
+                <h3>
+                  {loading ? (
+                    <span className="loading-value animate-pulse">•••</span>
+                  ) : (
+                    salesStats?.totalProposals || salesStats?.proposals || "—"
+                  )}
+                </h3>
+                <p>Proposals</p>
+              </div>
+              <div
+                className="stat-card"
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push("/sales/enquiry-reminders")}
+              >
+                <h3>→</h3>
+                <p>Pending Follow-ups</p>
+              </div>
+              <div
+                className="stat-card"
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push("/hoardings?status=blocked")}
+              >
+                <h3>→</h3>
+                <p>Blocked Hoardings</p>
+              </div>
+              <div
+                className="stat-card"
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push("/clients/history")}
+              >
+                <h3>→</h3>
+                <p>Clients</p>
               </div>
             </div>
 
@@ -2167,19 +2227,19 @@ function DashboardContent() {
         {userRoleLower === "designer" && (
           <>
             <div className="grid">
-              <div className="stat-card">
+              <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/design")}>
                 <h3>
                   {tasks.filter((t: any) => t.status === "pending").length}
                 </h3>
                 <p>Pending Designs</p>
               </div>
-              <div className="stat-card">
+              <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/design")}>
                 <h3>
                   {tasks.filter((t: any) => t.status === "in_progress").length}
                 </h3>
                 <p>In Progress</p>
               </div>
-              <div className="stat-card">
+              <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => router.push("/design")}>
                 <h3>
                   {tasks.filter((t: any) => t.status === "completed").length}
                 </h3>
@@ -2297,19 +2357,19 @@ function DashboardContent() {
         {userRoleLower === "fitter" && (
           <>
             <div className="grid">
-              <div className="stat-card">
+              <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => document.getElementById("fitter-jobs")?.scrollIntoView({ behavior: "smooth" })}>
                 <h3>
                   {tasks.filter((t: any) => t.status === "pending").length}
                 </h3>
                 <p>Pending Installations</p>
               </div>
-              <div className="stat-card">
+              <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => document.getElementById("fitter-jobs")?.scrollIntoView({ behavior: "smooth" })}>
                 <h3>
                   {tasks.filter((t: any) => t.status === "in_progress").length}
                 </h3>
                 <p>In Progress</p>
               </div>
-              <div className="stat-card">
+              <div className="stat-card" style={{ cursor: "pointer" }} onClick={() => document.getElementById("fitter-jobs")?.scrollIntoView({ behavior: "smooth" })}>
                 <h3>
                   {tasks.filter((t: any) => t.status === "completed").length}
                 </h3>
@@ -2318,7 +2378,7 @@ function DashboardContent() {
             </div>
 
             {/* Assigned Installation Jobs */}
-            <div className="card" style={{ marginTop: "24px" }}>
+            <div id="fitter-jobs" className="card" style={{ marginTop: "24px" }}>
               <h3>My Assigned Installation Jobs</h3>
               {loading ? (
                 <LoadingAnimation label="Loading installation jobs..." />

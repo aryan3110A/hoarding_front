@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
+import { contractsAPI } from "@/lib/api";
 import { useUser } from "@/components/AppLayout";
 import { showError } from "@/lib/toast";
 
@@ -20,13 +20,8 @@ export default function ContractDetail() {
     const fetch = async () => {
       try {
         setLoading(true);
-        const authToken = localStorage.getItem("token");
-        const API_URL =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-        const resp = await axios.get(`${API_URL}/api/contracts`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-        const list = resp.data?.data || resp.data || [];
+        const resp = await contractsAPI.getAll();
+        const list = resp?.data || resp || [];
         const found = Array.isArray(list)
           ? list.find((c: any) => String(c.id) === String(id))
           : null;

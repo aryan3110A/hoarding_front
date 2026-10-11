@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { locationAPI } from "@/lib/api";
+import { invalidateResource } from "@/lib/query-client";
 import { useUser } from "@/components/AppLayout";
 
 export default function Location() {
@@ -42,16 +44,8 @@ export default function Location() {
   const fetchCheckIns = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
-        }/api/location/checkins`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const checkInsData = response.data?.data || response.data || [];
+      const response = await locationAPI.getAllCheckIns();
+      const checkInsData = response?.data || response || [];
       setCheckIns(Array.isArray(checkInsData) ? checkInsData : []);
       setLoading(false);
     } catch (error) {
@@ -78,6 +72,7 @@ export default function Location() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      await invalidateResource("location");
       setShowCheckInForm(false);
       setCheckInData({ latitude: "", longitude: "", notes: "" });
       fetchCheckIns();

@@ -534,6 +534,13 @@ h4 {
   transition: all 0.2s ease;
   min-width: 120px;
   text-align: center;
+  outline: none;
+}
+
+.tab-button:focus,
+.tab-button:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .tab-button:hover {
@@ -541,7 +548,9 @@ h4 {
   box-shadow: var(--shadow-md);
 }
 
-.tab-button.active {
+.tab-button.active,
+.tab-button.active:focus,
+.tab-button.active:focus-visible {
   background: linear-gradient(
     135deg,
     var(--primary-color) 0%,
@@ -549,7 +558,8 @@ h4 {
   );
   color: var(--glacier-white);
   border-color: transparent;
-  box-shadow: 0 6px 16px rgba(31, 92, 169, 0.3);
+  outline: none;
+  box-shadow: none;
 }
 
 /* Stat Cards */

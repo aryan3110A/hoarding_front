@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
 import OptionAutocomplete from "@/components/OptionAutocomplete";
 import CustomSelect from "@/components/CustomSelect";
-import { categoriesAPI, hoardingsAPI } from "@/lib/api";
+import { categoriesAPI, hoardingsAPI, isHoardingListFresh } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 import { canCreate, canDelete, canUpdate, getRoleFromUser } from "@/lib/rbac";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -22,6 +23,7 @@ type HoardingFilters = {
 };
 
 export default function Hoardings() {
+  const searchParams = useSearchParams();
   const [hoardings, setHoardings] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ export default function Hoardings() {
     city: "",
     area: "",
     landmark: "",
-    status: "",
+    status: searchParams?.get("status") || "",
     categoryId: "",
     type: "",
   });
@@ -146,17 +148,18 @@ export default function Hoardings() {
     reset: boolean = false,
   ) => {
     try {
+      const request = {
+        ...filters,
+        page: pageNum,
+        limit: PAGE_SIZE,
+      };
       if (reset) {
-        setLoading(true);
+        if (!isHoardingListFresh(request)) setLoading(true);
       } else {
         setLoadingMore(true);
       }
 
-      const response = await hoardingsAPI.getAll({
-        ...filters,
-        page: pageNum,
-        limit: PAGE_SIZE,
-      });
+      const response = await hoardingsAPI.getAll(request);
 
       if (response?.success && response?.data) {
         const rows = Array.isArray(response.data.hoardings)

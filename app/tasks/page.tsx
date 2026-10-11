@@ -15,12 +15,15 @@ export default function TasksPage() {
 
   // Form states
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     dueDate: "",
     visibility: "private",
     roleName: "",
+    tags: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -64,18 +67,23 @@ export default function TasksPage() {
         dueDate: formData.dueDate || undefined,
         visibility: formData.visibility,
         roleName: formData.visibility === "role" ? formData.roleName : undefined,
+        tags: formData.tags.trim() || undefined,
       };
 
-      const res = await todosAPI.create(payload);
+      const res = editingId
+        ? await todosAPI.update(editingId, payload)
+        : await todosAPI.create(payload);
       if (res?.success) {
-        showSuccess("Task created successfully");
+        showSuccess(editingId ? "Task updated successfully" : "Task created successfully");
         setShowAddForm(false);
+        setEditingId(null);
         setFormData({
           title: "",
           description: "",
           dueDate: "",
           visibility: "private",
           roleName: "",
+          tags: "",
         });
         loadTodos();
       } else {
@@ -130,10 +138,53 @@ export default function TasksPage() {
     }
   };
 
+  const resetForm = () => {
+    setEditingId(null);
+    setFormData({
+      title: "",
+      description: "",
+      dueDate: "",
+      visibility: "private",
+      roleName: "",
+      tags: "",
+    });
+  };
+
+  const startEdit = (todo: any) => {
+    setEditingId(String(todo.id));
+    setShowAddForm(true);
+    setFormData({
+      title: String(todo.title || ""),
+      description: String(todo.description || ""),
+      dueDate: todo.dueDate ? String(todo.dueDate).slice(0, 10) : "",
+      visibility: String(todo.visibility || "private"),
+      roleName: String(todo.roleName || ""),
+      tags: String(todo.tags || ""),
+    });
+  };
+
   const filteredTodos = useMemo(() => {
-    if (activeTab === "all") return todos;
-    return todos.filter((t) => String(t.visibility).toLowerCase() === activeTab);
-  }, [todos, activeTab]);
+    const q = search.trim().toLowerCase();
+    return todos.filter((t) => {
+      if (activeTab !== "all" && String(t.visibility).toLowerCase() !== activeTab) {
+        return false;
+      }
+      if (!q) return true;
+      const haystack = [
+        t.title,
+        t.description,
+        t.status,
+        t.tags,
+        t.visibility,
+        t.roleName,
+        t.createdBy?.name,
+        t.createdBy?.email,
+      ]
+        .map((value) => String(value || "").toLowerCase())
+        .join(" ");
+      return haystack.includes(q);
+    });
+  }, [todos, activeTab, search]);
 
   const formatDate = (value: unknown) => {
     if (!value) return null;
@@ -146,15 +197,6 @@ export default function TasksPage() {
     });
   };
 
-  const getRoleBadgeColor = (role: string) => {
-    const r = String(role).toLowerCase();
-    if (r === "owner") return "bg-red-100 text-red-800 border-red-200";
-    if (r === "admin") return "bg-purple-100 text-purple-800 border-purple-200";
-    if (r === "manager") return "bg-blue-100 text-blue-800 border-blue-200";
-    if (r === "sales") return "bg-green-100 text-green-800 border-green-200";
-    return "bg-slate-100 text-slate-800 border-slate-200";
-  };
-
   if (!user) {
     return (
       <div style={{ textAlign: "center", padding: "40px" }}>
@@ -163,75 +205,113 @@ export default function TasksPage() {
     );
   }
 
+  const suggestedTags = [
+    "Printing",
+    "Mounting",
+    "Client Follow-up",
+    "Site Visit",
+    "Maintenance",
+    "Artwork",
+    "Payment",
+    "Urgent",
+  ];
+
+  const toggleSuggestedTag = (tag: string) => {
+    const current = formData.tags
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const next = current.some((item) => item.toLowerCase() === tag.toLowerCase())
+      ? current.filter((item) => item.toLowerCase() !== tag.toLowerCase())
+      : [...current, tag];
+    setFormData({ ...formData, tags: next.join(", ") });
+  };
+
   return (
     <ProtectedRoute component="tasks">
-      <div className="px-4 sm:px-6 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-white">To-Do List</h1>
-              <p className="text-white/80 mt-1 text-sm">
-                Organize campaigns, log custom action items, and manage public, private, or role-based checklists.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="self-start sm:self-auto inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-md transition"
-            >
-              {showAddForm ? "✕ Close Form" : "➕ Create New Task"}
-            </button>
+      <div className="tasks-page">
+        <div className="mobile-page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div>
+            <h1 style={{ marginBottom: 4 }}>Tasks</h1>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.85)", fontSize: 14 }}>
+              Track follow-ups, site work, and internal action items.
+            </p>
           </div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              if (showAddForm) resetForm();
+              setShowAddForm(!showAddForm);
+            }}
+          >
+            {showAddForm ? "Close" : "New Task"}
+          </button>
+        </div>
 
-          {/* Add Todo Form */}
           {showAddForm && (
-            <div className="bg-white/95 backdrop-blur border border-white/20 shadow-xl rounded-2xl p-5 md:p-6 mb-8 text-slate-850">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Create Action Item</h3>
-              <form onSubmit={handleAddTodo} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Task Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="e.g., Mount new flex for client Shubham"
-                    required
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Provide additional task context (optional)..."
-                    rows={3}
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Due Date (optional)
-                    </label>
+            <div className="card tasks-form-card">
+              <h3 style={{ marginTop: 0, marginBottom: 12 }}>
+                {editingId ? "Edit task" : "New task"}
+              </h3>
+              <form onSubmit={handleAddTodo}>
+                <div className="tasks-form-grid">
+                  <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                    <label>Title *</label>
+                    <input
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="Example: Mount flex at CG Road"
+                      required
+                    />
+                  </div>
+                  <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                    <label>Description</label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Client, hoarding, location, or next step"
+                      rows={2}
+                    />
+                  </div>
+                  <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                    <label>Tags</label>
+                    <input
+                      type="text"
+                      value={formData.tags}
+                      onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                      placeholder="Printing, Mounting, Urgent"
+                    />
+                    <div className="tasks-tag-picks">
+                      {suggestedTags.map((tag) => {
+                        const selected = formData.tags
+                          .split(",")
+                          .map((item) => item.trim().toLowerCase())
+                          .includes(tag.toLowerCase());
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            className={selected ? "tasks-tag-pick selected" : "tasks-tag-pick"}
+                            onClick={() => toggleSuggestedTag(tag)}
+                          >
+                            {tag}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>Due date</label>
                     <input
                       type="date"
                       value={formData.dueDate}
                       onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none"
                     />
                   </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Visibility Scope
-                    </label>
+                  <div className="form-group">
+                    <label>Visibility</label>
                     <select
                       value={formData.visibility}
                       onChange={(e) =>
@@ -241,197 +321,351 @@ export default function TasksPage() {
                           roleName: e.target.value !== "role" ? "" : formData.roleName,
                         })
                       }
-                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none"
                     >
-                      <option value="private">Private (Only Me)</option>
-                      <option value="public">Public (Everyone)</option>
-                      <option value="role">Role-Based (Specific Roles)</option>
+                      <option value="private">Private</option>
+                      <option value="public">Public</option>
+                      <option value="role">Role</option>
                     </select>
                   </div>
-
                   {formData.visibility === "role" && (
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        Target Role *
-                      </label>
+                    <div className="form-group">
+                      <label>Role *</label>
                       <select
                         value={formData.roleName}
                         onChange={(e) => setFormData({ ...formData, roleName: e.target.value })}
                         required
-                        className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none"
                       >
-                        <option value="">-- Choose Role --</option>
-                        {availableRoles.map((r) => (
-                          <option key={r} value={r}>
-                            {r.toUpperCase()}
+                        <option value="">Choose role</option>
+                        {availableRoles.map((role) => (
+                          <option key={role} value={role}>
+                            {role}
                           </option>
                         ))}
                       </select>
                     </div>
                   )}
                 </div>
-
-                <div className="pt-2 flex items-center justify-end gap-3">
+                <div className="tasks-form-actions">
                   <button
                     type="button"
-                    onClick={() => setShowAddForm(false)}
-                    className="px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 text-sm font-semibold transition"
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setShowAddForm(false);
+                      resetForm();
+                    }}
                   >
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow transition"
-                  >
-                    {submitting ? "Creating..." : "Save Action Item"}
+                  <button type="submit" className="btn btn-primary" disabled={submitting}>
+                    {submitting ? "Saving..." : editingId ? "Update task" : "Save task"}
                   </button>
                 </div>
               </form>
             </div>
           )}
 
-          {/* Filters tabs */}
-          <div className="flex flex-wrap gap-3 mb-6">
-            {[
-              { id: "all", label: "📋 All Tasks" },
-              { id: "private", label: "🔒 Private" },
-              { id: "public", label: "🌐 Public" },
-              { id: "role", label: "👥 Role-Based" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div className="card tasks-list-card">
+            <div className="tasks-toolbar">
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search title, description, status, tags, or user"
+              />
+              <div className="tasks-segment" role="tablist">
+                {[
+                  { id: "all", label: "All" },
+                  { id: "private", label: "Private" },
+                  { id: "public", label: "Public" },
+                  { id: "role", label: "Role" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={activeTab === tab.id ? "active" : ""}
+                    onClick={() => setActiveTab(tab.id as any)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {loading ? (
+              <p className="tasks-empty">Loading tasks...</p>
+            ) : filteredTodos.length === 0 ? (
+              <p className="tasks-empty">No tasks match this view.</p>
+            ) : (
+              <div className="tasks-table-wrap">
+                <table className="tasks-table">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Task</th>
+                      <th>Due</th>
+                      <th>Scope</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTodos.map((todo) => {
+                      const isDone = todo.status === "done";
+                      const isCreator = String(todo.createdById) === String(user?.id);
+                      const canManage =
+                        isCreator ||
+                        ["owner", "admin"].includes(String(getRoleFromUser(user) || "").toLowerCase());
+                      return (
+                        <tr key={todo.id} className={isDone ? "is-done" : ""}>
+                          <td>
+                            <button
+                              type="button"
+                              className={isDone ? "tasks-check done" : "tasks-check"}
+                              onClick={() => handleToggleStatus(todo.id, todo.status)}
+                              aria-label={isDone ? "Mark pending" : "Mark done"}
+                            >
+                              {isDone ? "✓" : ""}
+                            </button>
+                          </td>
+                          <td>
+                            <div className="tasks-title">{todo.title}</div>
+                            {todo.description ? <div className="tasks-desc">{todo.description}</div> : null}
+                            {todo.tags ? (
+                              <div className="tasks-tags">
+                                {String(todo.tags)
+                                  .split(",")
+                                  .map((tag: string) => tag.trim())
+                                  .filter(Boolean)
+                                  .map((tag: string) => (
+                                    <span key={tag}>{tag}</span>
+                                  ))}
+                              </div>
+                            ) : null}
+                            <div className="tasks-meta">
+                              {todo.createdBy?.name || "System"}
+                            </div>
+                          </td>
+                          <td>{formatDate(todo.dueDate) || "—"}</td>
+                          <td>
+                            {todo.visibility === "role"
+                              ? `Role · ${String(todo.roleName || "").toLowerCase()}`
+                              : String(todo.visibility || "private")}
+                          </td>
+                          <td className="tasks-actions">
+                            {canManage ? (
+                              <button type="button" onClick={() => startEdit(todo)}>
+                                Edit
+                              </button>
+                            ) : null}
+                            {isCreator ? (
+                              <button type="button" className="danger" onClick={() => handleDeleteTodo(todo.id)}>
+                                Delete
+                              </button>
+                            ) : null}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
-          {/* List contents */}
-          {loading ? (
-            <div className="text-center py-16 bg-white/10 rounded-2xl border border-white/10">
-              <div className="loading-spinner mx-auto"></div>
-              <p className="text-white mt-4 text-sm">Loading task checklist...</p>
-            </div>
-          ) : filteredTodos.length === 0 ? (
-            <div className="bg-white/95 rounded-2xl border border-white/20 shadow-xl p-10 text-center text-slate-600">
-              <div className="text-4xl mb-4 font-semibold text-slate-400">✔️</div>
-              <h3 className="text-lg font-bold text-slate-800">Checklist is empty</h3>
-              <p className="text-sm mt-1 text-slate-500">
-                All caught up! Create a new task to track list deliverables.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredTodos.map((todo) => {
-                const isDone = todo.status === "done";
-                const isCreator = String(todo.createdById) === String(user?.id);
-
-                return (
-                  <div
-                    key={todo.id}
-                    className={`bg-white/95 text-slate-800 rounded-xl p-5 shadow border transition-all flex items-start gap-4 ${
-                      isDone ? "border-green-300 bg-green-50/95 opacity-80" : "border-white/20 hover:border-white/40"
-                    }`}
-                  >
-                    {/* Status Checkbox */}
-                    <button
-                      type="button"
-                      onClick={() => handleToggleStatus(todo.id, todo.status)}
-                      className={`flex-shrink-0 w-6 h-6 rounded-lg border flex items-center justify-center text-xs transition-all ${
-                        isDone
-                          ? "bg-green-500 border-green-500 text-white font-bold"
-                          : "border-slate-300 hover:border-sky-500 hover:bg-sky-50 bg-white"
-                      }`}
-                    >
-                      {isDone && "✓"}
-                    </button>
-
-                    {/* Todo Details */}
-                    <div className="flex-grow min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        {/* Scope tags */}
-                        {todo.visibility === "private" && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                            🔒 Private
-                          </span>
-                        )}
-                        {todo.visibility === "public" && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
-                            🌐 Public
-                          </span>
-                        )}
-                        {todo.visibility === "role" && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                            👥 Role: {todo.roleName?.toUpperCase()}
-                          </span>
-                        )}
-
-                        {todo.dueDate && (
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                              new Date(todo.dueDate) < new Date() && !isDone
-                                ? "bg-red-50 text-red-700 border-red-200"
-                                : "bg-slate-50 text-slate-600 border-slate-200"
-                            }`}
-                          >
-                            📅 Due: {formatDate(todo.dueDate)}
-                          </span>
-                        )}
-                      </div>
-
-                      <h4
-                        className={`text-base font-bold text-slate-900 leading-tight ${
-                          isDone ? "line-through text-slate-400" : ""
-                        }`}
-                      >
-                        {todo.title}
-                      </h4>
-
-                      {todo.description && (
-                        <p
-                          className={`text-sm text-slate-500 mt-1.5 whitespace-pre-wrap leading-relaxed ${
-                            isDone ? "line-through opacity-70" : ""
-                          }`}
-                        >
-                          {todo.description}
-                        </p>
-                      )}
-
-                      <div className="text-[10px] text-slate-400 mt-2 flex flex-wrap gap-2">
-                        <span>
-                          Created by: <strong>{todo.createdBy?.name || "System"}</strong>
-                        </span>
-                        <span>•</span>
-                        <span>
-                          Created at: {new Date(todo.createdAt).toLocaleString("en-IN", {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Delete actions */}
-                    {isCreator && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteTodo(todo.id)}
-                        className="flex-shrink-0 text-slate-400 hover:text-red-500 p-1 font-bold text-lg leading-none transition"
-                        title="Delete Task"
-                      >
-                        🗑️
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+          <style jsx global>{`
+            .tasks-page .card:hover {
+              transform: none;
+            }
+            .tasks-form-card,
+            .tasks-list-card {
+              padding: 16px 18px;
+            }
+            .tasks-form-grid {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 10px 14px;
+            }
+            .tasks-form-card .form-group {
+              margin-bottom: 0;
+            }
+            .tasks-form-card .form-group label {
+              margin-bottom: 4px;
+              font-size: 13px;
+            }
+            .tasks-form-card .form-group input,
+            .tasks-form-card .form-group select,
+            .tasks-form-card .form-group textarea {
+              padding: 8px 12px;
+            }
+            .tasks-tag-picks {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 6px;
+              margin-top: 8px;
+            }
+            .tasks-tag-pick {
+              border: 1px solid #cbd5e1;
+              background: #fff;
+              color: #334155;
+              border-radius: 999px;
+              padding: 4px 10px;
+              font-size: 12px;
+              font-weight: 600;
+              cursor: pointer;
+              outline: none;
+            }
+            .tasks-tag-pick.selected {
+              background: #e0f2fe;
+              border-color: #7dd3fc;
+              color: #0369a1;
+            }
+            .tasks-form-actions {
+              display: flex;
+              justify-content: flex-end;
+              gap: 8px;
+              margin-top: 12px;
+            }
+            .tasks-toolbar {
+              display: flex;
+              gap: 12px;
+              align-items: center;
+              justify-content: space-between;
+              flex-wrap: wrap;
+              margin-bottom: 12px;
+            }
+            .tasks-toolbar input {
+              flex: 1;
+              min-width: 220px;
+              padding: 8px 12px;
+              border: 1px solid #cbd5e1;
+              border-radius: 8px;
+              font-size: 14px;
+            }
+            .tasks-segment {
+              display: inline-flex;
+              background: #f1f5f9;
+              border-radius: 8px;
+              padding: 3px;
+              gap: 2px;
+            }
+            .tasks-segment button {
+              border: 0;
+              background: transparent;
+              color: #475569;
+              font-size: 13px;
+              font-weight: 600;
+              padding: 6px 12px;
+              border-radius: 6px;
+              cursor: pointer;
+              outline: none;
+              box-shadow: none;
+            }
+            .tasks-segment button.active,
+            .tasks-segment button:focus,
+            .tasks-segment button:focus-visible {
+              outline: none;
+              box-shadow: none;
+            }
+            .tasks-segment button.active {
+              background: #fff;
+              color: #0f172a;
+            }
+            .tasks-empty {
+              margin: 8px 0 4px;
+              color: #64748b;
+              text-align: center;
+              padding: 28px 0;
+            }
+            .tasks-table-wrap {
+              overflow-x: auto;
+            }
+            .tasks-table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 14px;
+            }
+            .tasks-table th {
+              text-align: left;
+              font-size: 12px;
+              letter-spacing: 0.02em;
+              text-transform: uppercase;
+              color: #64748b;
+              padding: 8px;
+              border-bottom: 1px solid #e2e8f0;
+            }
+            .tasks-table td {
+              padding: 10px 8px;
+              border-bottom: 1px solid #f1f5f9;
+              vertical-align: top;
+              color: #0f172a;
+            }
+            .tasks-table tr.is-done .tasks-title,
+            .tasks-table tr.is-done .tasks-desc {
+              color: #94a3b8;
+              text-decoration: line-through;
+            }
+            .tasks-title {
+              font-weight: 650;
+            }
+            .tasks-desc,
+            .tasks-meta {
+              color: #64748b;
+              font-size: 12px;
+              margin-top: 2px;
+            }
+            .tasks-tags {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 4px;
+              margin-top: 6px;
+            }
+            .tasks-tags span {
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              color: #334155;
+              border-radius: 999px;
+              padding: 1px 8px;
+              font-size: 11px;
+              font-weight: 600;
+            }
+            .tasks-check {
+              width: 18px;
+              height: 18px;
+              border-radius: 4px;
+              border: 1px solid #cbd5e1;
+              background: #fff;
+              cursor: pointer;
+              outline: none;
+              color: #fff;
+              font-size: 12px;
+              line-height: 1;
+            }
+            .tasks-check.done {
+              background: #0f766e;
+              border-color: #0f766e;
+            }
+            .tasks-actions {
+              white-space: nowrap;
+              text-align: right;
+            }
+            .tasks-actions button {
+              border: 0;
+              background: transparent;
+              color: #0369a1;
+              font-weight: 600;
+              font-size: 13px;
+              cursor: pointer;
+              outline: none;
+              padding: 0 6px;
+            }
+            .tasks-actions button.danger {
+              color: #b91c1c;
+            }
+            @media (max-width: 720px) {
+              .tasks-form-grid {
+                grid-template-columns: 1fr;
+              }
+            }
+          `}</style>
       </div>
     </ProtectedRoute>
   );

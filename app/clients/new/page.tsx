@@ -22,6 +22,8 @@ export default function NewClientPage() {
     phone: prefillPhone,
     email: "",
     companyName: "",
+    area: "",
+    landmark: "",
   });
 
   const canSubmit = useMemo(() => {
@@ -76,11 +78,16 @@ export default function NewClientPage() {
     }
     setSubmitting(true);
     try {
+      const locationBits = [
+        form.area.trim() ? `Area: ${form.area.trim()}` : "",
+        form.landmark.trim() ? `Landmark: ${form.landmark.trim()}` : "",
+      ].filter(Boolean);
       const resp = await clientsAPI.create({
         name: form.name.trim(),
         phone: form.phone.trim(),
         email: form.email.trim() || undefined,
         companyName: form.companyName.trim() || undefined,
+        billingAddress: locationBits.length ? locationBits.join(" | ") : undefined,
       });
       if (!resp?.success) {
         showError(resp?.message || "Failed to create client");
@@ -189,6 +196,34 @@ export default function NewClientPage() {
                   }
                   className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
                   placeholder="e.g. rahul@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Area (optional)
+                </label>
+                <input
+                  value={form.area}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, area: e.target.value }))
+                  }
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                  placeholder="Optional"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Landmark (optional)
+                </label>
+                <input
+                  value={form.landmark}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, landmark: e.target.value }))
+                  }
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
+                  placeholder="Optional"
                 />
               </div>
 

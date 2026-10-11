@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { contractsAPI } from "@/lib/api";
 import axios from "axios";
 import { useUser } from "@/components/AppLayout";
 import AccessDenied from "@/components/AccessDenied";
@@ -20,13 +21,8 @@ export default function Contracts() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const authToken = localStorage.getItem("token");
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const response = await axios.get(`${API_URL}/api/contracts`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      const contractsData = response.data?.data || response.data || [];
+      const response = await contractsAPI.getAll();
+      const contractsData = response?.data || response || [];
       const list = Array.isArray(contractsData) ? contractsData : [];
 
       // Use denormalized fields `clientName` and `hoardingCode` when available to avoid N+1 fetches.

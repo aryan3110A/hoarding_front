@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useSearchParams } from "next/navigation";
 import { useUser } from "@/components/AppLayout";
 import OptionAutocomplete from "@/components/OptionAutocomplete";
 import { canCreate, canUpdate, getRoleFromUser } from "@/lib/rbac";
@@ -160,6 +161,7 @@ function StatusDropdown({
 }
 
 export default function Enquiries() {
+  const searchParams = useSearchParams();
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -173,7 +175,7 @@ export default function Enquiries() {
     city: "",
     area: "",
     location: "",
-    status: "",
+    status: searchParams?.get("status") || "",
     performanceStage: "",
     categoryId: "",
     assignedSalesId: "",
@@ -200,6 +202,9 @@ export default function Enquiries() {
   const [categories, setCategories] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [savingCategory, setSavingCategory] = useState(false);
   const [salesUsers, setSalesUsers] = useState<
     Array<{ id: string; name: string }>
   >([]);
@@ -741,7 +746,7 @@ export default function Enquiries() {
   const categoryOptions = useMemo(
     () => [
       ...categories.map((c) => ({ value: String(c.id), label: String(c.name) })),
-      { value: "ADD_NEW_CATEGORY", label: "✅ ADD A HOARDING CATEGORY" }
+      { value: "ADD_NEW_CATEGORY", label: "+ Add New Category" }
     ],
     [categories],
   );
@@ -774,10 +779,10 @@ export default function Enquiries() {
         </div>
 
         {showForm && canCreateInquiry && (
-          <div className="card">
-            <h3>Create New Inquiry</h3>
+          <div className="card enquiry-create-form">
+            <h3 style={{ marginTop: 0, marginBottom: 12 }}>Create New Inquiry</h3>
             <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 enquiries-form-grid">
+              <div className="enquiry-form-grid">
                 <div className="form-group">
                   <label>Phone *</label>
                   <input
@@ -884,30 +889,69 @@ export default function Enquiries() {
                   <label>Category</label>
                   <StatusDropdown
                     value={formData.categoryId}
-                    onChange={async (v) => {
+                    onChange={(v) => {
                       if (v === "ADD_NEW_CATEGORY") {
-                        const name = window.prompt("Enter new category name:");
-                        if (!name || !name.trim()) return;
-                        try {
-                          const res = await categoriesAPI.create({ name: name.trim() });
-                          if (res && res.data) {
-                            const newCat = res.data;
-                            const catRes = await categoriesAPI.list();
-                            setCategories(Array.isArray(catRes?.data) ? catRes.data : []);
-                            setFormData((prev) => ({ ...prev, categoryId: newCat.id }));
-                          }
-                        } catch (err: any) {
-                          showError(err?.response?.data?.message || "Failed to create category");
-                        }
-                      } else {
-                        setFormData({ ...formData, categoryId: v });
+                        setShowNewCategory(true);
+                        return;
                       }
+                      setFormData({ ...formData, categoryId: v });
                     }}
                     placeholder="Select category"
                     options={categoryOptions}
                     buttonClassName="w-full"
                     matchButtonWidth
                   />
+                  {showNewCategory ? (
+                    <div className="enquiry-new-category">
+                      <input
+                        type="text"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="New category name"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        disabled={savingCategory}
+                        onClick={async () => {
+                          const name = newCategoryName.trim();
+                          if (!name) {
+                            showError("Category name is required");
+                            return;
+                          }
+                          try {
+                            setSavingCategory(true);
+                            const res = await categoriesAPI.create({ name });
+                            if (res?.data) {
+                              const catRes = await categoriesAPI.list();
+                              setCategories(Array.isArray(catRes?.data) ? catRes.data : []);
+                              setFormData((prev) => ({ ...prev, categoryId: res.data.id }));
+                              setNewCategoryName("");
+                              setShowNewCategory(false);
+                              showSuccess("Category added");
+                            }
+                          } catch (err: any) {
+                            showError(err?.response?.data?.message || "Failed to create category");
+                          } finally {
+                            setSavingCategory(false);
+                          }
+                        }}
+                      >
+                        {savingCategory ? "Adding..." : "Add"}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => {
+                          setShowNewCategory(false);
+                          setNewCategoryName("");
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
                 {isOwnerOrManager ? (
                   <div className="form-group">
@@ -1004,7 +1048,7 @@ export default function Enquiries() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Area *</label>
+                  <label>Area</label>
                   <input
                     type="text"
                     value={formData.area}
@@ -1014,18 +1058,18 @@ export default function Enquiries() {
                         area: e.target.value,
                       })
                     }
-                    required
+                    placeholder="Optional"
                   />
                 </div>
                 <div className="form-group">
-                  <label>Location / Landmark *</label>
+                  <label>Location / Landmark</label>
                   <input
                     type="text"
                     value={formData.location}
                     onChange={(e) =>
                       setFormData({ ...formData, location: e.target.value })
                     }
-                    required
+                    placeholder="Optional"
                   />
                 </div>
                 <div className="form-group" style={{ gridColumn: "1 / -1" }}>
@@ -1088,6 +1132,7 @@ export default function Enquiries() {
               <button
                 type="submit"
                 className="btn btn-primary"
+                style={{ marginTop: 12 }}
                 disabled={!!phoneConflictMessage}
               >
                 Save Inquiry
@@ -1096,10 +1141,51 @@ export default function Enquiries() {
           </div>
         )}
 
-        <style jsx>{`
-          @media (max-width: 640px) {
-            .enquiries-form-grid {
-              gap: 8px !important;
+        <style jsx global>{`
+          .enquiry-create-form {
+            padding: 16px 18px;
+          }
+          .enquiry-create-form:hover {
+            transform: none;
+          }
+          .enquiry-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px 14px;
+          }
+          .enquiry-create-form .form-group {
+            margin-bottom: 0;
+          }
+          .enquiry-create-form .form-group label {
+            margin-bottom: 4px;
+            font-size: 13px;
+          }
+          .enquiry-create-form .form-group input,
+          .enquiry-create-form .form-group select,
+          .enquiry-create-form .form-group textarea {
+            padding: 8px 12px;
+          }
+          .enquiry-new-category {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+          }
+          .enquiry-new-category input {
+            flex: 1;
+            min-width: 0;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+          }
+          .enquiry-new-category .btn {
+            padding: 8px 12px;
+            min-height: 36px;
+          }
+          @media (max-width: 720px) {
+            .enquiry-form-grid {
+              grid-template-columns: 1fr;
             }
           }
         `}</style>

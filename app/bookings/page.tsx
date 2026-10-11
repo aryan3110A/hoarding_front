@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { useUser } from "@/components/AppLayout";
+import { bookingsAPI, hoardingsAPI } from "@/lib/api";
 import { canCreate, canUpdate, canEditOwn } from "@/lib/rbac";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -29,32 +29,24 @@ export default function Bookings() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const authToken = localStorage.getItem("token");
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
       // Fetch bookings and hoardings
       const [bookingsRes, hoardingsRes] = await Promise.allSettled([
-        axios.get(`${API_URL}/api/bookings`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        }),
-        axios.get(`${API_URL}/api/hoardings`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        }),
+        bookingsAPI.getAll(),
+        hoardingsAPI.getAll(),
       ]);
 
-      // Extract data from responses
       const bookingsData =
         bookingsRes.status === "fulfilled"
           ? bookingsRes.value.data?.data || bookingsRes.value.data?.data || []
           : [];
+      const hoardingsPayload =
+        hoardingsRes.status === "fulfilled" ? hoardingsRes.value : null;
       const hoardingsData =
-        hoardingsRes.status === "fulfilled"
-          ? hoardingsRes.value.data?.data?.hoardings ||
-            hoardingsRes.value.data?.hoardings ||
-            hoardingsRes.value.data?.data?.hoardings ||
-            []
-          : [];
+        hoardingsPayload?.data?.hoardings ||
+        hoardingsPayload?.hoardings ||
+        hoardingsPayload?.data ||
+        [];
 
       setBookings(Array.isArray(bookingsData) ? bookingsData : []);
       setHoardings(Array.isArray(hoardingsData) ? hoardingsData : []);
@@ -70,10 +62,6 @@ export default function Bookings() {
   const handleCreateBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const authToken = localStorage.getItem("token");
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
       const clientName = prompt("Enter Client Name:");
       const clientContact = prompt("Enter Client Contact:");
       const price = prompt("Enter Total Price:");
@@ -83,21 +71,15 @@ export default function Bookings() {
         return;
       }
 
-      await axios.post(
-        `${API_URL}/api/bookings`,
-        {
-          hoardingId: tokenForm.hoardingId,
-          startDate: tokenForm.startDate,
-          endDate: tokenForm.endDate,
-          clientName,
-          clientContact,
-          price: price ? parseFloat(price) : null,
-          status: "confirmed",
-        },
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-        },
-      );
+      await bookingsAPI.create({
+        hoardingId: tokenForm.hoardingId,
+        startDate: tokenForm.startDate,
+        endDate: tokenForm.endDate,
+        clientName,
+        clientContact,
+        price: price ? parseFloat(price) : null,
+        status: "confirmed",
+      });
       setShowTokenForm(false);
       setTokenForm({ hoardingId: "", startDate: "", endDate: "" });
       fetchData();
